@@ -5,7 +5,7 @@
 ## 边界
 
 1. **本机**：HTTP 服务默认 loopback；CLI 通过 `runtime.json`（0600）发现端口与令牌。
-2. **局域网**：打包版监听 `0.0.0.0`，但除非设置开启「局域网访问」，非 loopback 请求一律 403；开启后要求配对 cookie 或 Bearer token。
+2. **局域网**：打包版监听 `0.0.0.0`，但除非设置开启「局域网访问」，非 loopback 请求一律 403；开启后要求配对 cookie 或 Bearer token。存在证书时另监听固定 47822 的 HTTPS，供 PWA 离线使用。
 3. **外部**：仅 AI 请求会离开设备，且只发往用户配置的 Base URL；外链由系统浏览器打开。
 
 ## 认证
@@ -26,6 +26,7 @@
 
 - SQLite WAL；文件权限继承用户目录；runtime/secrets 0600。
 - 图片：白名单 mime、20MB 上限、禁止 SVG（脚本执行风险）、sha256 去重。
+- HTTPS：自签名证书写入 `<dataDir>/certs`（key 0600，含当前 LAN IP 的 SAN）；手机需手动安装并完全信任证书。证书不等同于 Developer ID，不会让 macOS 应用通过 Gatekeeper 公证。
 - 备份：导入前 `integrity_check`、schema 版本检查、当前库自动备份；导入暂存、重启原子替换。备份包含加密 AI 密钥与本地密钥文件，必须按敏感文件保管（0600）。
 - 日志：pino 结构化；不记录任务正文、密钥、AI 对话。
 

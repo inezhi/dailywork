@@ -24,8 +24,11 @@ pnpm build
 
 ## 3. 当前覆盖（v0.1.0）
 
-`apps/server/src/app.test.ts` + `features.test.ts`（12 个集成测试）：
+Vitest 共 46 个测试，包含纯单元与集成/路由：
 
+单元（31）：日期与周界、hashtag 提取、文档文本/链接投影、CLI 参数、快速添加语法、主题对比度、Ops 目录不变量、流式 LLM 解析。
+
+集成（14）：
 - 创建 / 列表任务。
 - 同一 `opId` 重复创建只产生一条。
 - 空标题返回 `VALIDATION_ERROR`。
@@ -37,10 +40,14 @@ pnpm build
 - 单实例专注与任务实际分钟回填。
 - `.dailywork` 导出 → 新目录导入 → 数据一致。
 - AI 工具：未开启变更时拒绝，开启后执行并写入 actor=ai 审计。
+- 流式聊天路由：start / tool_start / tool_result / delta / done。
+- 每日例程增删启停与日注。
+- 项目模板保存/应用与项目操作记录。
+- 局域网 HTTPS 证书生成（cert/key/CA 文件）。
 
-Playwright（6 个核心旅程）：创建/编辑/完成/刷新仍在、速记转任务、文档保存与重载、⌘K 搜索、深浅主题、移动端无横向滚动。额外 QA 脚本覆盖看板拖拽、专注开始/结束、备份导出、打包应用首启、欢迎文档与局域网配对（`e2e/*-qa.mjs`、`e2e/packaged-*.mjs`）。
+Playwright（9 个）：Chrome 桌面 6 个核心旅程 + WebKit iPhone 13 视口 3 个（今天页、全屏抽屉、仪表盘/文档）。额外 QA 脚本覆盖看板/四象限/日历/时间轴拖拽、专注、备份导出、AI 流式与上下文、文档 AI 菜单、速记附件、打包应用首启、局域网配对、HTTPS 证书与离线壳（`e2e/*-qa.mjs`、`e2e/packaged-*.mjs`）。
 
-待补：LAN 配对纳入正式 spec、迁移 v1→v2、离线与并发压力。
+待补：LAN 配对与 HTTPS 纳入正式 spec、迁移升级夹具、并发压力；真实 iPhone 需人工验收。
 
 ## 4. 数据与隔离
 

@@ -58,7 +58,7 @@ flowchart LR
 
 ### 3.3 AI
 
-AI 面板 → `ai.chat` → assistant 上下文拼系统提示与工具 schema → 供应商返回 tool_calls → ops 执行器递归执行工具（actor=ai）→ 工具结果回填 → 最终文本落库为 `ai_messages`。只读工具自动执行；变更需 UI 开关；破坏性操作永远返回 `CONFIRM_REQUIRED`。任务抽屉、文档工具栏与周复盘通过 `openAi({context,draft})` 预填上下文。
+AI 面板 → `/api/ai/chat/stream`（SSE）→ assistant 上下文拼系统提示与工具 schema → 供应商流式返回 content/tool_calls → ops 执行器递归执行工具（actor=ai）→ 工具结果回填 → 最终文本落库为 `ai_messages`。CLI/MCP 使用非流式 `ai.chat` op。只读工具自动执行；变更需 UI 开关；破坏性操作永远返回 `CONFIRM_REQUIRED`。任务抽屉、文档工具栏与周复盘通过 `openAi({context,draft})` 预填上下文。
 
 ## 4. 存储与同步
 
@@ -97,7 +97,7 @@ AI 面板 → `ai.chat` → assistant 上下文拼系统提示与工具 schema �
 
 ## 8. 已知限制
 
-- 局域网 HTTP 下 Service Worker 不注册（平台安全上下文要求）；iOS 可添加到主屏幕但离线缓存需 HTTPS。
+- 局域网 HTTP 下 Service Worker 不注册（平台安全上下文要求）；可在设置中生成自签名 HTTPS 证书（固定端口 47822），手机信任证书后启用离线壳；真机需手动信任。
 - Electron 为 ad-hoc 签名；首次打开需右键打开或系统设置放行，更新为手动 dmg。
 - 日历 / 时间轴暂不支持拖拽改期；可在抽屉中改日期。
-- 每日收尾提醒、文档 AI 选区操作条、AI 流式输出尚未实现（见 backlog）。
+- 空间级禁止 AI、全局撤销、Developer ID 公证、真机 iPhone 验收仍需外部条件（见 backlog）。
