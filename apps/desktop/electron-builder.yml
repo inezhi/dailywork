@@ -1,0 +1,35 @@
+appId: com.lingzhi.dailywork
+productName: Dailywork
+copyright: Copyright © 2026 lingzhi
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**
+  - package.json
+extraResources:
+  - from: ../web/dist
+    to: web
+  - from: ../server/dist
+    to: server
+  - from: build/tray.png
+    to: tray.png
+mac:
+  category: public.app-category.productivity
+  icon: build/icon.icns
+  identity: null
+  hardenedRuntime: false
+  target:
+    - target: dmg
+      arch:
+        - arm64
+dmg:
+  title: 时序 · Dailywork
+  artifactName: Dailywork-${version}-${arch}.dmg
+  contents:
+    - x: 140
+      y: 200
+    - x: 400
+      y: 200
+      type: link
+      path: /Applications
