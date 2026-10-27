@@ -1,0 +1,10 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch({ channel: 'chrome', headless: true })
+const page = await browser.newPage({ viewport: { width: 1440, height: 960 } })
+await page.goto('http://127.0.0.1:5173/tasks', { waitUntil: 'networkidle' })
+const seg = await page.evaluate(() => Array.from(document.querySelectorAll('.page-head .seg button')).map(b=>({text:b.textContent, h:b.getBoundingClientRect().height, w:b.getBoundingClientRect().width})))
+console.log('seg', seg)
+await page.goto('http://127.0.0.1:5173/focus', { waitUntil: 'networkidle' })
+await page.waitForTimeout(500)
+await page.screenshot({ path: 'design/qa/focus-empty.png' })
+await browser.close()

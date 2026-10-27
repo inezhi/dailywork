@@ -1,0 +1,11 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch({ channel: 'chrome', headless: true })
+const page = await browser.newPage({ viewport: { width: 1440, height: 960 } })
+await page.goto('http://127.0.0.1:5173/settings', { waitUntil: 'networkidle' })
+await page.getByRole('button', { name: '数据与备份' }).click()
+await page.getByRole('button', { name: /导出备份/ }).click()
+const toast = page.locator('.toast')
+await toast.waitFor({ timeout: 15000 })
+console.log('toast', await toast.innerText())
+await page.screenshot({ path: 'design/qa/backup-export.png' })
+await browser.close()

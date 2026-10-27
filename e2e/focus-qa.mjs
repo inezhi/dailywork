@@ -1,0 +1,16 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch({ channel: 'chrome', headless: true })
+const page = await browser.newPage({ viewport: { width: 1440, height: 960 } })
+const errors = []
+page.on('pageerror', (e) => errors.push(String(e)))
+await page.goto('http://127.0.0.1:5173/focus', { waitUntil: 'networkidle' })
+await page.getByRole('button', { name: /开始 25 分钟专注/ }).click()
+await page.locator('.focus-stage').waitFor({ timeout: 10000 })
+await page.waitForTimeout(1800)
+await page.screenshot({ path: 'design/qa/focus-active.png' })
+await page.getByRole('button', { name: /提前结束/ }).click()
+await page.waitForTimeout(1200)
+const stillActive = await page.locator('.focus-stage').count()
+console.log('active after finish', stillActive)
+console.log('errors', errors)
+await browser.close()

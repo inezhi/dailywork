@@ -1,0 +1,18 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch({ channel: 'chrome', headless: true })
+const page = await browser.newPage({ viewport: { width: 1440, height: 960 } })
+const errors = []
+page.on('pageerror', (e) => errors.push(String(e)))
+await page.goto('http://127.0.0.1:5173/today', { waitUntil: 'networkidle' })
+await page.locator('.task-row').first().click()
+await page.locator('.drawer').waitFor()
+await page.locator('.drawer').getByRole('button', { name: /AI/ }).click()
+await page.locator('.ai-panel').waitFor()
+const value = await page.locator('.ai-composer textarea').inputValue()
+console.log('draft', value.slice(0, 80))
+await page.locator('.ai-send').click()
+await page.locator('.ai-msg.assistant').first().waitFor({ timeout: 30000 })
+await page.waitForTimeout(500)
+await page.screenshot({ path: 'design/qa/ai-task.png' })
+console.log('errors', errors)
+await browser.close()
