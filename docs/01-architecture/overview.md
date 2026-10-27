@@ -6,25 +6,30 @@
 
 ```mermaid
 flowchart LR
-  subgraph Mac["macOS"]
-    E["Electron 主进程<br/>窗口 / 托盘 / 全局快捷键"] --> W["React SPA<br/>TanStack Router + Query"]
-    E -->|"utilityProcess.fork"| S["Hono 服务<br/>127.0.0.1 / 0.0.0.0"]
-    W -->|"HTTP + SSE"| S
-    S --> DB[("SQLite<br/>data.sqlite · WAL")]
-    S --> B[("图片 BLOB<br/>sha256 去重")]
-    CLI["daily CLI"] -->|"HTTP + 单实例 runtime.json"| S
-    MCP["MCP stdio"] --> CLI
-    S -->|"OpenAI 兼容 API"| LLM["DeepSeek / 任意供应商"]
+  subgraph Clients["客户端"]
+    E["Electron 桌面客户端<br/>窗口 / 托盘 / 快捷键"]
+    B["浏览器 SPA"]
+    A["Android / 移动浏览器<br/>后续原生客户端"]
   end
-  PHONE["iPhone / iPad Safari"] -->|"LAN + 配对 cookie"| S
-  BROWSER["localhost 浏览器"] --> W
+  subgraph Server["Docker 服务端"]
+    S["Hono 服务<br/>HTTP + SSE"]
+    DB[("账户库 + 每账户工作区<br/>SQLite · WAL")]
+    S --- DB
+  end
+  E -->|"HTTP + SSE"| S
+  B -->|"HTTP + SSE"| S
+  A -->|"HTTP + SSE"| S
+  CLI["daily CLI"] -->|"HTTP"| S
+  MCP["MCP stdio"] --> CLI
+  S -->|"OpenAI 兼容 API"| LLM["DeepSeek / 任意供应商"]
 ```
 
-- **唯一写入口**：服务端 ops 执行器；Web / CLI / MCP / AI 都通过 `POST /api/ops/<name>`。
-- **生产形态**：Electron 用 `utilityProcess` 启动打包后的 `resources/server/server.mjs`，服务监听 `0.0.0.0`（局域网请求默认被设置开关拦截），用 `resources/web` 托管同源静态文件。
-- **开发形态**：`pnpm dev` 启动 tsx 服务（47821）、Vite（5173）与 Electron；Vite 代理 `/api`。
-- **单实例**：服务把 `{url, port, token, pairingCode, pid}` 写入 `<dataDir>/runtime.json`（0600）；token 持久化在 `<dataDir>/server-token`，CLI 先探测健康，再决定复用或拉起 headless 服务。
-- **账户与会话**：`accounts.sqlite` 保存 users/sessions（scrypt 密码、HttpOnly 会话 cookie）；每个账户使用独立的 `users/<userId>/data.sqlite`，Web 通过 `/api/auth/*` 登录后中间件选择对应数据库。CLI/MCP 使用 runtime Bearer token 映射到首个账户；局域网配对创建首个账户的会话。账户层为后续联网服务预留。
+- **唯一写入口**：服务端 ops 执行器；桌面、浏览器、Android、CLI、MCP 与 AI 都通过 `POST /api/ops/<name>` 调用。
+- **生产形态**：Docker 容器运行 Hono 服务与 Web 静态资源，SQLite 数据在 `/data` volume；反向代理终止 TLS。
+- **桌面形态**：Electron 只做客户端，读取 `DAILYWORK_SERVER_URL` 或 `connection.json` 后直接加载服务端页面；不启动内置服务，不保存业务数据库。
+- **开发形态**：`pnpm dev` 启动 tsx 服务（47821）、Vite（5173）与 Electron；Vite 代理 `/api`。开发数据和生产服务端数据分离。
+- **单实例服务**：服务把 `{url, port, token, pairingCode, pid}` 写入 `<dataDir>/runtime.json`（0600）；CLI 先探测健康，再决定复用或拉起 headless 服务。当前是单服务端写模型，不对同一 `/data` 启动多个副本。
+- **账户与会话**：服务端 `accounts.sqlite` 保存 users/sessions（scrypt 密码、HttpOnly 会话 cookie）；每个账户使用独立 `users/<userId>/data.sqlite`，所有客户端通过 `/api/auth/*` 登录后共享同一账户数据。Android 原生客户端后续复用同一会话/令牌接口。
 
 ## 2. DDD 限界上下文
 
@@ -48,7 +53,7 @@ flowchart LR
 ### 3.1 命令
 
 1. 客户端 `POST /api/ops/task.create`，body 含业务字段与可选 `opId`。
-2. HTTP 层做鉴权（loopback / LAN cookie / Bearer）、`confirm` 校验、`opId` 生成。
+2. HTTP 层做鉴权（会话 cookie / 服务端 Bearer / TLS 代理）、`confirm` 校验、`opId` 生成。
 3. `runOp` 用 zod 校验输入；若 `op_log` 已有同一 `opId`，直接返回 `after_json`（幂等）。
 4. handler 在 `BEGIN IMMEDIATE` 事务内写业务表，并调用 `recordOp` 写 `op_log`（同事务）。
 5. 成功后通过 SSE `/api/events` 广播 `{type:'op', command}`；所有 Web 查询失效重取。
@@ -63,16 +68,16 @@ AI 面板 → `/api/ai/chat/stream`（SSE）→ assistant 上下文拼系统提�
 
 ## 4. 存储与同步
 
-- 数据全部在 SQLite（WAL）。**不使用任何云同步**（2026-10-27 决策，见 ADR-0003）。
+- 数据全部在服务端 SQLite（WAL）。客户端不持有业务数据库；多端通过同一个服务端读写，不在客户端之间同步文件。
 - 图片：`blobs` 存 BLOB、sha256 唯一、引用计数；`attachments` 多态关联 task/document/memo；删除附件递减引用，零引用即回收。文档正文以 `attachment://<id>` 或附件 URL 引用。
-- 审计：`op_log` 是操作日志、活动记录与导出重放底稿，记录 `before_json`/`after_json`；任务级「撤销上一步」用 before 快照恢复。**不实现 HLC / deviceId / 墓碑 / 多设备合并**（macOS 桌面端，已取消同步）。
+- 审计：`op_log` 是操作日志、活动记录与导出重放底稿，记录 `before_json`/`after_json`；任务级「撤销上一步」用 before 快照恢复。多端通过服务端 SSE 刷新，不做客户端之间的文件级合并。
 - 备份：`VACUUM INTO` 快照 + `.dailywork` zip（manifest + data.sqlite + README）；导入先 `PRAGMA integrity_check` 与 schema 版本检查，暂存 `data.sqlite.import-pending`，下次启动原子替换并备份当前库。
 - 迁移：`schema_migrations` + 顺序 SQL；已应用 v1（完整 schema）、v2（回填 `completed_at`）。迁移在单事务内执行。
 
 ## 5. 安全
 
 - Electron：contextIsolation、sandbox、无 nodeIntegration、preload 白名单；阻止窗口内导航到外站，外链交给系统浏览器。
-- 当前设备：服务默认监听 loopback（打包版为支持 LAN 监听 0.0.0.0，但非本设备请求在 `lanEnabled=false` 时 403）。
+- 服务端：容器监听 0.0.0.0；服务器部署模式允许远程登录，默认只允许创建首个账户，`DAILYWORK_OPEN_REGISTRATION=1` 才继续公开注册。
 - LAN：6 位配对码（10 分钟 10 次限流）换 HttpOnly cookie；Bearer token 亦可；生产静态 HTML 带 CSP（`default-src 'self'`、`object-src 'none'`）。
 - 密钥：AI Key 用 AES-256-GCM 加密，密钥文件 `<dataDir>/secrets.key` 0600；日志不写正文与密钥。
 - 无遥测、无外部字体/CDN；所有资源随包分发。
@@ -89,7 +94,7 @@ AI 面板 → `/api/ai/chat/stream`（SSE）→ assistant 上下文拼系统提�
 
 | 原方案 | 当前实现 | 原因 |
 |---|---|---|
-| 云同步 / op_log 多设备合并 | SQLite + 备份导出导入 | 用户 2026-10-27 取消云同步；macOS 桌面端 |
+| 每台设备一份数据库 | 单 Docker 服务端 + 多客户端 | 多端必须共享账户与数据；客户端不保存业务库 |
 | better-sqlite3 + Drizzle | Node 内置 `node:sqlite` + 手写 SQL | 免原生编译与 Electron ABI 重建，打包稳定 |
 | TipTap + Yjs CRDT | TipTap JSON 持久化 | 首期个人使用；避免双写与 CRDT 复杂度 |
 | FullCalendar / ECharts | 自绘月/周/日、时间轴、SVG 图表 | 主题与排版完全可控、体积更小；图表需求简单 |
@@ -98,11 +103,12 @@ AI 面板 → `/api/ai/chat/stream`（SSE）→ assistant 上下文拼系统提�
 
 ## 8. 部署与未来联网
 
-桌面端由 Electron 启动内置服务；服务器部署可使用 Docker 镜像（服务 + Web + SQLite + /data 卷），由反向代理终止 TLS。当前交付以桌面服务 + 账户隔离运行；`accounts.sqlite` 与每账户独立数据文件使后续接入联网服务时，只需替换会话传输、服务发现与托管方式，不改变领域模型。
+Docker 服务端是唯一权威实例（服务 + Web + SQLite + `/data` 卷），由反向代理终止 TLS。桌面 Electron、浏览器与后续 Android 客户端都连接该服务端；桌面端不启动内置服务。多端共享账户与数据，客户端页面刷新依赖 SSE 与查询缓存。
 
 ## 9. 已知限制
 
-- 局域网 HTTP 下 Service Worker 不注册（平台安全上下文要求）；可在设置中生成自签名 HTTPS 证书（固定端口 47822），手机信任证书后启用离线壳；真机需手动信任。
+- 客户端没有离线业务库；服务端不可达时不能编辑数据（后续可做只读缓存/离线队列）。
+- 局域网 HTTPS 证书与移动端信任仍可能受平台限制。
 - Electron 为 ad-hoc 签名；首次打开需右键打开或系统设置放行，更新为手动 dmg。
 - 日历 / 时间轴暂不支持拖拽改期；可在抽屉中改日期。
 - 空间级禁止 AI、全局撤销、Developer ID 公证、真机 iPhone 验收仍需外部条件（见 backlog）。

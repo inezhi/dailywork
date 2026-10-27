@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import type { Project, Space, TodayResult, CreateProjectInput, CreateSpaceInput } from '@daily/contracts'
 import { useOp, useOpMutation } from '@/lib/query'
+import { todayIso } from '@/lib/format'
 import { useUi } from '@/stores/ui'
 import { FocusRing } from './FocusRing'
 import { Modal, ModalHeader } from './Modal'
@@ -45,7 +46,11 @@ export function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const { data: spaces } = useOp<Space[]>('space.list')
   const { data: projects } = useOp<Project[]>('project.list', {})
-  const { data: today } = useOp<TodayResult>('today.get', {}, { staleTime: 30_000 })
+  const { data: today } = useOp<TodayResult>(
+    'today.get',
+    { date: todayIso() },
+    { staleTime: 30_000 },
+  )
   const [newProjectOpen, setNewProjectOpen] = useState(false)
   const [newSpaceOpen, setNewSpaceOpen] = useState(false)
 

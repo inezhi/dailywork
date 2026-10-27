@@ -7,12 +7,9 @@ directories:
 afterPack: scripts/after-pack.mjs
 files:
   - dist/**
+  - connection.html
   - package.json
 extraResources:
-  - from: ../web/dist
-    to: web
-  - from: ../server/dist
-    to: server
   - from: build/tray.png
     to: tray.png
 mac:

@@ -10,7 +10,7 @@ macOS 桌面应用，需要 SQLite 数据库、系统托盘/全局快捷键、�
 
 - Electron 45 + electron-vite 生态（本仓库使用 esbuild 打包主进程/服务） + electron-builder 26。
 - React 19.3 + Vite 8.3 + Tailwind 4.3（设计 tokens 以自定义 CSS 变量为主）；TanStack Router/Query、Zustand。
-- Hono 4.13 + `@hono/node-server`，运行在 Electron utilityProcess；CLI 通过 HTTP 调用同一服务。
+- Hono 4.13 + `@hono/node-server`，运行在 Docker 服务端；桌面客户端、浏览器与 CLI 通过 HTTP 调用同一服务。
 - SQLite：Node 内置 `node:sqlite`（见 ADR-0008），WAL。
 - TypeScript 5.9 strict；pnpm 10 workspace + Turborepo；Vitest 5 + Playwright 1.64。
 - 图标 Lucide；拖拽 dnd-kit；文档 TipTap 3；图表与日历/时间轴自绘 SVG/CSS。

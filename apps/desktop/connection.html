@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>连接服务器 · 时序</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f7fa;
+        --card: #ffffff;
+        --line: #e5e6eb;
+        --ink: #1d2129;
+        --ink-2: #4e5969;
+        --ink-3: #6b7785;
+        --accent: #1677ff;
+        --accent-strong: #0958d9;
+        --danger: #ff4d4f;
+        --success: #52c41a;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at 20% 10%, rgba(22, 119, 255, 0.08), transparent 35%),
+          var(--bg);
+        color: var(--ink);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC', sans-serif;
+        -webkit-font-smoothing: auto;
+      }
+      .drag { position: fixed; inset: 0 0 auto 0; height: 42px; -webkit-app-region: drag; }
+      .card {
+        width: min(520px, calc(100vw - 48px));
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 30px;
+        box-shadow: 0 18px 50px rgba(29, 33, 41, 0.08);
+      }
+      .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+      .mark {
+        width: 38px; height: 38px; border-radius: 10px;
+        display: grid; place-items: center;
+        background: var(--accent); color: #fff;
+        font-size: 18px; font-weight: 700;
+      }
+      .brand b { display: block; font-size: 15px; letter-spacing: 0.2px; }
+      .brand span { display: block; font-size: 10px; letter-spacing: 1.6px; color: var(--ink-3); margin-top: 3px; }
+      h1 { font-size: 21px; margin: 0 0 8px; letter-spacing: -0.3px; }
+      p { font-size: 12.5px; line-height: 1.65; color: var(--ink-2); margin: 0 0 18px; }
+      label { display: block; font-size: 11.5px; font-weight: 600; color: var(--ink-2); margin-bottom: 7px; }
+      input {
+        width: 100%; height: 42px; border: 1px solid var(--line); border-radius: 8px;
+        padding: 0 12px; font: inherit; font-size: 13px; color: var(--ink); background: #fbfcfd;
+        outline: none;
+      }
+      input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.12); }
+      .actions { display: flex; gap: 8px; margin-top: 16px; }
+      button {
+        height: 38px; border-radius: 8px; border: 1px solid var(--line);
+        background: #fff; color: var(--ink); padding: 0 16px; font: inherit; font-size: 12.5px;
+        cursor: pointer;
+      }
+      button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+      button.primary:hover { background: var(--accent-strong); }
+      button:disabled { opacity: 0.5; cursor: default; }
+      .status { min-height: 20px; margin-top: 14px; font-size: 11.5px; line-height: 1.5; color: var(--ink-3); }
+      .status.ok { color: var(--success); }
+      .status.bad { color: var(--danger); }
+      .hint { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 11px; line-height: 1.7; color: var(--ink-3); }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px; color: var(--ink-2); }
+    </style>
+  </head>
+  <body>
+    <div class="drag"></div>
+    <main class="card">
+      <div class="brand">
+        <div class="mark">时</div>
+        <div><b>时序 · Dailywork</b><span>DESKTOP CLIENT</span></div>
+      </div>
+      <h1>连接你的工作台</h1>
+      <p>桌面端、浏览器和手机都是客户端，连接同一个服务端才能看到同一份任务、文档与账户数据。</p>
+      <label for="server">服务端地址</label>
+      <input id="server" type="url" spellcheck="false" placeholder="http://127.0.0.1:47821" autofocus />
+      <div class="actions">
+        <button class="primary" id="connect">保存并连接</button>
+        <button id="test">测试连接</button>
+      </div>
+      <div class="status" id="status">服务端通常运行在 Docker 中。</div>
+      <div class="hint">
+        Docker 服务端：<code>http://127.0.0.1:47821</code><br />
+        远程服务器：填写部署后对外提供的 HTTPS 地址。修改连接不会删除服务端数据。
+      </div>
+    </main>
+    <script>
+      const input = document.getElementById('server')
+      const status = document.getElementById('status')
+      const connect = document.getElementById('connect')
+      const test = document.getElementById('test')
+      const api = window.dailywork?.connection
+
+      function setStatus(text, kind = '') {
+        status.textContent = text
+        status.className = `status ${kind}`
+      }
+
+      if (!api) {
+        setStatus('客户端桥接未就绪，请重新打开应用。', 'bad')
+      } else {
+        api.get().then((url) => {
+          input.value = url
+        }).catch(() => {})
+      }
+
+      test?.addEventListener('click', async () => {
+        if (!api) return
+        test.disabled = true
+        setStatus('正在测试连接…')
+        try {
+          const result = await api.test(input.value)
+          if (result.ok) setStatus(`连接成功${result.version ? ` · 服务端 v${result.version}` : ''}`, 'ok')
+          else setStatus(`连接失败：${result.error ?? '未知错误'}`, 'bad')
+        } catch (error) {
+          setStatus(`连接失败：${error instanceof Error ? error.message : String(error)}`, 'bad')
+        } finally {
+          test.disabled = false
+        }
+      })
+
+      connect?.addEventListener('click', async () => {
+        if (!api) return
+        connect.disabled = true
+        setStatus('正在连接服务端…')
+        try {
+          const result = await api.save(input.value)
+          if (!result.ok) {
+            setStatus(`连接失败：${result.error ?? '未知错误'}`, 'bad')
+            connect.disabled = false
+            return
+          }
+          setStatus(`已连接${result.version ? ` · 服务端 v${result.version}` : ''}`, 'ok')
+        } catch (error) {
+          setStatus(`连接失败：${error instanceof Error ? error.message : String(error)}`, 'bad')
+          connect.disabled = false
+        }
+      })
+
+      input?.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') connect?.click()
+      })
+    </script>
+  </body>
+</html>

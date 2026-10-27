@@ -22,7 +22,11 @@ import {
 
 export function TodayPage() {
   const today = todayIso()
-  const { data, isLoading } = useOp<TodayResult>('today.get', {}, { staleTime: 15_000, refetchInterval: 60_000 })
+  const { data, isLoading } = useOp<TodayResult>(
+    'today.get',
+    { date: today },
+    { staleTime: 15_000, refetchInterval: 60_000 },
+  )
   const { data: settings } = useOp<Settings>('settings.get')
   const { data: routines } = useOp<Routine[]>('routine.list', {})
   const timer = useTimer()
