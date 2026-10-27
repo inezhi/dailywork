@@ -5,5 +5,6 @@ interface Window {
     restart: () => Promise<void>
     version: () => Promise<string>
     dataDir: () => Promise<string>
+    pickBackup: () => Promise<string | null>
   }
 }

@@ -375,7 +375,7 @@ function AiSettings() {
       <section className="settings-section">
         <h2>AI 供应商</h2>
         <p className="desc">
-          默认推荐 DeepSeek（OpenAI 兼容）。密钥用本机密钥加密，只保存在本地数据库，不会进入日志或备份之外的地方。
+          默认推荐 DeepSeek（OpenAI 兼容）。密钥用本机密钥加密后存入本地数据库（会随备份文件导出），不会写入日志。
         </p>
         {(providers ?? []).map((provider) => (
           <div key={provider.id} className="setting-row" style={{ alignItems: 'flex-start' }}>
@@ -600,7 +600,20 @@ function DataSettings() {
           <button className="btn" onClick={() => void exportData()} disabled={exporting}>
             <Download size={13} /> {exporting ? '导出中…' : '导出备份'}
           </button>
-          <button className="btn" onClick={() => setImportOpen(true)}>
+          <button
+            className="btn"
+            onClick={async () => {
+              if (window.dailywork?.pickBackup) {
+                const picked = await window.dailywork.pickBackup()
+                if (picked) {
+                  setImportPath(picked)
+                  setImportOpen(true)
+                }
+              } else {
+                setImportOpen(true)
+              }
+            }}
+          >
             <Upload size={13} /> 导入备份
           </button>
         </div>
@@ -632,7 +645,7 @@ daily mcp serve`}</pre>
       <Modal open={importOpen} onClose={() => setImportOpen(false)} label="导入备份">
         <ModalHeader
           title="导入 .dailywork 备份"
-          description="会校验文件完整性，先备份当前数据库，再原子替换。导入后需要重启应用。"
+          description="会校验文件完整性，先备份当前数据库，再原子替换。导入后需要立即重启应用；当前会话里未导出的改动会丢失。"
           onClose={() => setImportOpen(false)}
         />
         <div className="modal-body">

@@ -18,7 +18,7 @@ app.setName('Dailywork')
 app.setAppUserModelId('com.lingzhi.dailywork')
 
 const isDev = !app.isPackaged
-const dataDir = join(app.getPath('appData'), 'Dailywork')
+const dataDir = process.env.DAILYWORK_DATA_DIR ?? join(app.getPath('appData'), 'Dailywork')
 mkdirSync(dataDir, { recursive: true, mode: 0o700 })
 
 let mainWindow: BrowserWindow | null = null
@@ -268,6 +268,14 @@ ipcMain.handle('dailywork:restart', () => {
 })
 ipcMain.handle('dailywork:version', () => app.getVersion())
 ipcMain.handle('dailywork:data-dir', () => dataDir)
+ipcMain.handle('dailywork:pick-backup', async () => {
+  const result = await dialog.showOpenDialog({
+    title: '选择 .dailywork 备份',
+    properties: ['openFile'],
+    filters: [{ name: 'Dailywork 备份', extensions: ['dailywork'] }],
+  })
+  return result.canceled ? null : result.filePaths[0] ?? null
+})
 
 const gotLock = app.requestSingleInstanceLock()
 if (!gotLock) {
