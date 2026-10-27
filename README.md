@@ -1,140 +1,116 @@
-# 时序 · Dailywork
+# 时序 / Dailywork v2
 
-> 时间有序，专注有度。
+个人任务 × 时间 × 知识工作台。v2 同时是一个 **Go 微服务学习项目**：用一个真实可用的产品，练习服务边界、数据所有权、事件驱动、可观测性与容器化。
 
-时序是一款个人任务与知识工作台：任务、项目、看板、日历、时间轴、专注计时、flomo 式速记、块级文档与数据仪表盘。
+> 当前状态：**文档阶段**。代码尚未开始；仓库里只有 v1 归档与 v2 文档入口。
 
-它采用**一个服务端 + 多客户端**的结构：服务端运行在 Docker 中，持有唯一的 SQLite 数据库；桌面安装版、浏览器以及后续 Android 客户端都连接同一个服务端，因此账户与数据天然互通。
+## 为什么重做
 
-![时序 · 今日](design/qa/final-020-today.png)
+v1 是一个 TypeScript 单体（Hono + SQLite + React/Electron），功能已经完整，但架构目标已经变化：
 
-## 是什么
+- 产品只服务一个人，不需要背着历史实现；
+- 下一阶段的目标是 Go 微服务实践，而不是继续扩展单体；
+- v1 的代码、文档、设计稿已完整保存在 `main`、`v0.2.0` tag 和远端仓库中。
 
-- **一个闭环**：捕获 → 规划 → 执行（专注）→ 复盘 → 洞察。
-- **不是又一个待办清单**：任务与时间、容量、专注、文档互相咬合；今天页回答「现在做什么」，仪表盘回答「最近怎么样」。
-- **多端同一份数据**：服务端是唯一权威数据源；桌面端、浏览器、Android 客户端只做展示与操作，不再各自保存一套业务库。
-- **账户**：注册需用户名、邮箱和至少 8 位含字母与数字的密码；注册需要验证码，登录连续失败后也会要求验证码；支持修改密码与头像（默认使用用户名首字母）。
-- **版本记录**：设置 → 关于可查看每个版本的更新内容；每次发布同步更新应用内记录与 CHANGELOG。
-- **数据自有**：服务端 SQLite 数据库；图片以 BLOB 存库并按 sha256 去重；支持 `.dailywork` 导出/导入，随时带走全部数据。
-- **为 AI 而设计**：所有界面操作都收敛为一套 ops 契约，同时暴露 HTTP、CLI 与 MCP，AI 与人类走同一套规则。
-- **克制的设计**：冷白画布、经典蓝强调色、单一字体家族、极浅阴影；支持强调色 / 语义色 / 中性色温自定义与深浅主题。
+因此 v2 从零开始，先把产品与架构写成文档，再写代码。
 
-## 快速开始
+## 学习目标
 
-### 1. 启动服务端
+这个项目不是玩具 demo，而是一个能长期自用的产品。通过它练习：
 
-要求：Docker（Docker Desktop 或 Colima 均可）。
+- 按限界上下文拆分服务，而不是按技术层拆；
+- 每个服务独立数据库，跨服务只走 API 或事件；
+- 同步查询与异步事件的边界、outbox、幂等与最终一致；
+- Redis 会话/缓存、NATS JetStream 事件流；
+- OpenTelemetry 日志、指标、链路，以及 Docker Compose / K8s 部署；
+- Go 的工程习惯：`context.Context`、显式错误、接口小、依赖注入、优雅退出、表驱动测试。
 
-```bash
-cp .env.example .env
-docker compose up -d
+## 规划架构
+
+```text
+浏览器 / 未来移动端
+        │ HTTPS
+        ▼
+   gateway (Go)
+   ├── identity    账户、会话、验证码、头像
+   ├── task        空间、项目、任务、标签、速记
+   ├── planning    日历、容量、专注会话
+   ├── docs        文档、正文、附件
+   └── assistant   AI 供应商、对话、流式输出
+        │
+        ├── PostgreSQL（每个服务独立库）
+        ├── Redis（会话、缓存、限流）
+        ├── NATS JetStream（领域事件）
+        └── MinIO（附件对象存储，后期）
 ```
 
-服务端默认监听 `47821`，数据持久化在 `dailywork_dailywork-data` volume 的 `/data`。首次访问注册第一个账户；默认之后关闭公开注册。详见 [Docker 部署](docs/04-process/docker-deployment.md)。
+MVP 只实现 **gateway + identity + task**，跑通注册、登录、创建任务、今天列表；其余服务按路线图逐步拆出。
 
-### 2. 打开客户端
+## 规划技术栈
 
-- **浏览器**：打开 http://127.0.0.1:47821
-- **桌面版**：安装 `apps/desktop/release/Dailywork-0.2.0-arm64.dmg`，启动后默认连接 `http://127.0.0.1:47821`；通过菜单「服务器 → 服务器连接…」可改为远程服务端地址
-- **Android**：后续客户端复用同一服务端 API；当前可先用手机浏览器访问同一个地址
-
-只有服务端持有数据库；桌面端不再内置服务，也不会生成第二份数据。
-
-### 3. 开发
-
-要求：macOS、Node.js ≥ 22.5、pnpm 10。
-
-```bash
-pnpm install
-pnpm dev
-```
-
-`pnpm dev` 会启动开发用 Hono 服务（47821）、Vite（5173）与 Electron 窗口，只用于界面与接口开发。生产运行以 Docker 服务端为准。
-
-### 常用命令
-
-| 命令 | 说明 |
+| 层 | 选型 |
 |---|---|
-| `docker compose up -d` | 启动唯一服务端（服务 + Web + SQLite） |
-| `pnpm dev` | 开发用服务 + Web + Electron |
-| `pnpm build` | 构建 Web / 服务 / CLI |
-| `pnpm build:desktop` | 构建并打包 macOS 客户端 dmg（ad-hoc 签名，不内置服务端） |
-| `pnpm test` | Vitest 单元与集成测试 |
-| `pnpm test:e2e` | Playwright 核心旅程（自动启动开发服务与 Web） |
-| `pnpm typecheck` | TypeScript 全量类型检查 |
-| `pnpm lint` | ESLint |
-| `pnpm daily -- task list` | 通过 CLI 操作服务端 |
+| 语言 | Go 1.27 |
+| HTTP | 标准库 `net/http` + `chi` |
+| 数据库 | PostgreSQL + `pgx` + `sqlc` + `golang-migrate` |
+| 缓存/会话 | Redis + `go-redis` |
+| 事件 | NATS JetStream |
+| 内部通信 | ConnectRPC / gRPC |
+| 外部契约 | REST + OpenAPI 3.1 |
+| 可观测性 | `slog` + OpenTelemetry + Prometheus + Grafana + Jaeger |
+| 本地编排 | Docker Compose |
+| 前端 | React + Vite（后续接入，复用 v1 视觉参考） |
 
-## 数据在哪
-
-生产数据只在服务端：
-
-```text
-/data/
-  accounts.sqlite
-  users/<id>/data.sqlite
-  backups/
-  logs/
-  secrets.key
-```
-
-Docker 部署时由 `dailywork_dailywork-data` volume 挂载。桌面客户端只在 `~/Library/Application Support/Dailywork/` 保存窗口状态与 `connection.json`（服务端地址），不再保存业务数据库。
-
-备份可以：
-
-- 在应用「设置 → 数据与备份」导出 `.dailywork`（远程模式下文件生成在服务端，可用 `docker cp` 取出）
-- 直接备份 Docker volume
-- 迁移时把备份放入服务端 `/data/backups/`，填写服务端路径导入，然后重启容器
-
-## 技术架构
-
-Electron 45 + React 19 + TypeScript；服务端为 Hono + `node:sqlite`（WAL）；DDD 纵向切片；统一 ops 目录生成 HTTP / CLI / MCP / AI 工具四个表面。
+## 当前仓库结构
 
 ```text
-apps/
-  desktop/   Electron 客户端（窗口、快捷键、连接服务端）
-  server/    Hono 服务端（领域唯一写入口）
-  web/       React SPA（浏览器 / 桌面共用）
-  cli/       daily 命令行（HTTP 客户端 + MCP Server）
-packages/
-  contracts/ 共享 zod schema 与 DTO
-  platform/  SQLite、迁移、路径、时间、密钥、日志
-  contexts/  workspace / tasking / projects / capture / planning / focus / documents / assistant
-  ops/       操作目录与执行器
-  analytics/ 只读投影：仪表盘、搜索
-docs/        PRD、架构、设计系统、ADR、流程文档
-design/      品牌标识、架构图、设计稿与参考图
+dailywork/
+├── old/          # v1 完整归档，只读参考
+├── CLAUDE.md     # 协作说明
+├── README.md     # 本文件
+└── .gitignore
 ```
 
-详细设计见 [docs/01-architecture/overview.md](docs/01-architecture/overview.md)，部署说明见 [Docker 部署](docs/04-process/docker-deployment.md)，决策记录见 [docs/03-adr](docs/03-adr)。飞书归档：[时序 · Dailywork 文档库](https://my.feishu.cn/wiki/HjuOwAe34iZPbmkzOJhcMYK1nb4)。
+代码阶段的规划目录：
 
-## 分支与协作
+```text
+services/   gateway, identity, task, planning, docs, assistant
+api/        OpenAPI / Protobuf 契约
+deploy/     Docker Compose, K8s manifests
+web/        React SPA
+docs/       本地只放索引；正式文档在飞书
+```
 
-- `main` 只保留已发布基线，已开启分支保护；不直接开发，只通过 GitHub Pull Request 合入。
-- `dev` 是日常集成分支；功能从 `dev` 切出 `feat/<scope>`，完成后先合入 `dev`。
-- 发布时从 `dev` 向 `main` 提 PR，合并后在 `main` 打 `vX.Y.Z` tag。
-- 远程仓库：`origin https://github.com/inezhi/dailywork.git`。
+## 文档
 
-## 项目状态
+飞书知识库根节点：[开发](https://my.feishu.cn/wiki/HjuOwAe34iZPbmkzOJhcMYK1nb4)
 
-**v0.2.0 · 可验收**。核心闭环已经打通：任务 / 项目 / 看板 / 四象限 / 日历 / 时间轴 / 专注 / 速记 / 文档 / 仪表盘 / AI 助理 / CLI / MCP / 备份导出导入。服务端镜像 `dailywork:0.2.0`，桌面客户端 `apps/desktop/release/Dailywork-0.2.0-arm64.dmg`。进度与已知限制见 [CHANGELOG](docs/04-process/CHANGELOG.md)。
+| # | 文档 |
+|---|---|
+| 01 | [项目总览｜时序 v2](https://my.feishu.cn/wiki/ALRjwaoJxi88NNk7ttMca03cnEf) |
+| 02 | [产品需求文档（PRD）｜时序 v2](https://my.feishu.cn/wiki/VBjjw4UdfisQpnk8YrZcesHLnvg) |
+| 03 | [产品路线图与迭代计划｜时序 v2](https://my.feishu.cn/wiki/EpqawRh7din22ykpkXocPu17n5d) |
+| 04 | [微服务架构总览｜时序 v2](https://my.feishu.cn/wiki/LrvQw8IlDiGKxSkw8SoceIsunWb) |
+| 05 | [服务边界与数据归属｜时序 v2](https://my.feishu.cn/wiki/AmXswneqTiE6aZklphTcGHqAnle) |
+| 06 | [数据模型与一致性｜时序 v2](https://my.feishu.cn/wiki/LM7bwpqfjiHdF7kAUxpczJ7qnkh) |
+| 07 | [API 契约与网关｜时序 v2](https://my.feishu.cn/wiki/LcvjwjRJ9iVboYkNvucclMnWnEd) |
+| 08 | [事件驱动与消息｜时序 v2](https://my.feishu.cn/wiki/TbDcw8OwTiR4T1kpcvFc56Eqnze) |
+| 09 | [安全与账户体系｜时序 v2](https://my.feishu.cn/wiki/ZmTDwwY03iUAq1kjzolcKDuun0c) |
+| 10 | [可观测性与运维｜时序 v2](https://my.feishu.cn/wiki/KCMuwU3aWivkUKkVXzxcUT37n4g) |
+| 11 | [测试策略｜时序 v2](https://my.feishu.cn/wiki/NL76wH41OihPOGkFF6ocBrzQnTd) |
+| 12 | [设计系统与页面规格｜时序 v2](https://my.feishu.cn/wiki/M2NZwqil8iJ5WKkvp74cnMqpnZx) |
+| 13 | [ADR 决策记录｜时序 v2](https://my.feishu.cn/wiki/NJr6wRyuTiMzeEkHu79c8hoCnNg) |
+| 14 | [研发流程与发布｜时序 v2](https://my.feishu.cn/wiki/CtWjwAwCwiYLIJkdPPPciEuDnbr) |
 
-### 验收路径（5 分钟）
+## v1 归档
 
-1. `docker compose up -d`，浏览器打开 http://127.0.0.1:47821，注册第一个账户。
-2. 安装桌面 dmg，启动后连接同一个地址；浏览器里创建的任务会出现在桌面端。
-3. 在桌面端点开任务，设置预估 / 计划时间，点「开始专注」；浏览器刷新后看到同一任务与专注记录。
-4. 打开「文档」，阅读《欢迎使用时序》；打开「仪表盘」查看趋势；按 `⌘K` 搜索任务。
-5. 设置 → 数据与备份导出备份；手机浏览器访问同一个服务端地址即可作为移动客户端。
+- 旧代码、旧文档、设计资产、测试与部署配置全部在 [`old/`](old/)。
+- `old/` 是冻结参考：不参与构建，不从中 import，不修改。
+- v1 的完整历史在 `main` 分支与 `v0.2.0` tag；远端仓库：<https://github.com/inezhi/dailywork>。
 
-设计证据：`design/qa/auth-register.png`、`design/qa/account-settings.png`、`design/qa/remote-client-today.png`、`design/qa/remote-client-settings.png`、`design/qa/remote-client-connect.png`、`design/qa/final-020-releases.png`。
+## 工作方式
 
-### 质量
-
-- Vitest：61/61（纯单元 + 集成/路由），覆盖日期、参数解析、Ops 不变量、流式解析、备份、撤销、账户/会话/头像、邮箱、验证码、登录失败限流、服务器部署模式与 AI 护栏。
-- Playwright：11/11（setup 账户 + 桌面 Chrome + WebKit iPhone 13 + 账户 UI），含注册/默认头像/上传/登录、创建、编辑、完成、速记转任务、文档重载、搜索、主题与移动布局。
-- 远程客户端验收：Docker 服务端 + 打包桌面客户端，验证注册、创建任务、服务端读回、重启桌面端后会话与任务保留、连接页恢复。
-
-## 许可
-
-个人项目，未公开授权。
+- `main` 只收 PR，不直接开发。
+- `v2` 是 v2 集成分支；功能从 `v2` 切 `feat/<scope>`。
+- 文档先行：产品与架构文档定稿后，再开始 M1 代码。
+- 提交遵循 Conventional Commits。
