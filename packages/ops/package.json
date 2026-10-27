@@ -1,0 +1,24 @@
+{
+  "name": "@daily/ops",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@daily/contracts": "workspace:*",
+    "@daily/platform": "workspace:*",
+    "@daily/context-tasking": "workspace:*",
+    "@daily/context-projects": "workspace:*",
+    "@daily/context-capture": "workspace:*",
+    "@daily/context-planning": "workspace:*",
+    "@daily/context-focus": "workspace:*",
+    "@daily/context-documents": "workspace:*",
+    "@daily/context-workspace": "workspace:*",
+    "@daily/context-assistant": "workspace:*",
+    "@daily/analytics": "workspace:*",
+    "@daily/attachments": "workspace:*",
+    "zod": "4.6.7"
+  }
+}

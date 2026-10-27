@@ -1,0 +1,14 @@
+{
+  "name": "@daily/context-capture",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@daily/contracts": "workspace:*",
+    "@daily/context-tasking": "workspace:*",
+    "@daily/platform": "workspace:*"
+  }
+}
