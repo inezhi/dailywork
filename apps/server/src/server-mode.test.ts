@@ -55,7 +55,7 @@ describe('server deployment mode', () => {
     const registered = await request('/api/auth/register', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ username: 'ServerOwner', password: 'secret123' }),
+      body: JSON.stringify({ username: 'ServerOwner', email: 'server@example.com', password: 'secret123' }),
     })
     expect(registered.status).toBe(200)
     expect(registered.json.data.user.username).toBe('ServerOwner')
@@ -68,7 +68,7 @@ describe('server deployment mode', () => {
     const login = await request('/api/auth/login', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ username: 'ServerOwner', password: 'secret123' }),
+      body: JSON.stringify({ username: 'ServerOwner', email: 'server@example.com', password: 'secret123' }),
     })
     expect(login.status).toBe(200)
     const cookie = login.cookie?.split(';')[0]
@@ -87,7 +87,7 @@ describe('server deployment mode', () => {
     const second = await request('/api/auth/register', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ username: 'SecondOwner', password: 'secret456' }),
+      body: JSON.stringify({ username: 'SecondOwner', email: 'second-server@example.com', password: 'secret456' }),
     })
     expect(second.status).toBe(403)
     expect(second.json.error.code).toBe('UNAUTHORIZED')
@@ -102,7 +102,7 @@ describe('server deployment mode', () => {
         {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ username: 'RemoteUser', password: 'secret789' }),
+          body: JSON.stringify({ username: 'RemoteUser', email: 'remote@example.com', password: 'secret789' }),
         },
         remoteEnv as never,
       )

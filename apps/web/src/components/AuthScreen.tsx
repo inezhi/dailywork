@@ -1,36 +1,89 @@
-import { useEffect, useState } from 'react'
-import { ArrowRight, Check, Loader2, LockKeyhole, ShieldCheck, UserRound } from 'lucide-react'
-import { authApi } from '@/lib/auth-api'
+import { useCallback, useEffect, useState } from 'react'
+import {
+  ArrowRight,
+  Check,
+  Loader2,
+  LockKeyhole,
+  Mail,
+  RefreshCw,
+  ShieldCheck,
+  UserRound,
+} from 'lucide-react'
+import { ApiError } from '@/lib/api'
+import { authApi, type CaptchaChallenge } from '@/lib/auth-api'
 import { useAuthStore } from '@/stores/auth'
 
 type Mode = 'login' | 'register'
+
+function passwordProblem(value: string, forRegister: boolean): string {
+  if (!value) return '请输入密码'
+  if (!forRegister) return ''
+  if (value.length < 8) return '密码至少 8 位'
+  if (!/[A-Za-z]/.test(value) || !/\d/.test(value)) return '密码需同时包含字母和数字'
+  return ''
+}
+
+function emailProblem(value: string): string {
+  if (!value.trim()) return '请输入邮箱'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) return '请输入有效的邮箱地址'
+  return ''
+}
 
 export function AuthScreen() {
   const login = useAuthStore((s) => s.login)
   const register = useAuthStore((s) => s.register)
   const [mode, setMode] = useState<Mode>('login')
-  const [hasUsers, setHasUsers] = useState<boolean | null>(null)
+  const [captchaEnabled, setCaptchaEnabled] = useState(false)
+  const [captchaRequired, setCaptchaRequired] = useState(false)
+  const [captcha, setCaptcha] = useState<CaptchaChallenge | null>(null)
+  const [captchaLoading, setCaptchaLoading] = useState(false)
   const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [captchaAnswer, setCaptchaAnswer] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+
+  const loadCaptcha = useCallback(async () => {
+    setCaptchaLoading(true)
+    try {
+      const result = await authApi.captcha()
+      if ('disabled' in result) {
+        setCaptchaEnabled(false)
+        setCaptcha(null)
+      } else {
+        setCaptcha(result)
+      }
+    } catch {
+      setCaptcha(null)
+    } finally {
+      setCaptchaLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     authApi
       .status()
       .then((status) => {
-        setHasUsers(status.hasUsers)
-        if (!status.hasUsers) setMode('register')
+        setCaptchaEnabled(status.captchaEnabled)
+        if (!status.hasUsers) {
+          setMode('register')
+          if (status.captchaEnabled) void loadCaptcha()
+        }
       })
-      .catch(() => setHasUsers(null))
-  }, [])
+      .catch(() => {})
+  }, [loadCaptcha])
 
   const switchMode = (next: Mode) => {
     setMode(next)
     setError('')
     setPassword('')
     setConfirm('')
+    setCaptchaAnswer('')
+    setCaptchaRequired(false)
+    if (next === 'register' && captchaEnabled) void loadCaptcha()
+    if (next === 'login') setCaptcha(null)
   }
 
   const submit = async () => {
@@ -39,24 +92,55 @@ export function AuthScreen() {
       setError('请输入用户名')
       return
     }
-    if (password.length < 8) {
-      setError('密码至少 8 位')
+    const passwordError = passwordProblem(password, mode === 'register')
+    if (passwordError) {
+      setError(passwordError)
       return
     }
-    if (mode === 'register' && password !== confirm) {
-      setError('两次输入的密码不一致')
+    if (mode === 'register') {
+      const mailError = emailProblem(email)
+      if (mailError) {
+        setError(mailError)
+        return
+      }
+      if (password !== confirm) {
+        setError('两次输入的密码不一致')
+        return
+      }
+    }
+    const needsCaptcha = mode === 'register' ? captchaEnabled || captchaRequired : captchaRequired
+    if (needsCaptcha && !captchaAnswer.trim()) {
+      setError('请输入验证码')
       return
     }
     setBusy(true)
     try {
-      if (mode === 'login') await login({ username: username.trim(), password })
-      else await register({ username: username.trim(), password })
+      const captchaInput = needsCaptcha
+        ? { captchaId: captcha?.id, captchaAnswer: captchaAnswer.trim() }
+        : {}
+      if (mode === 'login') {
+        await login({ username: username.trim(), password, ...captchaInput })
+      } else {
+        await register({
+          username: username.trim(),
+          email: email.trim(),
+          password,
+          ...captchaInput,
+        })
+      }
     } catch (err) {
+      if (err instanceof ApiError && err.code === 'CAPTCHA_REQUIRED') {
+        setCaptchaRequired(true)
+        await loadCaptcha()
+        setCaptchaAnswer('')
+      }
       setError(err instanceof Error ? err.message : '操作失败')
     } finally {
       setBusy(false)
     }
   }
+
+  const showCaptcha = mode === 'register' ? captchaEnabled || captchaRequired : captchaRequired
 
   return (
     <div className="auth-shell">
@@ -109,18 +193,13 @@ export function AuthScreen() {
           </div>
 
           <div className="auth-heading">
-            <h2>{mode === 'login' ? '欢迎回来' : hasUsers === false ? '创建账户' : '创建账户'}</h2>
-            <p>
-              {mode === 'login'
-                ? '输入账户，继续今天的工作。'
-                : hasUsers === false
-                  ? '这是第一个账户；每个账户拥有独立的数据与设置。'
-                  : '每个账户拥有独立的任务、文档与设置。'}
-            </p>
+            <h2>{mode === 'login' ? '欢迎回来' : '创建账户'}</h2>
+            <p>{mode === 'login' ? '输入账户，继续今天的工作。' : '填写账户信息，开始使用。'}</p>
           </div>
 
           <form
             className="auth-form"
+            noValidate
             onSubmit={(event) => {
               event.preventDefault()
               void submit()
@@ -133,26 +212,54 @@ export function AuthScreen() {
                 <input
                   autoFocus
                   value={username}
-                  onChange={(event) => setUsername(event.target.value)}
+                  onChange={(event) => {
+                    setUsername(event.target.value)
+                    setError('')
+                  }}
                   placeholder="你的用户名"
                   autoComplete="username"
                   maxLength={32}
                 />
               </div>
             </label>
+            {mode === 'register' && (
+              <label>
+                <span>邮箱</span>
+                <div className="auth-input">
+                  <Mail size={15} />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(event) => {
+                      setEmail(event.target.value)
+                      setError('')
+                    }}
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    maxLength={254}
+                  />
+                </div>
+              </label>
+            )}
             <label>
               <span>密码</span>
-              <div className="auth-input">
+              <div className={`auth-input${error.includes('密码') ? ' is-invalid' : ''}`}>
                 <LockKeyhole size={15} />
                 <input
                   type="password"
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="至少 8 位"
+                  onChange={(event) => {
+                    setPassword(event.target.value)
+                    setError('')
+                  }}
+                  placeholder={mode === 'login' ? '请输入密码' : '至少 8 位，含字母和数字'}
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                   maxLength={128}
                 />
               </div>
+              {mode === 'register' && (
+                <span className="auth-hint">密码至少 8 位，需同时包含字母和数字。</span>
+              )}
             </label>
             {mode === 'register' && (
               <label>
@@ -162,7 +269,10 @@ export function AuthScreen() {
                   <input
                     type="password"
                     value={confirm}
-                    onChange={(event) => setConfirm(event.target.value)}
+                    onChange={(event) => {
+                      setConfirm(event.target.value)
+                      setError('')
+                    }}
                     placeholder="再输入一次"
                     autoComplete="new-password"
                     maxLength={128}
@@ -170,8 +280,34 @@ export function AuthScreen() {
                 </div>
               </label>
             )}
+            {showCaptcha && (
+              <div className="auth-captcha">
+                <div className="auth-captcha-head">
+                  <span>验证码</span>
+                  <button type="button" onClick={() => void loadCaptcha()} disabled={captchaLoading}>
+                    <RefreshCw size={11} className={captchaLoading ? 'spin' : ''} /> 换一张
+                  </button>
+                </div>
+                <div className="auth-captcha-row">
+                  <div className="auth-captcha-image" aria-live="polite">
+                    {captcha ? <img src={captcha.image} alt="验证码图片" /> : <span>{captchaLoading ? '加载中…' : '点击刷新'}</span>}
+                  </div>
+                  <input
+                    className="auth-captcha-input"
+                    value={captchaAnswer}
+                    onChange={(event) => {
+                      setCaptchaAnswer(event.target.value.toUpperCase())
+                      setError('')
+                    }}
+                    placeholder="输入图中字符"
+                    autoComplete="off"
+                    maxLength={8}
+                  />
+                </div>
+              </div>
+            )}
             {error && <div className="auth-error" role="alert">{error}</div>}
-            <button className="auth-submit" type="submit" disabled={busy}>
+            <button className="auth-submit" type="submit" disabled={busy || (showCaptcha && !captcha)}>
               {busy ? (
                 <><Loader2 size={15} className="spin" /> 处理中…</>
               ) : (
@@ -186,10 +322,6 @@ export function AuthScreen() {
             ) : (
               <>已经有账户？<button onClick={() => switchMode('login')}>直接登录</button></>
             )}
-          </div>
-
-          <div className="auth-note">
-            默认头像使用用户名首字母生成；登录后可在「设置 → 账户」上传头像或修改密码。
           </div>
         </div>
       </main>

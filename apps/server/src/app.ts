@@ -29,6 +29,8 @@ import {
   getAvatar,
   getSessionUser,
   getUserByUsername,
+  createCaptcha,
+  verifyCaptcha,
   openAccountsDb,
   openDatabase,
   registerUser,
@@ -59,6 +61,7 @@ export interface AppOptions {
   openRegistration?: boolean
   trustProxy?: boolean
   secureCookies?: boolean
+  captchaDisabled?: boolean
 }
 
 export interface AppBundle {
@@ -152,6 +155,9 @@ export function createApp(options: AppOptions): AppBundle {
   const trustProxy = options.trustProxy ?? process.env.DAILYWORK_TRUST_PROXY === '1'
   const secureCookies =
     options.secureCookies ?? process.env.DAILYWORK_SECURE_COOKIES === '1'
+  const captchaDisabled =
+    options.captchaDisabled ??
+    (process.env.DAILYWORK_CAPTCHA_DISABLED === '1' || process.env.NODE_ENV === 'test')
   const requestIsSecure = (c: any): boolean => {
     if (secureCookies) return true
     if (c.req.url.startsWith('https://')) return true
@@ -179,6 +185,24 @@ export function createApp(options: AppOptions): AppBundle {
   let actualHttpsPort = 0
 
   const pairingAttempts = new Map<string, { count: number; resetAt: number }>()
+  const loginFailures = new Map<string, { count: number; resetAt: number }>()
+
+  const loginFailureKey = (c: any, username: string): string =>
+    `${username.trim().toLowerCase()}|${remoteAddress(c)}`
+  const noteLoginFailure = (key: string): number => {
+    const now = Date.now()
+    const record = loginFailures.get(key)
+    if (!record || record.resetAt <= now) {
+      loginFailures.set(key, { count: 1, resetAt: now + 10 * 60_000 })
+      return 1
+    }
+    record.count += 1
+    return record.count
+  }
+  const captchaRequiredFor = (key: string): boolean => {
+    const record = loginFailures.get(key)
+    return Boolean(record && record.resetAt > Date.now() && record.count >= 3)
+  }
 
   app.use('/api/*', async (c, next) => {
     const startedAt = Date.now()
@@ -189,6 +213,7 @@ export function createApp(options: AppOptions): AppBundle {
       path === '/api/health' ||
       path === '/api/pair' ||
       path === '/api/auth/status' ||
+      path === '/api/auth/captcha' ||
       path === '/api/auth/login' ||
       path === '/api/auth/register' ||
       path === '/api/auth/me'
@@ -324,8 +349,18 @@ export function createApp(options: AppOptions): AppBundle {
   })
 
   app.get('/api/auth/status', (c) =>
-    c.json({ ok: true, data: { hasUsers: countUsers(accountsDb) > 0 } }),
+    c.json({
+      ok: true,
+      data: { hasUsers: countUsers(accountsDb) > 0, captchaEnabled: !captchaDisabled },
+    }),
   )
+
+  app.get('/api/auth/captcha', (c) => {
+    if (captchaDisabled) {
+      return c.json({ ok: true, data: { disabled: true } })
+    }
+    return c.json({ ok: true, data: createCaptcha() })
+  })
 
   app.post('/api/auth/register', async (c) => {
     let body: unknown = {}
@@ -348,10 +383,26 @@ export function createApp(options: AppOptions): AppBundle {
         422,
       )
     }
+    if (!captchaDisabled) {
+      const captcha = verifyCaptcha(parsed.data.captchaId, parsed.data.captchaAnswer)
+      if (!captcha.ok) {
+        return c.json(
+          {
+            ok: false,
+            error: { code: 'CAPTCHA_REQUIRED', message: captcha.reason ?? '请完成验证码' },
+          },
+          400,
+        )
+      }
+    }
     const first = countUsers(accountsDb) === 0
     let user: AccountUserRow
     try {
-      user = registerUser(accountsDb, parsed.data)
+      user = registerUser(accountsDb, {
+        username: parsed.data.username,
+        email: parsed.data.email,
+        password: parsed.data.password,
+      })
     } catch (error) {
       if (error instanceof OpError) {
         return c.json({ ok: false, error: { code: error.code, message: error.message } }, 409)
@@ -385,10 +436,38 @@ export function createApp(options: AppOptions): AppBundle {
     if (!parsed.success) {
       return c.json({ ok: false, error: { code: 'VALIDATION_ERROR', message: '请输入用户名和密码' } }, 422)
     }
+    const failureKey = loginFailureKey(c, parsed.data.username)
+    const captchaRequired = !captchaDisabled && captchaRequiredFor(failureKey)
+    if (captchaRequired) {
+      const captcha = verifyCaptcha(parsed.data.captchaId, parsed.data.captchaAnswer)
+      if (!captcha.ok) {
+        return c.json(
+          {
+            ok: false,
+            error: { code: 'CAPTCHA_REQUIRED', message: captcha.reason ?? '请完成验证码' },
+          },
+          400,
+        )
+      }
+    }
     const user = getUserByUsername(accountsDb, parsed.data.username)
     if (!user || !verifyPassword(user, parsed.data.password)) {
-      return c.json({ ok: false, error: { code: 'UNAUTHORIZED', message: '用户名或密码不正确' } }, 401)
+      const failures = noteLoginFailure(failureKey)
+      const required = !captchaDisabled && failures >= 3
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: required ? 'CAPTCHA_REQUIRED' : 'UNAUTHORIZED',
+            message: required
+              ? '用户名或密码不正确，请完成验证码后重试'
+              : '用户名或密码不正确',
+          },
+        },
+        required ? 400 : 401,
+      )
     }
+    loginFailures.delete(failureKey)
     const session = createSession(accountsDb, user.id)
     const secure = requestIsSecure(c)
     c.header('set-cookie', sessionCookie(session, secure))
