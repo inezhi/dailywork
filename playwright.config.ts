@@ -50,7 +50,7 @@ export default defineConfig({
   webServer: [
     {
       command:
-        'rm -rf .data-e2e && DAILYWORK_DATA_DIR="$PWD/.data-e2e" DAILYWORK_PORT=47821 pnpm dev:server',
+        'rm -rf .data-e2e && DAILYWORK_DATA_DIR="$PWD/.data-e2e" DAILYWORK_PORT=47821 DAILYWORK_CAPTCHA_DISABLED=1 pnpm dev:server',
       url: 'http://127.0.0.1:47821/api/health',
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
