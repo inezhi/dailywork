@@ -56,7 +56,7 @@ describe('local accounts', () => {
     const registered = await request('/api/auth/register', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ username: 'Owner', password: 'secret123' }),
+      body: JSON.stringify({ username: 'Owner', email: 'owner@example.com', password: 'secret123' }),
     })
     expect(registered.status).toBe(200)
     expect(registered.json.data.user.username).toBe('Owner')
@@ -79,7 +79,7 @@ describe('local accounts', () => {
     const second = await request('/api/auth/register', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ username: 'Second', password: 'secret456' }),
+      body: JSON.stringify({ username: 'Second', email: 'second@example.com', password: 'secret456' }),
     })
     expect(second.status).toBe(200)
     const secondTasks = await request('/api/ops/task.list', {

@@ -1,4 +1,12 @@
 import type { ChangePasswordInput, LoginInput, PublicUser, RegisterInput } from '@daily/contracts'
+
+export interface CaptchaChallenge {
+  id: string
+  image: string
+  expiresInSeconds: number
+}
+
+export type CaptchaResponse = CaptchaChallenge | { disabled: true }
 import { ApiError } from './api'
 
 async function authRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -27,7 +35,8 @@ const json = (body: unknown): RequestInit => ({
 })
 
 export const authApi = {
-  status: () => authRequest<{ hasUsers: boolean }>('/api/auth/status'),
+  status: () => authRequest<{ hasUsers: boolean; captchaEnabled: boolean }>('/api/auth/status'),
+  captcha: () => authRequest<CaptchaResponse>('/api/auth/captcha'),
   me: () => authRequest<{ user: PublicUser }>('/api/auth/me'),
   register: (input: RegisterInput) =>
     authRequest<{ user: PublicUser }>('/api/auth/register', json(input)),

@@ -1,5 +1,6 @@
 export * from './accounts.js'
 export * from './backup.js'
+export * from './captcha.js'
 export * from './db.js'
 export * from './db-utils.js'
 export * from './ids.js'
