@@ -266,3 +266,8 @@ export const MIGRATION_2 = `
 UPDATE tasks SET completed_at = updated_at
 WHERE status = 'done' AND completed_at IS NULL;
 `
+
+
+export const MIGRATION_3 = `
+ALTER TABLE op_log ADD COLUMN before_json TEXT;
+`

@@ -186,6 +186,7 @@ export function updateTask(ctx: ServiceContext, input: UpdateTaskInput): Task {
         actual: current.version,
       })
     }
+    const beforeTask = getTask(ctx.db, input.id)
 
     const sets: string[] = []
     const values: Array<string | number | null> = []
@@ -256,6 +257,7 @@ export function updateTask(ctx: ServiceContext, input: UpdateTaskInput): Task {
       aggregateId: input.id,
       summary: ctx.summary ?? `更新任务「${task.title}」`,
       payload: input,
+      before: beforeTask,
       after: task,
     })
     return task
@@ -310,6 +312,7 @@ export function deleteTask(ctx: ServiceContext, input: { id: string; opId?: stri
       aggregateId: input.id,
       summary: `删除任务「${current.title}」`,
       payload: { id: input.id },
+      before: task,
       after: { deleted: true, task },
     })
     return { id: input.id }

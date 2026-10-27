@@ -22,6 +22,7 @@ import {
   moveTask,
   reopenTask,
   taskActivity,
+  undoLastTaskOperation,
   updateTag,
   updateTask,
 } from '@daily/context-tasking'
@@ -125,6 +126,18 @@ export const taskOps = [
     exposure: { http: true, cli: ['task', 'list'], mcp: true, ai: true },
     aggregate: 'task',
     handler: (ctx, input) => listTasks(ctx, input),
+  }),
+  defineOp({
+    name: 'history.undo',
+    version: 1,
+    kind: 'command',
+    summary: '撤销最近一次任务创建/更新/完成/删除',
+    description: '基于 op_log 的 before 快照恢复任务；项目、文档与 AI 对话不在此范围。',
+    input: z.object({}),
+    exposure: { http: true, cli: ['undo'], mcp: true, ai: false },
+    annotations: { idempotent: false },
+    aggregate: 'task',
+    handler: (ctx) => undoLastTaskOperation(ctx.db, { actor: ctx.actor, source: ctx.source }),
   }),
   defineOp({
     name: 'task.activity',

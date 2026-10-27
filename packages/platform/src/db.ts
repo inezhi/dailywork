@@ -1,18 +1,19 @@
 import { DatabaseSync } from 'node:sqlite'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { MIGRATION_1, MIGRATION_2 } from './migrations/v1.js'
+import { MIGRATION_1, MIGRATION_2, MIGRATION_3 } from './migrations/v1.js'
 import { setMeta, setSetting, transaction, getMeta } from './db-utils.js'
 import { nowIso } from './time.js'
 import type { Db } from './db-utils.js'
 
 export type { Db } from './db-utils.js'
 
-export const SCHEMA_VERSION = 2
+export const SCHEMA_VERSION = 3
 
 const MIGRATIONS: Array<{ version: number; sql: string }> = [
   { version: 1, sql: MIGRATION_1 },
   { version: 2, sql: MIGRATION_2 },
+  { version: 3, sql: MIGRATION_3 },
 ]
 
 export function openDatabase(file: string): Db {

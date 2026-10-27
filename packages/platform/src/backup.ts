@@ -14,6 +14,7 @@ import {
 import { join } from 'node:path'
 import { zipSync, unzipSync } from 'fflate'
 import type { Db } from './db-utils.js'
+import { SCHEMA_VERSION } from './db.js'
 import { dataPaths, ensureDataDirs } from './paths.js'
 import { nowIso, toDateOnly } from './time.js'
 
@@ -143,7 +144,7 @@ export function inspectBackup(sourcePath: string): ImportInspection {
       .get() as { value: string } | undefined
     db.close()
     if (check.integrity_check !== 'ok') throw new Error('备份数据库完整性校验失败')
-    if (Number(version?.value ?? 0) > 2) throw new Error('备份来自更新的版本，请先升级应用')
+    if (Number(version?.value ?? 0) > SCHEMA_VERSION) throw new Error('备份来自更新的版本，请先升级应用')
   } finally {
     try {
       unlinkSync(tmp)

@@ -82,7 +82,7 @@ export const systemOps = [
       return {
         version: APP_VERSION,
         builtAt: process.env.DAILYWORK_BUILT_AT ?? new Date().toISOString(),
-        schemaVersion: 1,
+        schemaVersion: 3,
         platform: process.platform,
         dataDir: paths.dataDir,
         lanUrls: [],

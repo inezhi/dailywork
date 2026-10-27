@@ -280,3 +280,31 @@ describe('LAN HTTPS certificate', () => {
     expect(existsSync(join(dataDir, 'certs', 'dailywork-ca.crt'))).toBe(true)
   }, 30_000)
 })
+
+describe('task undo', () => {
+  it('restores the previous title, status and deleted task, and removes the last create', async () => {
+    const created = await call('task.create', { title: '撤销原始标题', priority: 'high' })
+    const id = created.json.data.id
+    await call('task.update', { id, title: '撤销后的新标题' })
+    const undoUpdate = await call('history.undo', {})
+    expect(undoUpdate.json.ok).toBe(true)
+    const restored = await call('task.get', { id })
+    expect(restored.json.data.title).toBe('撤销原始标题')
+
+    await call('task.complete', { id })
+    await call('history.undo', {})
+    const reopened = await call('task.get', { id })
+    expect(reopened.json.data.status).not.toBe('done')
+
+    await call('task.delete', { id, confirm: true })
+    const undoDelete = await call('history.undo', {})
+    expect(undoDelete.json.ok).toBe(true)
+    const restoredAfterDelete = await call('task.get', { id })
+    expect(restoredAfterDelete.json.data.title).toBe('撤销原始标题')
+
+    const createdAgain = await call('task.create', { title: '撤销创建的任务' })
+    await call('history.undo', {})
+    const gone = await call('task.get', { id: createdAgain.json.data.id })
+    expect(gone.json.ok).toBe(false)
+  })
+})

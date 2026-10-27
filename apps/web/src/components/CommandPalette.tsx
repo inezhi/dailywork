@@ -10,6 +10,7 @@ import {
   Inbox,
   ListTodo,
   Plus,
+  RotateCcw,
   Search,
   StickyNote,
   Sun,
@@ -17,6 +18,8 @@ import {
 } from 'lucide-react'
 import type { SearchHit } from '@daily/contracts'
 import { useOp } from '@/lib/query'
+import { callOp } from '@/lib/api'
+import { toast } from '@/stores/toast'
 import { useUi } from '@/stores/ui'
 import { useTimer } from '@/stores/timer'
 
@@ -77,6 +80,21 @@ export function CommandPalette() {
   const items = useMemo<Item[]>(() => {
     const list: Item[] = []
     if (debounced.length === 0) {
+      list.push({
+        key: 'action:undo',
+        label: '撤销上一步任务操作',
+        hint: '历史',
+        icon: <RotateCcw size={14} />,
+        run: async () => {
+          setOpen(false)
+          try {
+            const result = await callOp<{ summary: string }>('history.undo')
+            toast.success(result.summary)
+          } catch (error) {
+            toast.error(error instanceof Error ? error.message : '没有可撤销的操作')
+          }
+        },
+      })
       if (!timer.session) {
         list.push({
           key: 'action:new',

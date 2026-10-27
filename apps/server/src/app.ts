@@ -205,7 +205,7 @@ export function createApp(options: AppOptions): AppBundle {
   app.get('/api/meta', (c) =>
     c.json({
       version,
-      schemaVersion: 1,
+      schemaVersion: 3,
       dataDir: paths.dataDir,
       platform: process.platform,
       builtAt: process.env.DAILYWORK_BUILT_AT ?? null,

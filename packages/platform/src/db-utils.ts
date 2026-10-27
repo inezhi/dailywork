@@ -28,14 +28,15 @@ export interface OpLogEntry {
   aggregateId: string
   summary?: string
   payload?: unknown
+  before?: unknown
   after?: unknown
 }
 
 /** Append an audit entry inside the caller's transaction. Duplicate opIds are ignored. */
 export function recordOp(db: Db, entry: OpLogEntry): void {
   db.prepare(
-    `INSERT INTO op_log(op_id, ts, actor, source, command, aggregate_type, aggregate_id, summary, payload_json, after_json)
-     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO op_log(op_id, ts, actor, source, command, aggregate_type, aggregate_id, summary, payload_json, before_json, after_json)
+     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(op_id) DO NOTHING`,
   ).run(
     entry.opId,
@@ -47,6 +48,7 @@ export function recordOp(db: Db, entry: OpLogEntry): void {
     entry.aggregateId,
     entry.summary ?? '',
     JSON.stringify(entry.payload ?? {}),
+    entry.before == null ? null : JSON.stringify(entry.before),
     entry.after == null ? null : JSON.stringify(entry.after),
   )
 }
@@ -56,6 +58,7 @@ export interface OpLogRecord {
   command: string
   aggregateType: string
   aggregateId: string
+  beforeJson: string | null
   afterJson: string | null
 }
 
@@ -63,7 +66,7 @@ export function findOpLog(db: Db, opId: string): OpLogRecord | null {
   const row = db
     .prepare(
       `SELECT op_id AS opId, command, aggregate_type AS aggregateType,
-              aggregate_id AS aggregateId, after_json AS afterJson
+              aggregate_id AS aggregateId, before_json AS beforeJson, after_json AS afterJson
        FROM op_log WHERE op_id = ?`,
     )
     .get(opId) as OpLogRecord | undefined
