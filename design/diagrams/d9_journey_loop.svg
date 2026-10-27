@@ -79,7 +79,7 @@
 <text x="180" y="453" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">自然语言 → ops 工具调用：拆任务、排期、润色文档、生成复盘；所有变更需确认。</text>
 <rect x="64" y="488" width="1112" height="44" rx="10" fill="#EAF1F7" stroke="none" stroke-width="1" opacity="1"/>
 <text x="84" y="516" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#6A9BCC" text-anchor="start" opacity="1">数据闭环</text>
-<text x="180" y="516" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">SQLite（权威，含图片 BLOB）→ op_log（审计/撤销）→ 本地快照 / 导出包 → 仪表盘投影（洞察）。</text>
+<text x="180" y="516" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">SQLite（权威，含图片 BLOB）→ op_log（审计/撤销）→ 快照 / 导出包 → 仪表盘投影（洞察）。</text>
 <line x1="48" y1="578" x2="1192" y2="578" stroke="#E8E6DC" stroke-width="1"/>
 <text x="48" y="600" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">时序 · Dailywork ｜ v1.0 ｜ 2026-10-27</text>
 <text x="1192" y="600" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">飞书画板 · 可编辑</text>

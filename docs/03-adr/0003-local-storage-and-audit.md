@@ -1,14 +1,14 @@
-# ADR-0003：本地 SQLite、op_log 与取消 iCloud 同步
+# ADR-0003：SQLite、op_log 与取消 iCloud 同步
 
 状态：已接受（取代 2026-10-27 之前的 iCloud 方案） · 2026-10-27
 
 ## 背景
 
-原方案计划以 iCloud Drive 作为单 Mac 的备份与未来多设备同步通道，并设计了 HLC、墓碑、快照向量与假传输测试。用户在 2026-10-27 明确取消 iCloud：数据全部存储在本地数据库，通过导出/导入迁移。
+原方案计划以 iCloud Drive 作为单 Mac 的备份与未来多设备同步通道，并设计了 HLC、墓碑、快照向量与假传输测试。用户在 2026-10-27 明确取消 iCloud：数据全部存储在 SQLite 数据库，通过导出/导入迁移。
 
 ## 决策
 
-- 唯一权威数据：本地 SQLite（WAL），不放入 iCloud，不做 CloudKit。
+- 唯一权威数据：SQLite（WAL），不放入 iCloud，不做 CloudKit。
 - 保留 `op_log`，用途收敛为：审计、活动记录、操作幂等、未来撤销/导出重放的底稿。
 - 不实现：HLC、deviceId、字段级 patch 合并、墓碑、快照向量、多设备收敛。
 - 备份与迁移：`VACUUM INTO` 单文件快照 + `.dailywork` zip（manifest + data.sqlite + 图片），导入校验完整性后暂存、下次启动原子替换。

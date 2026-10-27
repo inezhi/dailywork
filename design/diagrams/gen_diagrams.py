@@ -194,12 +194,12 @@ def save(svg, name):
 
 # ---------------------------------------------------------------- D1 system context
 def d1():
-    s = SVG(1240, 720, "系统上下文", "C4 Level 1 · macOS 单机权威 + 本地备份/导出 + 局域网移动端", "ARCHITECTURE")
+    s = SVG(1240, 720, "系统上下文", "C4 Level 1 · macOS 单机权威 + 备份/导出 + 局域网移动端", "ARCHITECTURE")
     s.title_block("ARCHITECTURE")
 
     # mac boundary
     s.rect(56, 120, 590, 540, fill="#F3F0E8", stroke=BORDER_STRONG, rx=20, sw=1.2, dash="7 6")
-    s.text(80, 150, "macOS · 本机（唯一写入口）", size=14, fill=INK2, weight=600)
+    s.text(80, 150, "macOS · 设备（唯一写入口）", size=14, fill=INK2, weight=600)
     s.icon("window", 560, 134, color=INK3, scale=0.8)
 
     # Electron
@@ -207,7 +207,7 @@ def d1():
     s.icon("window", 100, 194, color=ACCENT)
     s.text(138, 203, "Electron 桌面壳", size=15, weight=600)
     s.text(138, 225, "窗口 · 托盘 · 全局快捷键 · 通知", size=11.5, fill=INK2)
-    s.text(138, 244, "utilityProcess 启动本地服务", size=11.5, fill=INK3)
+    s.text(138, 244, "utilityProcess 启动服务", size=11.5, fill=INK3)
 
     # Web UI
     s.rect(84, 286, 230, 84, shadow=True)
@@ -227,7 +227,7 @@ def d1():
     # Hono server
     s.rect(356, 250, 250, 160, fill=CARD, stroke=ACCENT, rx=14, sw=1.6, shadow=True)
     s.icon("server", 376, 268, color=ACCENT)
-    s.text(414, 280, "Hono 本地服务", size=17, weight=700)
+    s.text(414, 280, "Hono 服务", size=17, weight=700)
     s.text(376, 310, "领域应用层唯一写入口", size=12, fill=INK2)
     s.pill(376, 324, "ops 分发", ACCENT_DEEP, ACCENT_SOFT, size=11)
     s.pill(452, 324, "HTTP + WS", ACCENT_DEEP, ACCENT_SOFT, size=11)
@@ -247,7 +247,7 @@ def d1():
     # local backup
     s.rect(742, 262, 186, 150, shadow=True)
     s.icon("db", 758, 278, color=INFO, scale=1.1)
-    s.text(800, 292, "本地备份", size=16, weight=700)
+    s.text(800, 292, "备份", size=16, weight=700)
     s.text(758, 320, "Dailywork/backup", size=11.5, fill=INK2)
     s.pill(758, 334, "VACUUM INTO", INFO, INFO_SOFT, size=10)
     s.pill(758, 366, ".dailywork 导出", INFO, INFO_SOFT, size=10)
@@ -285,7 +285,7 @@ def d1():
     # note
     s.rect(84, 575, 562, 62, fill=CARD, stroke=BORDER, rx=12)
     s.text(102, 599, "关键约束", size=12, weight=600, fill=ACCENT_DEEP)
-    s.text(102, 620, "默认仅监听本机；LAN 需 HTTPS + 配对码；Key 只存 Keychain；图片存 SQLite。", size=11.5, fill=INK2)
+    s.text(102, 620, "默认仅监听设备；LAN 需 HTTPS + 配对码；Key 只存 Keychain；图片存 SQLite。", size=11.5, fill=INK2)
 
     s.footer()
     save(s, "d1_system_context.svg")
@@ -337,9 +337,9 @@ def d2():
         ("SQLite（WAL）", "data.sqlite · 权威库", SUCCESS_SOFT, SUCCESS),
         ("op_log / outbox", "同事务写入 · 可重放", ACCENT_SOFT, ACCENT_DEEP),
         ("图片 BLOB", "blobs / attachments · sha256 去重", INFO_SOFT, INFO),
-        ("本地快照 / 导出包", "VACUUM INTO · .dailywork", INFO_SOFT, INFO),
+        ("快照 / 导出包", "VACUUM INTO · .dailywork", INFO_SOFT, INFO),
         ("Keychain", "AI Key · safeStorage", WARN_SOFT, WARN),
-        ("daily token", "0600 文件 · 本机鉴权", "#F6F3EC", INK2),
+        ("daily token", "0600 文件 · 设备鉴权", "#F6F3EC", INK2),
     ]
     y = 164
     for name, desc, bg, fg in data:
@@ -411,7 +411,7 @@ def d3():
 
 # ---------------------------------------------------------------- D4 sync flow
 def d4():
-    s = SVG(1240, 700, "本地存储、备份与导出", "SQLite 单文件（含图片 BLOB） · 每日快照 · .dailywork 导出/导入", "STORAGE")
+    s = SVG(1240, 700, "存储、备份与导出", "SQLite 单文件（含图片 BLOB） · 每日快照 · .dailywork 导出/导入", "STORAGE")
     s.title_block("STORAGE")
 
     # lanes
@@ -657,7 +657,7 @@ def d8():
         ("可访问性", "axe 扫描 + 键盘全流程"),
         ("性能基线", "1 万任务首屏 ≤1s · 拖拽 60fps"),
         ("测试数据", "隔离数据库 · 固定种子 · 不碰真实数据"),
-        ("AI 测试", "本地 mock 供应商 · 护栏断言"),
+        ("AI 测试", "mock 供应商 · 护栏断言"),
         ("同步测试", "假文件系统 3 设备属性测试"),
     ]
     y = 146
@@ -709,7 +709,7 @@ def d9():
     s.text(180, 453, "自然语言 → ops 工具调用：拆任务、排期、润色文档、生成复盘；所有变更需确认。", size=11.5, fill=INK2)
     s.rect(64, 488, 1112, 44, fill=INFO_SOFT, stroke="none", rx=10)
     s.text(84, 516, "数据闭环", size=12, weight=700, fill=INFO)
-    s.text(180, 516, "SQLite（权威，含图片 BLOB）→ op_log（审计/撤销）→ 本地快照 / 导出包 → 仪表盘投影（洞察）。", size=11.5, fill=INK2)
+    s.text(180, 516, "SQLite（权威，含图片 BLOB）→ op_log（审计/撤销）→ 快照 / 导出包 → 仪表盘投影（洞察）。", size=11.5, fill=INK2)
 
     s.footer()
     save(s, "d9_journey_loop.svg")
@@ -723,11 +723,11 @@ def d10():
     # mac
     s.rect(72, 160, 300, 250, shadow=True)
     s.icon("window", 92, 182, color=ACCENT)
-    s.text(130, 196, "Mac · 本地服务", size=16, weight=700)
+    s.text(130, 196, "Mac · 服务", size=16, weight=700)
     s.text(92, 232, "Hono 监听", size=12, fill=INK2)
     s.text(92, 254, "127.0.0.1（默认）", size=11.5, fill=INK3)
     s.text(92, 278, "0.0.0.0 + HTTPS（LAN 模式）", size=11.5, fill=INK3)
-    s.pill(92, 300, "mkcert 本地 CA", ACCENT_DEEP, ACCENT_SOFT, size=11)
+    s.pill(92, 300, "mkcert CA", ACCENT_DEEP, ACCENT_SOFT, size=11)
     s.pill(92, 334, "6 位配对码 → 会话令牌", INK2, "#F6F3EC", size=11)
     s.pill(92, 368, "限流 · 可撤销会话", INK2, "#F6F3EC", size=11)
 

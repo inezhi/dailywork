@@ -11,7 +11,7 @@ D1 = r'''def d1():
 
     # mac boundary
     s.rect(56, 120, 590, 540, fill="#F3F0E8", stroke=BORDER_STRONG, rx=20, sw=1.2, dash="7 6")
-    s.text(80, 150, "macOS · 本机（唯一写入口）", size=14, fill=INK2, weight=600)
+    s.text(80, 150, "macOS · 设备（唯一写入口）", size=14, fill=INK2, weight=600)
     s.icon("window", 560, 134, color=INK3, scale=0.8)
 
     # Electron
@@ -19,7 +19,7 @@ D1 = r'''def d1():
     s.icon("window", 100, 194, color=ACCENT)
     s.text(138, 203, "Electron 桌面壳", size=15, weight=600)
     s.text(138, 225, "窗口 · 托盘 · 全局快捷键 · 通知", size=11.5, fill=INK2)
-    s.text(138, 244, "utilityProcess 启动本地服务", size=11.5, fill=INK3)
+    s.text(138, 244, "utilityProcess 启动服务", size=11.5, fill=INK3)
 
     # Web UI
     s.rect(84, 286, 230, 84, shadow=True)
@@ -39,7 +39,7 @@ D1 = r'''def d1():
     # Hono server
     s.rect(356, 250, 250, 160, fill=CARD, stroke=ACCENT, rx=14, sw=1.6, shadow=True)
     s.icon("server", 376, 268, color=ACCENT)
-    s.text(414, 280, "Hono 本地服务", size=17, weight=700)
+    s.text(414, 280, "Hono 服务", size=17, weight=700)
     s.text(376, 310, "领域应用层唯一写入口", size=12, fill=INK2)
     s.pill(376, 324, "ops 分发", ACCENT_DEEP, ACCENT_SOFT, size=11)
     s.pill(452, 324, "HTTP + WS", ACCENT_DEEP, ACCENT_SOFT, size=11)
@@ -154,7 +154,7 @@ D2 = r'''def d2():
         ("op_log / outbox", "同事务写入 · 可重放", ACCENT_SOFT, ACCENT_DEEP),
         ("iCloud Drive", "密封分段 · 快照 · blob", INFO_SOFT, INFO),
         ("Keychain", "AI Key · safeStorage", WARN_SOFT, WARN),
-        ("daily token", "0600 文件 · 本机鉴权", "#F6F3EC", INK2),
+        ("daily token", "0600 文件 · 设备鉴权", "#F6F3EC", INK2),
     ]
     y = 164
     for name, desc, bg, fg in data:
@@ -304,7 +304,7 @@ D8 = r'''def d8():
         ("可访问性", "axe 扫描 + 键盘全流程"),
         ("性能基线", "1 万任务首屏 ≤1s · 拖拽 60fps"),
         ("测试数据", "隔离数据库 · 固定种子 · 不碰真实数据"),
-        ("AI 测试", "本地 mock 供应商 · 护栏断言"),
+        ("AI 测试", "mock 供应商 · 护栏断言"),
         ("同步测试", "假文件系统 3 设备属性测试"),
     ]
     y = 146

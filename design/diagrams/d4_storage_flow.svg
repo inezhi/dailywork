@@ -5,7 +5,7 @@
   <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#191919" flood-opacity="0.06"/>
 </filter>
 </defs>
-<text x="48" y="58" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="27" font-weight="700" fill="#141413" text-anchor="start" opacity="1">本地存储、备份与导出</text>
+<text x="48" y="58" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="27" font-weight="700" fill="#141413" text-anchor="start" opacity="1">存储、备份与导出</text>
 <text x="48" y="84" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">SQLite 单文件（含图片 BLOB） · 每日快照 · .dailywork 导出/导入</text>
 <rect x="1119.6" y="42" width="70.4" height="24" rx="12.0" fill="#D97757" stroke="none" stroke-width="0" opacity="1"/>
 <text x="1154.8" y="58.32" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#FFFFFF" text-anchor="middle" opacity="1">STORAGE</text>

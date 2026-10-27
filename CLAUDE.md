@@ -2,32 +2,47 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 版本与更新记录（发布时必须执行）
+
+当前版本：**0.2.0**。版本记录是产品的一部分：用户可在「设置 → 关于 → 版本记录」查看每个版本的更新内容。
+
+每次发布按以下顺序完成，缺一不可：
+
+1. 更新根目录与 `apps/*`、`packages/*` 的 `version`（semver），以及 `apps/server/src/app.ts`、`apps/server/src/index.ts`、`apps/cli/src/index.ts`、`packages/ops/src/system-ops.ts` 中的版本常量。
+2. 在 `apps/web/src/content/releases.ts` 顶部新增一条版本记录（标题、日期、新增/改进/修复）；这是产品内展示的版本记录。
+3. 在 `docs/04-process/CHANGELOG.md` 顶部写同样内容的 Markdown 版本记录。
+4. 更新 README 的安装包路径与版本号；运行 `pnpm lint && pnpm typecheck && pnpm test && pnpm test:e2e`。
+5. 用 `pnpm build:desktop` 重新打 dmg（版本号会进入文件名与安装包元数据），提交后打 `vX.Y.Z` tag。
+
+不要删除历史版本记录；只追加新版本。
+
 ## 项目概况
 
-时序 / Dailywork 是一款本地优先的 macOS 个人任务与知识工作台。Electron 45 + React 19 + TypeScript 单栈，Hono 本地服务运行在 Electron utilityProcess，SQLite（`node:sqlite`，WAL）是唯一权威数据源，**不使用 iCloud 或任何云同步**。全部界面操作收敛到 `packages/ops` 的操作目录，同时生成 HTTP、CLI、MCP、AI 工具四个表面。
+时序 / Dailywork 是一款 macOS 个人任务与知识工作台。Electron 45 + React 19 + TypeScript 单栈，Hono 服务运行在 Electron utilityProcess，SQLite（`node:sqlite`，WAL）是唯一权威数据源，**不使用 iCloud 或任何云同步**。全部界面操作收敛到 `packages/ops` 的操作目录，同时生成 HTTP、CLI、MCP、AI 工具四个表面。
 
 ## 常用命令
 
 - `pnpm dev`：并行启动服务（47821）、Vite（5173）与 Electron（dev 模式 Electron 加载 Vite）。
 - `pnpm dev:server` / `pnpm dev:web` / `pnpm dev:desktop`：单独启动。
-- `pnpm test`：Vitest 单元 + 集成测试（`packages/**/*.test.ts`、`apps/server/src/**/*.test.ts`、`apps/cli/src/**/*.test.ts`、`apps/web/src/lib/**/*.test.ts`）。
-- `pnpm test:e2e`：Playwright（桌面 Chrome + WebKit iPhone 13 两个 project，webServer 自动启动 `.data-e2e` 服务与 Vite）。
+- `pnpm test`：Vitest 单元 + 集成测试（54 个，含账户/会话/头像）（`packages/**/*.test.ts`、`apps/server/src/**/*.test.ts`、`apps/cli/src/**/*.test.ts`、`apps/web/src/lib/**/*.test.ts`）。
+- `pnpm test:e2e`：Playwright（setup 创建测试账户 → 桌面 Chrome + WebKit iPhone + 账户 UI，共 11 个；webServer 自动启动 `.data-e2e` 服务与 Vite）。
 - 视觉/交互 QA：`node e2e/qa-screenshots.mjs`、`e2e/*-qa.mjs`、`node e2e/packaged-*.mjs`（需已构建 dmg/app）。
 - `pnpm lan:https`：在数据目录生成局域网 HTTPS 证书（自签名，含当前 LAN IP）；重启后 HTTPS 监听固定端口 47822。
 - 单个测试：`pnpm vitest run apps/server/src/app.test.ts -t "creates and lists tasks"`。
 - `pnpm typecheck`：`tsconfig.node.json`（Node 侧）+ `tsconfig.web.json`（Web 侧），路径别名指向 TS 源码，无需先构建。
 - `pnpm lint` / `pnpm format`：ESLint 9 flat config / Prettier。
 - `pnpm build:desktop`：构建 Web + 服务，然后 electron-builder 打 dmg（ad-hoc 签名）。
-- `pnpm daily -- task list --json`：CLI 通过 `runtime.json` 发现本地服务；服务未运行时自动以 headless 方式拉起。
+- `pnpm daily -- task list --json`：CLI 通过 `runtime.json` 发现服务；服务未运行时自动以 headless 方式拉起。
 
 ## 架构要点
 
 - **单一写入口**：只有 `apps/server` 内的 ops 执行器写数据库。Web、CLI、MCP、AI 都通过 `POST /api/ops/<name>` 调用；不要为某个界面另开直写 SQL 的后门。
 - **ops 契约**：`packages/ops/src/*-ops.ts` 用 `defineOp` 声明 name / zod input / exposure / annotations / handler。新增能力先加 op，再在 Web 或 CLI 消费；CLI 命令树由 `exposure.cli` 自动生成。
 - **DDD 上下文**：`packages/contexts/<context>/src/index.ts` 是每个上下文的公开应用接口；跨上下文只调用对方的导出函数，不跨包读表。`packages/analytics` 是允许跨表只读的投影层。
-- **数据库**：schema 在 `packages/platform/src/migrations/v1.ts`，启动时自动迁移 + 种子（默认空间、设置）。`packages/platform/src/db.ts` 暴露 `openDatabase`、`transaction`、`recordOp`。所有变更必须在事务内同时写业务表与 `op_log`。
+- **数据库**：schema 在 `packages/platform/src/migrations/v1.ts`，启动时自动迁移 + 种子（默认空间、设置）。`packages/platform/src/db.ts` 暴露 `openDatabase`、`transaction`、`recordOp`。
+- **账户**：`<dataDir>/accounts.sqlite` 存 users/sessions（scrypt）；每个账户独立 `<dataDir>/users/<id>/data.sqlite`。`/api/auth/*` 管理注册/登录/改密/头像；未登录 `/api/*` 返回 401（首账户创建前除外）。CLI/MCP 用 runtime Bearer token 映射首个账户；局域网配对建立首个账户会话。Web 入口是 `AuthGate`，默认头像取用户名首字母。所有变更必须在事务内同时写业务表与 `op_log`。
 - **审计与幂等**：每个 command op 带 `opId`；`op_log.op_id` 唯一，重复请求返回已存结果。破坏性 op 在 HTTP 层要求 `confirm: true`。
-- **日期**：业务日期一律是本地时区的 `YYYY-MM-DD` 字符串（`packages/platform/src/time.ts`），时间戳是 UTC ISO；不要用 UTC 日期推导「今天」。
+- **日期**：业务日期一律是用户所在时区的 `YYYY-MM-DD` 字符串（`packages/platform/src/time.ts`），时间戳是 UTC ISO；不要用 UTC 日期推导「今天」。
 - **图片**：blobs 表按 sha256 去重存 BLOB，attachments 多态关联 task/document/memo；文档正文通过 `attachment://<id>` 引用。
 - **Web**：TanStack Router（代码式路由）+ TanStack Query + Zustand；设计 tokens 在 `apps/web/src/styles.css`，主题由设置里的 accent/semantic/neutral 在运行时写入 CSS 变量。服务通过 SSE `/api/events` 广播 command 完成事件，Web 收到后统一失效查询。
 - **桌面**：`apps/desktop/src/main.ts` 在打包模式下用 utilityProcess 启动 `resources/server/server.mjs`，随机端口，等待 `/api/health` 就绪后加载；生产环境由 Hono 同源托管 `resources/web` 静态文件。

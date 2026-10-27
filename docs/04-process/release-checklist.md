@@ -1,10 +1,17 @@
 # 发布清单（v1.0）
 
+## 版本记录
+
+- [ ] 更新所有 package.json 版本与版本常量
+- [ ] `apps/web/src/content/releases.ts` 顶部新增版本记录
+- [ ] `docs/04-process/CHANGELOG.md` 顶部新增同内容记录
+- [ ] 安装包文件名包含新版本号
+
 ## 构建
 
 - [ ] `pnpm install --frozen-lockfile`
 - [ ] `pnpm lint`、`pnpm typecheck`、`pnpm test`、`pnpm build`
-- [ ] `pnpm build:desktop` 生成 `apps/desktop/release/Dailywork-0.1.0-arm64.dmg`
+- [ ] `pnpm build:desktop` 生成 `apps/desktop/release/Dailywork-0.2.0-arm64.dmg`
 - [ ] dmg 在干净用户目录挂载安装；首次打开通过 Gatekeeper（右键打开或系统设置放行）
 - [ ] 应用图标、托盘图标、窗口标题正确；红绿灯不遮挡品牌区
 
@@ -30,7 +37,7 @@
 - [ ] 深色/浅色截图；390×844 移动端无横向滚动；Keyboard-only 走查
 - [ ] 1 万任务性能抽样（列表、仪表盘）
 - [ ] 日志不含任务正文/密钥；runtime.json 0600
-- [ ] CHANGELOG 更新；tag `v0.1.0`；文档归档到飞书
+- [ ] CHANGELOG 更新；tag `v0.2.0`；文档归档到飞书
 
 ## 已知限制（随发布说明）
 

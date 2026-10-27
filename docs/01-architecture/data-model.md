@@ -4,8 +4,8 @@
 
 ## 1. 原则
 
-1. **一个本地数据库**：`~/Library/Application Support/Dailywork/data.sqlite`，WAL 模式。
-2. **业务日期是本地日期字符串** `YYYY-MM-DD`；时间戳是 UTC ISO-8601。禁止用 UTC 日期推导「今天」。
+1. **一个数据库**：`~/Library/Application Support/Dailywork/data.sqlite`，WAL 模式。
+2. **业务日期是用户时区的日期字符串** `YYYY-MM-DD`；时间戳是 UTC ISO-8601。禁止用 UTC 日期推导「今天」。
 3. **写路径只经 ops**；同一事务内写业务表与 `op_log`。
 4. **图片入库**：不依赖文件路径；blob 不可变、按内容寻址、引用计数。
 5. **迁移单向**：`schema_migrations` 记录版本；启动自动执行未应用的迁移。
@@ -66,13 +66,26 @@
 - `schema_migrations(version PK, applied_at)`
 - `meta(key PK, value)`：`schema_version`、`seeded`、`created_at`。
 
+## 2.1 账户与会话
+
+账户数据独立于业务数据库：`<dataDir>/accounts.sqlite`
+
+- `users(id, username UNIQUE COLLATE NOCASE, password_hash, password_salt, avatar BLOB, avatar_mime, created_at, updated_at)`
+  - 密码 scrypt（16 字节 salt，64 字节 hash），不存明文。
+  - 头像 ≤5MB，允许 PNG/JPEG/WebP/GIF；默认头像由前端用用户名首字母生成，不落库。
+- `sessions(token PRIMARY KEY, user_id→users, created_at, expires_at)`
+  - token 32 字节随机；30 天有效；HttpOnly cookie `daily_session`。
+  - 修改密码会删除该用户其他会话。
+
+每个账户的业务数据：`<dataDir>/users/<userId>/data.sqlite`，包含任务/项目/文档/附件/设置/AI 供应商等完整 schema。首个注册账户会从根 `data.sqlite` 复制已有数据；后续账户获得全新的欢迎工作区。
+
 ## 3. 不变量
 
 1. 任务必须在存在的空间内；项目必须属于空间；移动项目时任务空间随项目更新。
 2. 子任务继承父任务的空间与项目；不允许三层。
 3. 完成状态与 `completed_at` 同步：进入 done 写时间，离开 done 清空。
 4. 删除标签自动清理 `task_tags`；删除附件零引用回收 blob。
-5. 计划日期 / 截止日期是本地日期，不存时区；跨时区设备（未来）需迁移策略。
+5. 计划日期 / 截止日期是用户时区日期，不存时区；跨时区设备（未来）需迁移策略。
 6. 所有命令必须携带（或由服务端生成）全局唯一 `opId`；重复 `opId` 不重复执行。
 
 ## 4. 备份格式 `.dailywork`
@@ -82,7 +95,7 @@ zip 文件，包含：
 - `manifest.json`：`{format:"dailywork", formatVersion:1, schemaVersion, appVersion, createdAt, counts:{tasks,projects,documents,memos,attachments,blobs}}`
 - `data.sqlite`：`VACUUM INTO` 生成的单文件快照（含图片 BLOB）。
 - `README.txt`：人类可读说明。
-- `secrets.key`（如存在）：AI key 的本地加密根，保证备份在新机器可恢复（备份文件含全部数据，请等同敏感文件保管）。
+- `secrets.key`（如存在）：AI key 的加密根，保证备份在新机器可恢复（备份文件含全部数据，请等同敏感文件保管）。
 
 导出路径默认 `<dataDir>/backups/dailywork-YYYYMMDD-HHmmss.dailywork`。
 
@@ -97,7 +110,9 @@ zip 文件，包含：
 
 ```
 ~/Library/Application Support/Dailywork/
-  data.sqlite            # 权威数据（WAL）
+  accounts.sqlite        # 账户、密码哈希、头像、会话
+  data.sqlite            # 首个账户之前的兼容数据库（首个账户创建后复制到 users/<id>/）
+  users/<id>/data.sqlite # 每个账户的权威业务数据（WAL）
   data.sqlite-wal / -shm
   runtime.json           # 端口 / token / 配对码 / pid（0600）
   server-token           # 持久化服务 token，配对 cookie 重启后仍有效（0600）

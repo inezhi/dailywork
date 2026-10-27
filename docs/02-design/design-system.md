@@ -7,38 +7,37 @@
 时序不是「又一个效率工具」。它要让人**安静地开始一件重要的事**。因此：
 
 1. 信息结构优先：靠排版层级、留白、1px 分隔线组织内容，不用「什么都是圆角卡片」。
-2. 单一强调色：陶土橙只用于主操作、进度、选中态与专注环。语义色只表达成功/警告/危险/信息。
+2. 单一强调色：经典蓝（默认 #1677FF）只用于主操作、进度、选中态与专注环。语义色只表达成功/警告/危险/信息。
 3. 半径分级：输入 6px、卡片 10px、抽屉/弹窗 14px；不统一圆角，也不叠加阴影。
 4. 动效只响应用户动作（展开、拖拽、完成），120–200ms；尊重 `prefers-reduced-motion`。
 5. 图标统一 Lucide（stroke 1.7–2），不用 emoji 当图标；不用全大写 eyebrow、装饰渐变、玻璃拟态。
 6. 中英文混排：Inter Variable + PingFang SC；数字 tabular numerals；文档阅读态 Source Serif 4。
 
-**签名元素**：专注环。出现在今天页头、专注模式、顶栏计时、仪表盘；其他界面保持克制。
+**签名元素**：专注环。出现在今天页头、专注模式、顶栏计时、仪表盘；默认蓝色强调，其他界面保持克制。
 
 ## 2. 色彩 tokens
 
-浅色（默认暖米白）：
+浅色（默认冷白 / 经典蓝）：
 
 | Token | 值 | 用途 |
 |---|---|---|
-| `--bg` | `#FAF9F5` | 画布 |
-| `--sunken` | `#F1EFE7` | 侧栏、分组背景、输入底 |
-| `--card` | `#FFFFFF` | 卡片、抽屉、弹窗 |
-| `--card-soft` | `#FCFBF8` | 卡片 hover、次级面板 |
-| `--line` / `--line-soft` | `#E8E6DC` / `#EFEDE5` | 边框 / 内部分隔 |
-| `--line-strong` | `#D6D2C4` | 强调边界、控件描边 |
-| `--ink` / `--ink-2` | `#141413` / `#5B5750` | 正文 / 次级正文 |
-| `--ink-3` / `--ink-4` | `#8A857D` / `#B3AEA5` | 辅助信息 / 占位 |
-| `--accent` | `#D97757` | 主操作、进度、选中 |
-| `--accent-strong` | `#C6613F` | hover / 激活文字 |
-| `--accent-soft` | `accent 13% + bg` | 选中底、标签 |
-| `--success` / `warning` / `danger` / `info` | `#788C5D` / `#A8761C` / `#B5473C` / `#6A9BCC` | 语义 |
+| `--bg` / `--bg-elevated` | `#F5F7FA` / `#FFFFFF` | 画布 / 浮层 |
+| `--sunken` | `#F0F2F5` | 侧栏、分组背景、输入底 |
+| `--card` / `--card-soft` | `#FFFFFF` / `#FAFBFC` | 卡片 / 卡片 hover |
+| `--line` / `--line-soft` / `--line-strong` | `#E5E6EB` / `#F0F1F3` / `#C9CDD4` | 边框 / 内部分隔 / 强调边界 |
+| `--ink` / `--ink-2` | `#1D2129` / `#4E5969` | 正文 / 次级正文 |
+| `--ink-3` / `--ink-4` | `#6B7785` / `#A9B0BA` | 辅助信息 / 占位 |
+| `--accent` / `--accent-strong` | `#1677FF` / `#0958D9` | 主操作、进度、选中 |
+| `--accent-soft` | `accent 12% + bg` | 选中底、标签 |
+| `--success` / `--warning` / `--danger` / `--info` | `#52C41A` / `#FAAD14` / `#FF4D4F` / `#13C2C2` | 语义 |
 
-深色：`--bg #1B1A18`、`--sunken #141312`、`--card #232220`、`--line #33312C`、`--ink #F5F2EC`、`--accent #E08560`。深色不是反色，而是重新定值的墨色体系。
+深色：`--bg #17171A`、`--sunken #101012`、`--card #1F1F22`、`--line #333338`、`--ink #F7F8FA`、`--accent #4096FF`、`--accent-strong #69B1FF`。深色不是反色，而是重新定值的蓝灰体系。
 
-**主题编辑器**：强调色任意取色 + 6 个预设；四个语义色独立可调；中性色温「暖 / 中性 / 冷」切换 `--bg/--sunken/--line` 组；密度「舒适 / 紧凑」调整行高。运行时把设置写入 `document.documentElement` 的 CSS 变量与 `data-theme/neutral/density`。强调色按亮度自动选择白/墨色前景（`contrastText`）。
+中性色温：默认「冷」使用上面的冷白；「暖」回到 `#FAF9F5 / #F1EFE7 / #141413` 的暖米白组；「中性」使用 `#FAFAFA / #F2F2F2 / #1F1F1F`。强调色和语义色不随中性温度改变。
 
-**对比度**：正文使用 `--ink`；`--ink-3` 仅用于 ≥10.5px 辅助信息；强调色小字使用 `--accent-strong`，避免 `#D97757` 在米白上的 3:1 左右对比度用于正文。
+**主题编辑器**：强调色任意取色 + 6 个预设（默认「经典蓝」）；四个语义色独立可调；中性色温「暖 / 中性 / 冷」切换 `--bg/--sunken/--line` 组；密度「舒适 / 紧凑」调整行高。运行时把设置写入 `document.documentElement` 的 CSS 变量与 `data-theme/neutral/density`。强调色按亮度自动选择白/墨色前景（`contrastText`），`--accent-strong` 由强调色自动混合生成。
+
+**对比度**：正文使用 `--ink`；`--ink-3` 仅用于 ≥10.5px 辅助信息；强调色小字使用 `--accent-strong`；蓝色在冷白画布上具有足够对比度。
 
 ## 3. 字体与字阶
 

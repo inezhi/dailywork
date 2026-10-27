@@ -22,9 +22,9 @@ pnpm lint
 pnpm build
 ```
 
-## 3. 当前覆盖（v0.1.0）
+## 3. 当前覆盖（v0.2.0）
 
-Vitest 共 47 个测试，包含纯单元与集成/路由：
+Vitest 共 54 个测试，包含纯单元与集成/路由：
 
 单元（31）：日期与周界、hashtag 提取、文档文本/链接投影、CLI 参数、快速添加语法、主题对比度、Ops 目录不变量、流式 LLM 解析。
 
@@ -45,8 +45,9 @@ Vitest 共 47 个测试，包含纯单元与集成/路由：
 - 项目模板保存/应用与项目操作记录。
 - 局域网 HTTPS 证书生成（cert/key/CA 文件）。
 - 任务级撤销：更新 / 完成 / 删除 / 创建。
+- 账户：注册、登录、数据隔离、CLI owner token、改密、头像、每账户备份暂存。
 
-Playwright（9 个）：Chrome 桌面 6 个核心旅程 + WebKit iPhone 13 视口 3 个（今天页、全屏抽屉、仪表盘/文档）。额外 QA 脚本覆盖看板/四象限/日历/时间轴拖拽、专注、备份导出、AI 流式与上下文、文档 AI 菜单、速记附件、打包应用首启、局域网配对、HTTPS 证书与离线壳（`e2e/*-qa.mjs`、`e2e/packaged-*.mjs`）。
+Playwright（11 个）：账户 setup、Chrome 桌面 6 个核心旅程、WebKit iPhone 13 视口 3 个、账户 UI 1 个（注册/默认头像/上传/退出/登录）。额外 QA 脚本覆盖看板/四象限/日历/时间轴拖拽、专注、备份导出、AI 流式与上下文、文档 AI 菜单、速记附件、打包应用首启、局域网配对、HTTPS 证书与离线壳（`e2e/*-qa.mjs`、`e2e/packaged-*.mjs`）。
 
 待补：LAN 配对与 HTTPS 纳入正式 spec、迁移升级夹具、并发压力；真实 iPhone 需人工验收。
 
@@ -54,7 +55,7 @@ Playwright（9 个）：Chrome 桌面 6 个核心旅程 + WebKit iPhone 13 视�
 
 - 测试使用 `mkdtemp` 临时目录，`createApp({dataDir})` 直接调用 fetch handler，无端口。
 - 每个测试文件独立数据库；`afterAll` 清理目录。
-- 不使用用户真实数据目录；`.data` 仅供本地开发。
+- 不使用用户真实数据目录；`.data` 仅供开发。
 
 ## 5. 发布门禁
 

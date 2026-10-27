@@ -1,34 +1,41 @@
 # Changelog
 
-All notable changes to this project are documented here.
+All notable changes to this project are documented here. The same entries are shown in the app at **设置 → 关于 → 版本记录**.
+
+## [0.2.0] — 2026-10-27
+
+### Added
+
+- **账户**：注册 / 登录 / 修改密码 / 头像上传与移除；默认头像使用用户名首字母；每个账户独立数据与设置。
+- **版本记录**：设置 → 关于可查看每个版本的更新内容。
+- **AI**：流式回复（SSE）、工具执行轨迹、对话历史侧栏；任务拆解、文档润色/续写/摘要/翻译/提取任务、周复盘上下文入口。
+- **工作流**：每日例程、项目最近操作记录、速记图片/PDF 附件、任务级撤销（创建/更新/完成/删除）。
+- **拖拽**：四象限调整优先级与截止；日历与时间轴改期。
+- **局域网**：可选自签名 HTTPS（固定 47822）、PWA 离线壳；配对绑定首个账户。
+- **文档**：AI 选区菜单、图片插入、自动保存。
+- **测试**：Vitest 54 项；Playwright 11 项（账户 setup、Chrome 桌面、WebKit iPhone、账户 UI）。
+
+### Changed
+
+- 默认主题改为经典蓝（`#1677FF`）+ 冷白画布 + 蓝灰中性色；语义色改为 `#52C41A / #FAAD14 / #FF4D4F / #13C2C2`。
+- 账户与会话层独立；业务数据按账户分隔；首个账户承接根数据库数据。
+- 备份按账户导出/导入；账户备份不包含全局密钥文件，恢复后需重新填写 AI Key。
+- 应用标识改为 `com.dailywork.app`；作者/版权改为 Dailywork。
+
+### Fixed
+
+- 修复速记转任务的事务嵌套错误。
+- 修复文档自动保存与标题更新竞态。
+- 修复强调色切换后 hover/激活色未同步的问题。
+- 修复 LAN 配对 cookie 重启后失效的问题。
 
 ## [0.1.0] — 2026-10-27
 
 ### Added
 
-- **本地优先架构**：Electron 45 + Hono（utilityProcess）+ SQLite（`node:sqlite`，WAL）；单实例 runtime 文件；打包版同源托管 Web。
-- **任务与视图**：任务 / 子任务 / 状态机 / 优先级 / 标签 / 计划与截止 / 预估 / 最近一步任务撤销（创建/更新/完成/删除）；今天、全部任务（列表 / 四象限）、看板（拖拽）、日历（月/周/日）、时间轴（28 天）。
-- **项目与空间**：空间创建、项目工作台、验收标准、交付成果、任务模板保存/应用、最近操作记录。
-- **速记与收件箱**：flomo 式卡片、`#标签`、置顶、搜索、转任务、图片/PDF 附件；收件箱聚合。
-- **计划与专注**：每日收尾（日注、未完成移到明天）；每日容量；每日例程；专注计时（15/25/45/60/自定义）、会话恢复、统计、任务实际分钟回填、专注环。
-- **文档中心**：TipTap 块编辑器（标题/列表/待办/引用/代码/表格/图片/链接/高亮）、文档树、反向链接、自动保存。
-- **仪表盘**：KPI、趋势、项目推进、状态分布、空间负载、洞察、需要关注、本周复盘弹窗。
-- **AI 助理**：DeepSeek/OpenAI 兼容供应商、AES-256-GCM 密钥、流式工具调用（SSE）、对话历史、变更开关、破坏性操作护栏、对话持久化；任务拆解、文档润色/续写/摘要/翻译/提取任务、周复盘上下文入口。
-- **CLI / MCP**：`daily` 覆盖全部 ops、`--json` 信封、稳定退出码、自动拉起服务；`daily mcp serve` 暴露 70+ 工具。
-- **附件**：任务/文档图片与 PDF、sha256 去重、浏览器 320px WebP 缩略图、引用计数回收。
-- **备份**：`.dailywork` 导出（manifest + SQLite + 密钥 + README）、导入校验、暂存与重启原子替换、导入前自动备份、每日自动快照保留 14 份。
-- **局域网**：LAN 开关、6 位配对码、HttpOnly cookie、持久化服务 token（配对跨重启）、可选自签名 HTTPS（固定 47822）、PWA manifest / 图标 / Service Worker 离线壳。
-- **设计系统**：暖米白 + 陶土橙 tokens、深浅主题、自定义强调色/语义色/中性色温/密度、`/design` 活文档；牛奶盒品牌标识；首启三步引导。
-- **工程**：pnpm 10 + Turborepo、TypeScript strict、ESLint 9、Vitest 47 个单元/集成测试、Playwright 9 个（Chrome + WebKit iPhone）、Electron/DMG 冒烟。
-
-### Changed
-
-- 取消 iCloud 同步，改为本地数据库 + 导出/导入（ADR-0003）。
-- `better-sqlite3 + Drizzle` → `node:sqlite` + 手写 SQL（ADR-0008）。
-- `TipTap + Yjs` → TipTap JSON（ADR-0007）。
-- FullCalendar / ECharts → 自绘日历/时间轴/SVG 图表。
-
-### Known issues
-
-- 空间级禁止 AI、全局撤销、Developer ID 公证与真机 iPhone 验收尚未完成。
-- 局域网 HTTP 下 PWA 离线缓存不可用；Electron 为 ad-hoc 签名。
+- 任务 / 子任务 / 状态机 / 优先级 / 标签 / 计划与截止 / 预估；今天、全部任务、看板、日历、时间轴。
+- 项目、空间、交付成果、任务模板、收件箱、速记、每日容量与收尾。
+- 专注计时、会话恢复、专注环、仪表盘与本周复盘。
+- 文档树、块编辑器、图片、反向链接、自动保存与附件。
+- AI 供应商配置、工具调用与护栏；daily CLI 与 MCP Server。
+- 局域网配对、备份导出/导入、每日快照、Electron dmg 与设计系统。

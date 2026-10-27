@@ -6,11 +6,11 @@
 </filter>
 </defs>
 <text x="48" y="58" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="27" font-weight="700" fill="#141413" text-anchor="start" opacity="1">系统上下文</text>
-<text x="48" y="84" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">C4 Level 1 · macOS 单机权威 + 本地备份/导出 + 局域网移动端</text>
+<text x="48" y="84" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">C4 Level 1 · macOS 单机权威 + 备份/导出 + 局域网移动端</text>
 <rect x="1083.6" y="42" width="106.39999999999999" height="24" rx="12.0" fill="#D97757" stroke="none" stroke-width="0" opacity="1"/>
 <text x="1136.8" y="58.32" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#FFFFFF" text-anchor="middle" opacity="1">ARCHITECTURE</text>
 <rect x="56" y="120" width="590" height="540" rx="20" fill="#F3F0E8" stroke="#D6D2C4" stroke-width="1.2" opacity="1" stroke-dasharray="7 6"/>
-<text x="80" y="150" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="600" fill="#5B5750" text-anchor="start" opacity="1">macOS · 本机（唯一写入口）</text>
+<text x="80" y="150" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="600" fill="#5B5750" text-anchor="start" opacity="1">macOS · 设备（唯一写入口）</text>
 <rect x="560" y="134" width="20.8" height="16.0" rx="2.4000000000000004" fill="none" stroke="#8A857D" stroke-width="1.6" opacity="1"/>
 <line x1="561" y1="139.6" x2="580.0" y2="139.6" stroke="#8A857D" stroke-width="1.4"/>
 <line x1="564.0" y1="136.8" x2="564.0" y2="136.8" stroke="#8A857D" stroke-width="2.4"/>
@@ -22,7 +22,7 @@
 <line x1="109.0" y1="197.5" x2="109.0" y2="197.5" stroke="#D97757" stroke-width="2.4"/>
 <text x="138" y="203" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="15" font-weight="600" fill="#141413" text-anchor="start" opacity="1">Electron 桌面壳</text>
 <text x="138" y="225" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">窗口 · 托盘 · 全局快捷键 · 通知</text>
-<text x="138" y="244" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">utilityProcess 启动本地服务</text>
+<text x="138" y="244" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">utilityProcess 启动服务</text>
 <rect x="84" y="286" width="230" height="84" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
 <rect x="100" y="304" width="26.0" height="20.0" rx="3.0" fill="none" stroke="#6A9BCC" stroke-width="1.6" opacity="1"/>
 <line x1="101" y1="311.0" x2="125.0" y2="311.0" stroke="#6A9BCC" stroke-width="1.4"/>
@@ -44,7 +44,7 @@
 <circle cx="380.0" cy="277.5" r="1.1" fill="#D97757" stroke="none" stroke-width="1" opacity="1"/>
 <rect x="376" y="282.0" width="24.0" height="5.0" rx="1.5" fill="none" stroke="#D97757" stroke-width="1.4" opacity="1"/>
 <circle cx="380.0" cy="284.5" r="1.1" fill="#D97757" stroke="none" stroke-width="1" opacity="1"/>
-<text x="414" y="280" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="17" font-weight="700" fill="#141413" text-anchor="start" opacity="1">Hono 本地服务</text>
+<text x="414" y="280" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="17" font-weight="700" fill="#141413" text-anchor="start" opacity="1">Hono 服务</text>
 <text x="376" y="310" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">领域应用层唯一写入口</text>
 <rect x="376" y="324" width="68.4" height="24" rx="12.0" fill="#F4E5DD" stroke="none" stroke-width="0" opacity="1"/>
 <text x="410.2" y="339.96" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#C6613F" text-anchor="middle" opacity="1">ops 分发</text>
@@ -73,7 +73,7 @@
 <line x1="786.6" y1="283.5" x2="786.6" y2="300.0" stroke="#6A9BCC" stroke-width="1.6"/>
 <path d="M758 300.0 Q772.3 306.6 786.6 300.0" fill="none" stroke="#6A9BCC" stroke-width="1.6"/>
 <path d="M758 291.2 Q772.3 297.8 786.6 291.2" fill="none" stroke="#6A9BCC" stroke-width="1.2" opacity="0.6"/>
-<text x="800" y="292" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="16" font-weight="700" fill="#141413" text-anchor="start" opacity="1">本地备份</text>
+<text x="800" y="292" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="16" font-weight="700" fill="#141413" text-anchor="start" opacity="1">备份</text>
 <text x="758" y="320" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">Dailywork/backup</text>
 <rect x="758" y="334" width="86.0" height="24" rx="12.0" fill="#EAF1F7" stroke="none" stroke-width="0" opacity="1"/>
 <text x="801.0" y="349.6" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#6A9BCC" text-anchor="middle" opacity="1">VACUUM INTO</text>
@@ -130,7 +130,7 @@
 <text x="830" y="550" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">OpenAI API</text>
 <rect x="84" y="575" width="562" height="62" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1"/>
 <text x="102" y="599" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="600" fill="#C6613F" text-anchor="start" opacity="1">关键约束</text>
-<text x="102" y="620" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">默认仅监听本机；LAN 需 HTTPS + 配对码；Key 只存 Keychain；图片存 SQLite。</text>
+<text x="102" y="620" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">默认仅监听设备；LAN 需 HTTPS + 配对码；Key 只存 Keychain；图片存 SQLite。</text>
 <line x1="48" y1="678" x2="1192" y2="678" stroke="#E8E6DC" stroke-width="1"/>
 <text x="48" y="700" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">时序 · Dailywork ｜ v1.0 ｜ 2026-10-27</text>
 <text x="1192" y="700" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">飞书画板 · 可编辑</text>

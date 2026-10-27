@@ -7,7 +7,7 @@ s = open(P, encoding="utf-8").read()
 
 # d1
 s = s.replace('s = SVG(1240, 720, "系统上下文", "C4 Level 1 · macOS 单机权威 + iCloud 备份 + 局域网移动端", "ARCHITECTURE")',
-              's = SVG(1240, 720, "系统上下文", "C4 Level 1 · macOS 单机权威 + 本地备份/导出 + 局域网移动端", "ARCHITECTURE")')
+              's = SVG(1240, 720, "系统上下文", "C4 Level 1 · macOS 单机权威 + 备份/导出 + 局域网移动端", "ARCHITECTURE")')
 old_card = '''    # iCloud
     s.rect(742, 262, 186, 136, shadow=True)
     s.icon("cloud", 758, 278, color=INFO, scale=1.1)
@@ -19,7 +19,7 @@ old_card = '''    # iCloud
 new_card = '''    # local backup
     s.rect(742, 262, 186, 150, shadow=True)
     s.icon("db", 758, 278, color=INFO, scale=1.1)
-    s.text(800, 292, "本地备份", size=16, weight=700)
+    s.text(800, 292, "备份", size=16, weight=700)
     s.text(758, 320, "Dailywork/backup", size=11.5, fill=INK2)
     s.pill(758, 334, "VACUUM INTO", INFO, INFO_SOFT, size=10)
     s.pill(758, 366, ".dailywork 导出", INFO, INFO_SOFT, size=10)
@@ -35,11 +35,11 @@ s = s.replace('("platform/", ["SQLite · migrations · Keychain", "SyncTransport
               '("platform/", ["SQLite · migrations · Keychain", "BackupService · logging"], INFO, 92),')
 old_data = '''        ("iCloud Drive", "密封分段 · 快照 · blob", INFO_SOFT, INFO),
         ("Keychain", "AI Key · safeStorage", WARN_SOFT, WARN),
-        ("daily token", "0600 文件 · 本机鉴权", "#F6F3EC", INK2),'''
+        ("daily token", "0600 文件 · 设备鉴权", "#F6F3EC", INK2),'''
 new_data = '''        ("图片 BLOB", "blobs / attachments · sha256 去重", INFO_SOFT, INFO),
-        ("本地快照 / 导出包", "VACUUM INTO · .dailywork", INFO_SOFT, INFO),
+        ("快照 / 导出包", "VACUUM INTO · .dailywork", INFO_SOFT, INFO),
         ("Keychain", "AI Key · safeStorage", WARN_SOFT, WARN),
-        ("daily token", "0600 文件 · 本机鉴权", "#F6F3EC", INK2),'''
+        ("daily token", "0600 文件 · 设备鉴权", "#F6F3EC", INK2),'''
 assert old_data in s
 s = s.replace(old_data, new_data, 1)
 
@@ -50,14 +50,14 @@ s = s.replace('("sync", "op_log 复制与恢复", INFO, INFO_SOFT)', '("backup",
 
 # d9
 s = s.replace('SQLite（权威）→ op_log（审计/同步）→ iCloud 快照（备份）→ 仪表盘投影（洞察）。',
-              'SQLite（权威，含图片 BLOB）→ op_log（审计/撤销）→ 本地快照 / 导出包 → 仪表盘投影（洞察）。')
+              'SQLite（权威，含图片 BLOB）→ op_log（审计/撤销）→ 快照 / 导出包 → 仪表盘投影（洞察）。')
 
 # d7
 s = s.replace('快照恢复演练 · iCloud TCC 授权 · 真机 iPhone Safari', '快照恢复演练 · 导出/导入演练 · 真机 iPhone Safari')
 
 # d4 replace whole function
 D4 = r'''def d4():
-    s = SVG(1240, 700, "本地存储、备份与导出", "SQLite 单文件（含图片 BLOB） · 每日快照 · .dailywork 导出/导入", "STORAGE")
+    s = SVG(1240, 700, "存储、备份与导出", "SQLite 单文件（含图片 BLOB） · 每日快照 · .dailywork 导出/导入", "STORAGE")
     s.title_block("STORAGE")
 
     # lanes

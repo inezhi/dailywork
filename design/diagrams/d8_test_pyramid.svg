@@ -35,7 +35,7 @@
 <text x="738" y="385" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">隔离数据库 · 固定种子 · 不碰真实数据</text>
 <rect x="720" y="410" width="232" height="58" rx="10" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1"/>
 <text x="738" y="432" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#141413" text-anchor="start" opacity="1">AI 测试</text>
-<text x="738" y="451" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">本地 mock 供应商 · 护栏断言</text>
+<text x="738" y="451" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">mock 供应商 · 护栏断言</text>
 <rect x="720" y="476" width="232" height="58" rx="10" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1"/>
 <text x="738" y="498" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#141413" text-anchor="start" opacity="1">同步测试</text>
 <text x="738" y="517" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">假文件系统 3 设备属性测试</text>

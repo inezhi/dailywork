@@ -1,6 +1,6 @@
 # 架构总览
 
-状态：v0.1.0 实现基线 · 更新：2026-10-27 · 飞书归档：[06 架构](https://my.feishu.cn/docx/Ox4qdSMrKo6OxtxwNNscr8SanGh)
+状态：v0.2.0 实现基线 · 更新：2026-10-27 · 飞书归档：[06 架构](https://my.feishu.cn/docx/Ox4qdSMrKo6OxtxwNNscr8SanGh)
 
 ## 1. 运行时拓扑
 
@@ -8,7 +8,7 @@
 flowchart LR
   subgraph Mac["macOS"]
     E["Electron 主进程<br/>窗口 / 托盘 / 全局快捷键"] --> W["React SPA<br/>TanStack Router + Query"]
-    E -->|"utilityProcess.fork"| S["Hono 本地服务<br/>127.0.0.1 / 0.0.0.0"]
+    E -->|"utilityProcess.fork"| S["Hono 服务<br/>127.0.0.1 / 0.0.0.0"]
     W -->|"HTTP + SSE"| S
     S --> DB[("SQLite<br/>data.sqlite · WAL")]
     S --> B[("图片 BLOB<br/>sha256 去重")]
@@ -24,6 +24,7 @@ flowchart LR
 - **生产形态**：Electron 用 `utilityProcess` 启动打包后的 `resources/server/server.mjs`，服务监听 `0.0.0.0`（局域网请求默认被设置开关拦截），用 `resources/web` 托管同源静态文件。
 - **开发形态**：`pnpm dev` 启动 tsx 服务（47821）、Vite（5173）与 Electron；Vite 代理 `/api`。
 - **单实例**：服务把 `{url, port, token, pairingCode, pid}` 写入 `<dataDir>/runtime.json`（0600）；token 持久化在 `<dataDir>/server-token`，CLI 先探测健康，再决定复用或拉起 headless 服务。
+- **账户与会话**：`accounts.sqlite` 保存 users/sessions（scrypt 密码、HttpOnly 会话 cookie）；每个账户使用独立的 `users/<userId>/data.sqlite`，Web 通过 `/api/auth/*` 登录后中间件选择对应数据库。CLI/MCP 使用 runtime Bearer token 映射到首个账户；局域网配对创建首个账户的会话。账户层为后续联网服务预留。
 
 ## 2. DDD 限界上下文
 
@@ -71,7 +72,7 @@ AI 面板 → `/api/ai/chat/stream`（SSE）→ assistant 上下文拼系统提�
 ## 5. 安全
 
 - Electron：contextIsolation、sandbox、无 nodeIntegration、preload 白名单；阻止窗口内导航到外站，外链交给系统浏览器。
-- 本地：服务默认监听 loopback（打包版为支持 LAN 监听 0.0.0.0，但非本机请求在 `lanEnabled=false` 时 403）。
+- 当前设备：服务默认监听 loopback（打包版为支持 LAN 监听 0.0.0.0，但非本设备请求在 `lanEnabled=false` 时 403）。
 - LAN：6 位配对码（10 分钟 10 次限流）换 HttpOnly cookie；Bearer token 亦可；生产静态 HTML 带 CSP（`default-src 'self'`、`object-src 'none'`）。
 - 密钥：AI Key 用 AES-256-GCM 加密，密钥文件 `<dataDir>/secrets.key` 0600；日志不写正文与密钥。
 - 无遥测、无外部字体/CDN；所有资源随包分发。
@@ -80,7 +81,7 @@ AI 面板 → `/api/ai/chat/stream`（SSE）→ assistant 上下文拼系统提�
 
 - TanStack Router 代码式路由：`/today`、`/inbox`、`/tasks`、`/board`、`/calendar`、`/timeline`、`/focus`、`/docs`、`/docs/$docId`、`/memos`、`/dashboard`、`/projects/$projectId`、`/settings`、`/design`。
 - TanStack Query：所有数据经 ops；SSE 收到 command 后统一 `invalidateQueries`。
-- Zustand：`ui`（抽屉、面板、侧栏、新任务弹窗）、`timer`（服务端会话 + 本地秒表）、`toast`。
+- Zustand：`ui`（抽屉、面板、侧栏、新任务弹窗）、`timer`（服务端会话 + 前端秒表）、`toast`。
 - 主题：设置里的 accent / semantic / neutral / density 运行时写入 CSS 变量与 `data-*` 属性；明暗由 `data-theme` 切换。
 - 专注计时以服务端 `startedAt` 为准，刷新可恢复；6 小时未结束的 running 会话在启动时自动取消。
 
@@ -88,14 +89,18 @@ AI 面板 → `/api/ai/chat/stream`（SSE）→ assistant 上下文拼系统提�
 
 | 原方案 | 当前实现 | 原因 |
 |---|---|---|
-| iCloud 同步 / op_log 多设备合并 | 本地 SQLite + 备份导出导入 | 用户 2026-10-27 取消 iCloud；单 Mac |
+| iCloud 同步 / op_log 多设备合并 | SQLite + 备份导出导入 | 用户 2026-10-27 取消 iCloud；单 Mac |
 | better-sqlite3 + Drizzle | Node 内置 `node:sqlite` + 手写 SQL | 免原生编译与 Electron ABI 重建，打包稳定 |
 | TipTap + Yjs CRDT | TipTap JSON 持久化 | 首期单用户；避免双写与 CRDT 复杂度 |
 | FullCalendar / ECharts | 自绘月/周/日、时间轴、SVG 图表 | 主题与排版完全可控、体积更小；图表需求简单 |
 | 每日自动快照 | 启动时生成当日 `.dailywork` 快照并保留 14 份 | 已实现 |
 | 流式 AI | 非流式请求（90s 超时） | 先保证工具调用与护栏；流式列入 v1.1 |
 
-## 8. 已知限制
+## 8. 未来联网
+
+当前交付以单机服务 + 账号隔离运行；`accounts.sqlite` 与每账户独立数据文件使后续接入联网服务时，只需替换会话传输、服务发现与托管方式，不改变领域模型。
+
+## 9. 已知限制
 
 - 局域网 HTTP 下 Service Worker 不注册（平台安全上下文要求）；可在设置中生成自签名 HTTPS 证书（固定端口 47822），手机信任证书后启用离线壳；真机需手动信任。
 - Electron 为 ad-hoc 签名；首次打开需右键打开或系统设置放行，更新为手动 dmg。
