@@ -1,6 +1,6 @@
-appId: com.lingzhi.dailywork
+appId: com.dailywork.app
 productName: Dailywork
-copyright: Copyright © 2026 lingzhi
+copyright: Copyright © 2026 Dailywork
 directories:
   output: release
   buildResources: build

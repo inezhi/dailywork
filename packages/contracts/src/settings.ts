@@ -34,12 +34,12 @@ export type Settings = z.infer<typeof SettingsSchema>
 
 export const DEFAULT_THEME_SETTINGS: ThemeSettings = {
   mode: 'light',
-  accent: '#D97757',
-  success: '#788C5D',
-  warning: '#A8761C',
-  danger: '#B5473C',
-  info: '#6A9BCC',
-  neutral: 'warm',
+  accent: '#1677FF',
+  success: '#52C41A',
+  warning: '#FAAD14',
+  danger: '#FF4D4F',
+  info: '#13C2C2',
+  neutral: 'cool',
   density: 'comfortable',
 }
 

@@ -485,7 +485,7 @@ function DocEditor({ detail }: { detail: DocumentDetail }) {
       )}
 
       <div style={{ marginTop: 48, fontSize: 10, color: 'var(--ink-4)' }}>
-        创建于 {fullDateLabel(doc.createdAt.slice(0, 10))} · 文档正文保存在本地数据库
+        创建于 {fullDateLabel(doc.createdAt.slice(0, 10))} · 文档正文保存在数据库
       </div>
 
       <ConfirmDialog

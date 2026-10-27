@@ -1,19 +1,21 @@
 import { DatabaseSync } from 'node:sqlite'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { MIGRATION_1, MIGRATION_2, MIGRATION_3 } from './migrations/v1.js'
+import { MIGRATION_1, MIGRATION_2, MIGRATION_3, MIGRATION_4, MIGRATION_5 } from './migrations/v1.js'
 import { setMeta, setSetting, transaction, getMeta } from './db-utils.js'
 import { nowIso } from './time.js'
 import type { Db } from './db-utils.js'
 
 export type { Db } from './db-utils.js'
 
-export const SCHEMA_VERSION = 3
+export const SCHEMA_VERSION = 5
 
 const MIGRATIONS: Array<{ version: number; sql: string }> = [
   { version: 1, sql: MIGRATION_1 },
   { version: 2, sql: MIGRATION_2 },
   { version: 3, sql: MIGRATION_3 },
+  { version: 4, sql: MIGRATION_4 },
+  { version: 5, sql: MIGRATION_5 },
 ]
 
 export function openDatabase(file: string): Db {
@@ -65,19 +67,19 @@ export function seed(db: Db): void {
     db.prepare(
       `INSERT INTO spaces(id, name, color, icon, sort_order, created_at, updated_at)
        VALUES(?, ?, ?, ?, ?, ?, ?)`,
-    ).run('spc_default', '个人空间', '#D97757', 'layers', 0, at, at)
+    ).run('spc_default', '个人空间', '#1677FF', 'layers', 0, at, at)
 
     setSetting(
       db,
       'theme',
       {
         mode: 'light',
-        accent: '#D97757',
-        success: '#788C5D',
-        warning: '#A8761C',
-        danger: '#B5473C',
-        info: '#6A9BCC',
-        neutral: 'warm',
+        accent: '#1677FF',
+        success: '#52C41A',
+        warning: '#FAAD14',
+        danger: '#FF4D4F',
+        info: '#13C2C2',
+        neutral: 'cool',
         density: 'comfortable',
       },
       at,
@@ -96,7 +98,7 @@ export function seed(db: Db): void {
       at,
     )
     const welcomeText =
-      '欢迎使用时序。时序不是又一个任务清单，而是把任务、时间、专注与知识放进同一个闭环的工作台。先写下今天最重要的一件事，再给它一个时长，然后开始一段专注。需要更多结构时，把任务放进项目与日期；想法先丢进速记；周末在仪表盘回看。所有数据只保存在这台 Mac 上，可在设置中导出完整备份。'
+      '欢迎使用时序。时序不是又一个任务清单，而是把任务、时间、专注与知识放进同一个闭环的工作台。先写下今天最重要的一件事，再给它一个时长，然后开始一段专注。需要更多结构时，把任务放进项目与日期；想法先丢进速记；周末在仪表盘回看。所有数据保存在工作台数据库中，可在设置中导出完整备份。'
     const welcomeContent = {
       type: 'doc',
       content: [
@@ -145,7 +147,7 @@ export function seed(db: Db): void {
         {
           type: 'paragraph',
           content: [
-            { type: 'text', text: '全部数据（含文档图片）都保存在本机 SQLite。设置 → 数据与备份可以导出 .dailywork 完整备份，或导入到新机器。' },
+            { type: 'text', text: '全部数据（含文档图片）都保存在 SQLite 数据库。设置 → 数据与备份可以导出 .dailywork 完整备份，或导入到新设备。' },
           ],
         },
         {

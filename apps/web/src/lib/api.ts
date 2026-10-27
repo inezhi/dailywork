@@ -26,8 +26,11 @@ export async function callOp<T>(name: string, input: unknown = {}): Promise<T> {
   } catch (error) {
     throw new ApiError(
       'NETWORK',
-      error instanceof Error ? error.message : '无法连接本地服务，请确认服务正在运行',
+      error instanceof Error ? error.message : '无法连接服务，请确认服务正在运行',
     )
+  }
+  if (res.status === 401 && typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('daily:unauthorized'))
   }
   let envelope: OpEnvelope<T>
   try {
@@ -92,6 +95,9 @@ export async function streamAiChat(
     body: JSON.stringify(input),
     signal,
   })
+  if (res.status === 401 && typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('daily:unauthorized'))
+  }
   if (!res.ok) {
     let message = `AI 请求失败（HTTP ${res.status}）`
     try {

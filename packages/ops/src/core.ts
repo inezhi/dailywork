@@ -17,6 +17,7 @@ export interface OpContext {
   port?: number
   httpsPort?: number
   pairingCode?: string
+  userId?: string
 }
 
 export interface OpDefinition<S extends z.ZodTypeAny = z.ZodTypeAny, R = unknown> {

@@ -64,7 +64,7 @@ function toolName(opName: string): string {
 
 function buildSystemPrompt(ctx: OpContext, input: z.infer<typeof ChatInput>): string {
   const lines = [
-    '你是「时序 Dailywork」本地工作台里的 AI 助理。',
+    '你是「时序 Dailywork」工作台里的 AI 助理。',
     `今天是 ${new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}。`,
     '',
     '工作原则：',

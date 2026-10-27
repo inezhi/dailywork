@@ -35,7 +35,7 @@ export function DesignPage() {
         <div className="panel-head">
           <div>
             <h3>色彩</h3>
-            <p>暖米白画布 + 陶土橙强调。语义色只表达含义。</p>
+            <p>冷白画布 + 经典蓝强调。语义色只表达含义。</p>
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>

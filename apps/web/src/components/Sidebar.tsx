@@ -37,7 +37,7 @@ const NAV = [
   { to: '/dashboard', label: '仪表盘', icon: ChartNoAxesColumn },
 ] as const
 
-const PROJECT_COLORS = ['#D97757', '#5E7D6B', '#6A8CAF', '#B5514A', '#B08A4C', '#7C6C8A']
+const PROJECT_COLORS = ['#1677FF', '#13C2C2', '#00B42A', '#FA8C16', '#F53F3F', '#722ED1']
 
 export function Sidebar() {
   const collapsed = useUi((s) => s.sidebarCollapsed)

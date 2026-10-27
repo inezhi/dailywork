@@ -15,14 +15,14 @@ import {
 import { dashboard } from '@daily/analytics'
 import { getSettings } from '@daily/context-workspace'
 import { listProviders, saveProvider, deleteProvider, testProvider, getProviderRow } from '@daily/context-assistant'
-import { dataPaths, exportBackup, stageImport } from '@daily/platform'
+import { dataPaths, exportBackup, stageImport, userDatabasePath } from '@daily/platform'
 import { networkInterfaces } from 'node:os'
 import { execFileSync } from 'node:child_process'
 import { chmodSync, copyFileSync, existsSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { defineOp } from './core.js'
 
-const APP_VERSION = '0.1.0'
+const APP_VERSION = '0.2.0'
 const startedAt = Date.now()
 
 export const systemOps = [
@@ -35,7 +35,10 @@ export const systemOps = [
     exposure: { http: true, cli: ['backup', 'export'], mcp: true, ai: false },
     annotations: { idempotent: false },
     aggregate: 'system',
-    handler: (ctx, input) => exportBackup(ctx.db, ctx.dataDir, ctx.version, input.targetPath),
+    handler: (ctx, input) =>
+      exportBackup(ctx.db, ctx.dataDir, ctx.version, input.targetPath, {
+        includeSecrets: !ctx.userId,
+      }),
   }),
   defineOp({
     name: 'backup.import',
@@ -47,7 +50,10 @@ export const systemOps = [
     annotations: { destructive: true, confirm: true },
     aggregate: 'system',
     handler: (ctx, input) => {
-      const inspection = stageImport(ctx.dataDir, input.sourcePath)
+      const target = ctx.userId
+        ? userDatabasePath(ctx.dataDir, ctx.userId)
+        : undefined
+      const inspection = stageImport(ctx.dataDir, input.sourcePath, target)
       return {
         restored: false,
         restartRequired: true,
@@ -82,7 +88,7 @@ export const systemOps = [
       return {
         version: APP_VERSION,
         builtAt: process.env.DAILYWORK_BUILT_AT ?? new Date().toISOString(),
-        schemaVersion: 3,
+        schemaVersion: 5,
         platform: process.platform,
         dataDir: paths.dataDir,
         lanUrls: [],

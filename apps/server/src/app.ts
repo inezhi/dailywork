@@ -4,18 +4,40 @@ import { createServer as createHttpsServer } from 'node:https'
 import { streamSSE } from 'hono/streaming'
 import { serve } from '@hono/node-server'
 import { readFile } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
+import { existsSync, mkdirSync } from 'node:fs'
 import { extname, join, normalize, resolve } from 'node:path'
 import type { Server } from 'node:http'
 import {
+  ChangePasswordInput,
+  LoginInput,
+  RegisterInput,
+  OpError,
   type Actor,
   type OpDescriptorMeta,
 } from '@daily/contracts'
 import {
+  changePassword,
+  clearAvatar,
+  countUsers,
   createLogger,
+  createSession,
   dataPaths,
+  deleteOtherSessions,
+  deleteSession,
   ensureDataDirs,
+  firstUser,
+  getAvatar,
+  getSessionUser,
+  getUserByUsername,
+  openAccountsDb,
   openDatabase,
+  registerUser,
+  setAvatar,
+  toPublicUser,
+  userDatabasePath,
+  verifyPassword,
+  type AccountUserRow,
+  type AccountsDb,
   type Db,
   type Logger,
 } from '@daily/platform'
@@ -36,7 +58,7 @@ export interface AppOptions {
 }
 
 export interface AppBundle {
-  app: Hono
+  app: Hono<any>
   db: Db
   token: string
   sseClients: Set<ReadableStreamDefaultController<Uint8Array>>
@@ -72,13 +94,54 @@ function actorFrom(headers: Headers): { actor: Actor; source: string } {
   return { actor, source }
 }
 
+interface AppEnv {
+  Variables: {
+    db: Db
+    user: AccountUserRow | null
+    sessionToken: string | null
+    isBootstrap: boolean
+    isOwner: boolean
+  }
+}
+
+function cookieValue(header: string | undefined, name: string): string | null {
+  if (!header) return null
+  for (const part of header.split(';')) {
+    const trimmed = part.trim()
+    if (trimmed.startsWith(`${name}=`)) return trimmed.slice(name.length + 1)
+  }
+  return null
+}
+
+function sessionCookie(token: string, secure: boolean): string {
+  return `daily_session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}${secure ? '; Secure' : ''}`
+}
+
+function remoteAddress(c: any): string {
+  return c.env?.incoming?.socket?.remoteAddress ?? '127.0.0.1'
+}
+
+function isLoopback(remote: string): boolean {
+  return remote === '127.0.0.1' || remote === '::1' || remote === '::ffff:127.0.0.1'
+}
+
 export function createApp(options: AppOptions): AppBundle {
   const paths = dataPaths(options.dataDir)
   ensureDataDirs(paths)
   const logger = options.logger ?? createLogger(paths, process.env.NODE_ENV === 'test' ? 'silent' : undefined)
-  const db = openDatabase(paths.dbFile)
+  const rootDb = openDatabase(paths.dbFile)
+  const accountsDb: AccountsDb = openAccountsDb(paths.dataDir)
+  const userDbs = new Map<string, Db>()
+  const getUserDb = (userId: string): Db => {
+    const cached = userDbs.get(userId)
+    if (cached) return cached
+    const file = userDatabasePath(paths.dataDir, userId)
+    const db = openDatabase(file)
+    userDbs.set(userId, db)
+    return db
+  }
   const token = options.token ?? ''
-  const version = options.version ?? '0.1.0'
+  const version = options.version ?? '0.2.0'
   const sseClients = new Set<ReadableStreamDefaultController<Uint8Array>>()
   const encoder = new TextEncoder()
 
@@ -93,7 +156,7 @@ export function createApp(options: AppOptions): AppBundle {
     }
   }
 
-  const app = new Hono()
+  const app = new Hono<AppEnv>()
 
   let actualPort = options.port ?? 0
   let actualHttpsPort = 0
@@ -101,53 +164,80 @@ export function createApp(options: AppOptions): AppBundle {
   const pairingAttempts = new Map<string, { count: number; resetAt: number }>()
 
   app.use('/api/*', async (c, next) => {
+    const startedAt = Date.now()
     const path = c.req.path
-    const incoming = (c.env as { incoming?: { socket?: { remoteAddress?: string } } } | undefined)
-      ?.incoming
-    const remote = incoming?.socket?.remoteAddress ?? '127.0.0.1'
-    const isLoopback =
-      remote === '127.0.0.1' || remote === '::1' || remote === '::ffff:127.0.0.1'
-    if (path === '/api/health' || path === '/api/pair') {
-      const startedAt = Date.now()
-      await next()
-      logger.info(
-        { method: c.req.method, path, status: c.res.status, ms: Date.now() - startedAt },
-        'http',
+    const remote = remoteAddress(c)
+    const loopback = isLoopback(remote)
+    const publicPath =
+      path === '/api/health' ||
+      path === '/api/pair' ||
+      path === '/api/auth/status' ||
+      path === '/api/auth/login' ||
+      path === '/api/auth/register' ||
+      path === '/api/auth/me'
+
+    if ((path === '/api/auth/register' || path === '/api/auth/login') && !loopback) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: '请先在 Mac 上登录，再从局域网配对' },
+          meta: { opId: '', version: 1 },
+        },
+        403,
       )
-      return
     }
-    if (!isLoopback) {
-      const settingsRow = getSettings(db)
-      if (!settingsRow.general.lanEnabled) {
+
+    const sessionToken = cookieValue(c.req.header('cookie'), 'daily_session')
+    let user = sessionToken ? getSessionUser(accountsDb, sessionToken) : null
+    let isOwner = false
+    const auth = c.req.header('authorization') ?? ''
+    if (!user && loopback && token && auth === `Bearer ${token}`) {
+      user = firstUser(accountsDb)
+      isOwner = Boolean(user)
+    }
+
+    c.set('sessionToken', sessionToken)
+    c.set('user', user)
+    c.set('isOwner', isOwner)
+    c.set('isBootstrap', false)
+    c.set('db', rootDb)
+
+    if (user) {
+      const db = getUserDb(user.id)
+      c.set('db', db)
+      if (!loopback) {
+        if (!getSettings(db).general.lanEnabled) {
+          return c.json(
+            {
+              ok: false,
+              error: { code: 'UNAUTHORIZED', message: '局域网访问未启用，请在设置中打开' },
+              meta: { opId: '', version: 1 },
+            },
+            403,
+          )
+        }
+      }
+    } else {
+      const hasUsers = countUsers(accountsDb) > 0
+      if (!hasUsers && loopback) {
+        c.set('isBootstrap', true)
+      } else if (!publicPath) {
         return c.json(
           {
             ok: false,
-            error: { code: 'UNAUTHORIZED', message: '局域网访问未启用，请在设置中打开' },
+            error: { code: 'UNAUTHORIZED', message: '请先登录' },
             meta: { opId: '', version: 1 },
           },
-          403,
-        )
-      }
-      const auth = c.req.header('authorization') ?? ''
-      const cookie = c.req.header('cookie') ?? ''
-      const cookieToken = cookie
-        .split(';')
-        .map((part) => part.trim())
-        .find((part) => part.startsWith('daily_token='))
-        ?.slice('daily_token='.length)
-      if (!token || (auth !== `Bearer ${token}` && cookieToken !== token)) {
-        return c.json(
-          { ok: false, error: { code: 'UNAUTHORIZED', message: '未授权' }, meta: { opId: '', version: 1 } },
           401,
         )
       }
     }
-    const startedAt = Date.now()
+
     await next()
     logger.info(
       {
         method: c.req.method,
-        path: c.req.path,
+        path,
         status: c.res.status,
         ms: Date.now() - startedAt,
       },
@@ -181,17 +271,185 @@ export function createApp(options: AppOptions): AppBundle {
     if (!options.pairingCode || code !== options.pairingCode) {
       return c.json({ ok: false, error: { message: '配对码不正确' } }, 401)
     }
-    if (!token) return c.json({ ok: false, error: { message: '服务令牌缺失' } }, 500)
-    const secure = c.req.url.startsWith('https://') ? '; Secure' : ''
-    c.header(
-      'set-cookie',
-      `daily_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000${secure}`,
-    )
+    const owner = firstUser(accountsDb)
+    if (!owner) {
+      return c.json(
+        { ok: false, error: { message: '请先在 Mac 上注册账户，再进行配对' } },
+        409,
+      )
+    }
+    if (!getSettings(getUserDb(owner.id)).general.lanEnabled) {
+      return c.json({ ok: false, error: { message: '请先在 Mac 设置中开启局域网访问' } }, 403)
+    }
+    const session = createSession(accountsDb, owner.id)
+    const secure = c.req.url.startsWith('https://')
+    c.header('set-cookie', sessionCookie(session, secure))
     return c.json({ ok: true })
   })
 
+  app.get('/api/auth/status', (c) =>
+    c.json({ ok: true, data: { hasUsers: countUsers(accountsDb) > 0 } }),
+  )
+
+  app.post('/api/auth/register', async (c) => {
+    let body: unknown = {}
+    try {
+      body = await c.req.json()
+    } catch {
+      body = {}
+    }
+    const parsed = RegisterInput.safeParse(body)
+    if (!parsed.success) {
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: parsed.error.issues[0]?.message ?? '输入不合法',
+            details: parsed.error.issues,
+          },
+        },
+        422,
+      )
+    }
+    const first = countUsers(accountsDb) === 0
+    let user: AccountUserRow
+    try {
+      user = registerUser(accountsDb, parsed.data)
+    } catch (error) {
+      if (error instanceof OpError) {
+        return c.json({ ok: false, error: { code: error.code, message: error.message } }, 409)
+      }
+      return c.json({ ok: false, error: { code: 'INTERNAL', message: '注册失败' } }, 500)
+    }
+    const userFile = userDatabasePath(paths.dataDir, user.id)
+    mkdirSync(join(paths.dataDir, 'users', user.id), { recursive: true, mode: 0o700 })
+    if (first) {
+      try {
+        rootDb.exec(`VACUUM INTO '${userFile.replaceAll("'", "''")}'`)
+      } catch (error) {
+        logger.warn({ error }, 'legacy data copy failed; using a fresh workspace')
+      }
+    }
+    getUserDb(user.id)
+    const session = createSession(accountsDb, user.id)
+    const secure = c.req.url.startsWith('https://')
+    c.header('set-cookie', sessionCookie(session, secure))
+    return c.json({ ok: true, data: { user: toPublicUser(user) } })
+  })
+
+  app.post('/api/auth/login', async (c) => {
+    let body: unknown = {}
+    try {
+      body = await c.req.json()
+    } catch {
+      body = {}
+    }
+    const parsed = LoginInput.safeParse(body)
+    if (!parsed.success) {
+      return c.json({ ok: false, error: { code: 'VALIDATION_ERROR', message: '请输入用户名和密码' } }, 422)
+    }
+    const user = getUserByUsername(accountsDb, parsed.data.username)
+    if (!user || !verifyPassword(user, parsed.data.password)) {
+      return c.json({ ok: false, error: { code: 'UNAUTHORIZED', message: '用户名或密码不正确' } }, 401)
+    }
+    const session = createSession(accountsDb, user.id)
+    const secure = c.req.url.startsWith('https://')
+    c.header('set-cookie', sessionCookie(session, secure))
+    return c.json({ ok: true, data: { user: toPublicUser(user) } })
+  })
+
+  app.post('/api/auth/logout', (c) => {
+    const session = c.get('sessionToken')
+    if (session) deleteSession(accountsDb, session)
+    const secure = c.req.url.startsWith('https://')
+    c.header('set-cookie', `daily_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure ? '; Secure' : ''}`)
+    return c.json({ ok: true, data: { loggedOut: true } })
+  })
+
+  app.get('/api/auth/me', (c) => {
+    const user = c.get('user')
+    if (!user) {
+      return c.json({ ok: false, error: { code: 'UNAUTHORIZED', message: '请先登录' } }, 401)
+    }
+    return c.json({ ok: true, data: { user: toPublicUser(user) } })
+  })
+
+  app.post('/api/auth/password', async (c) => {
+    const user = c.get('user')
+    if (!user) return c.json({ ok: false, error: { code: 'UNAUTHORIZED', message: '请先登录' } }, 401)
+    let body: unknown = {}
+    try {
+      body = await c.req.json()
+    } catch {
+      body = {}
+    }
+    const parsed = ChangePasswordInput.safeParse(body)
+    if (!parsed.success) {
+      return c.json(
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0]?.message ?? '输入不合法' } },
+        422,
+      )
+    }
+    try {
+      changePassword(accountsDb, user.id, parsed.data.currentPassword, parsed.data.newPassword)
+      deleteOtherSessions(accountsDb, user.id, c.get('sessionToken') ?? undefined)
+      return c.json({ ok: true, data: { changed: true } })
+    } catch (error) {
+      if (error instanceof OpError) {
+        return c.json({ ok: false, error: { code: error.code, message: error.message } }, error.code === 'UNAUTHORIZED' ? 401 : 400)
+      }
+      return c.json({ ok: false, error: { code: 'INTERNAL', message: '修改密码失败' } }, 500)
+    }
+  })
+
+  app.post('/api/auth/avatar', async (c) => {
+    const user = c.get('user')
+    if (!user) return c.json({ ok: false, error: { code: 'UNAUTHORIZED', message: '请先登录' } }, 401)
+    let body: Record<string, unknown>
+    try {
+      body = (await c.req.parseBody()) as Record<string, unknown>
+    } catch {
+      return c.json({ ok: false, error: { code: 'BAD_REQUEST', message: '无法解析上传内容' } }, 400)
+    }
+    const file = body.file
+    if (!file || typeof file === 'string') {
+      return c.json({ ok: false, error: { code: 'BAD_REQUEST', message: '缺少头像文件' } }, 400)
+    }
+    const allowed = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
+    const upload = file as File
+    if (!allowed.has(upload.type)) {
+      return c.json({ ok: false, error: { code: 'BAD_REQUEST', message: '头像仅支持 PNG / JPEG / WebP / GIF' } }, 400)
+    }
+    const data = new Uint8Array(await upload.arrayBuffer())
+    if (data.byteLength > 5 * 1024 * 1024) {
+      return c.json({ ok: false, error: { code: 'BAD_REQUEST', message: '头像不能超过 5MB' } }, 400)
+    }
+    const updated = setAvatar(accountsDb, user.id, data, upload.type)
+    return c.json({ ok: true, data: { user: toPublicUser(updated) } })
+  })
+
+  app.delete('/api/auth/avatar', (c) => {
+    const user = c.get('user')
+    if (!user) return c.json({ ok: false, error: { code: 'UNAUTHORIZED', message: '请先登录' } }, 401)
+    return c.json({ ok: true, data: { user: toPublicUser(clearAvatar(accountsDb, user.id)) } })
+  })
+
+  app.get('/api/auth/avatar/:id', (c) => {
+    const user = c.get('user')
+    if (!user) return c.json({ ok: false, error: { code: 'UNAUTHORIZED', message: '请先登录' } }, 401)
+    const avatar = getAvatar(accountsDb, c.req.param('id'))
+    if (!avatar) return c.text('Not Found', 404)
+    return new Response(avatar.data as unknown as BodyInit, {
+      headers: {
+        'content-type': avatar.mime,
+        'cache-control': 'private, max-age=60',
+      },
+    })
+  })
+
   app.get('/api/health', (c) => {
-    const count = db.prepare('SELECT COUNT(*) AS c FROM tasks').get() as { c: number }
+    const count = rootDb.prepare('SELECT COUNT(*) AS c FROM tasks').get() as { c: number }
     return c.json({
       ok: true,
       version,
@@ -205,7 +463,7 @@ export function createApp(options: AppOptions): AppBundle {
   app.get('/api/meta', (c) =>
     c.json({
       version,
-      schemaVersion: 3,
+      schemaVersion: 5,
       dataDir: paths.dataDir,
       platform: process.platform,
       builtAt: process.env.DAILYWORK_BUILT_AT ?? null,
@@ -267,7 +525,7 @@ export function createApp(options: AppOptions): AppBundle {
     }
     const { actor, source } = actorFrom(c.req.raw.headers)
     const ctx: OpContext = {
-      db,
+      db: c.get('db'),
       dataDir: paths.dataDir,
       actor,
       source,
@@ -275,6 +533,7 @@ export function createApp(options: AppOptions): AppBundle {
       port: actualPort,
       httpsPort: actualHttpsPort,
       pairingCode: options.pairingCode,
+      userId: c.get('user')?.id,
     }
     const result = await runOp(op, ctx, body)
     if (result.envelope.ok && op.kind === 'command') {
@@ -313,7 +572,7 @@ export function createApp(options: AppOptions): AppBundle {
       thumb = new Uint8Array(await (thumbFile as File).arrayBuffer())
     }
     try {
-      const attachment = saveAttachment(db, {
+      const attachment = saveAttachment(c.get('db'), {
         ownerType: parsedType.data,
         ownerId,
         filename: upload.name || 'attachment',
@@ -330,7 +589,7 @@ export function createApp(options: AppOptions): AppBundle {
 
   app.get('/api/attachments/:id/content', (c) => {
     try {
-      const file = getAttachmentContent(db, c.req.param('id'), false)
+      const file = getAttachmentContent(c.get('db'), c.req.param('id'), false)
       return new Response(file.data as unknown as BodyInit, {
         headers: {
           'content-type': file.mime,
@@ -345,7 +604,7 @@ export function createApp(options: AppOptions): AppBundle {
 
   app.get('/api/attachments/:id/thumb', (c) => {
     try {
-      const file = getAttachmentContent(db, c.req.param('id'), true)
+      const file = getAttachmentContent(c.get('db'), c.req.param('id'), true)
       return new Response(file.data as unknown as BodyInit, {
         headers: {
           'content-type': file.mime,
@@ -381,7 +640,7 @@ export function createApp(options: AppOptions): AppBundle {
     }
     const { actor, source } = actorFrom(c.req.raw.headers)
     const ctx: OpContext = {
-      db,
+      db: c.get('db'),
       dataDir: paths.dataDir,
       actor,
       source,
@@ -389,6 +648,7 @@ export function createApp(options: AppOptions): AppBundle {
       port: actualPort,
       httpsPort: actualHttpsPort,
       pairingCode: options.pairingCode,
+      userId: c.get('user')?.id,
     }
     return streamSSE(c, async (stream) => {
       try {
@@ -458,6 +718,12 @@ export function createApp(options: AppOptions): AppBundle {
         })
       }
       if (pathname.startsWith('/api/')) return c.text('Not Found', 404)
+      const remote = remoteAddress(c)
+      if (!isLoopback(remote)) {
+        const sessionToken = cookieValue(c.req.header('cookie'), 'daily_session')
+        const sessionUser = sessionToken ? getSessionUser(accountsDb, sessionToken) : null
+        if (!sessionUser) return c.html(pairPage())
+      }
       const index = await readFile(join(resolve(webDist), 'index.html'))
       return new Response(index, {
         headers: {
@@ -474,7 +740,7 @@ export function createApp(options: AppOptions): AppBundle {
 
   return {
     app,
-    db,
+    db: rootDb,
     token,
     sseClients,
     setPort: (port: number) => {
@@ -484,8 +750,20 @@ export function createApp(options: AppOptions): AppBundle {
       actualHttpsPort = port
     },
     closeDb: () => {
+      for (const db of userDbs.values()) {
+        try {
+          db.close()
+        } catch {
+          // ignore
+        }
+      }
       try {
-        db.close()
+        accountsDb.close()
+      } catch {
+        // ignore
+      }
+      try {
+        rootDb.close()
       } catch {
         // ignore
       }
@@ -494,7 +772,7 @@ export function createApp(options: AppOptions): AppBundle {
 }
 
 export function launchHttps(
-  app: Hono,
+  app: Hono<any>,
   port: number,
   host: string,
   cert: Buffer | string,
@@ -508,7 +786,7 @@ export function launchHttps(
   })
 }
 
-export function launchHttp(app: Hono, port = 0, host = '127.0.0.1'): Promise<Server> {
+export function launchHttp(app: Hono<any>, port = 0, host = '127.0.0.1'): Promise<Server> {
   return new Promise((resolvePromise, reject) => {
     const server = serve({ fetch: app.fetch, port, hostname: host }, () => {
       resolvePromise(server as unknown as Server)

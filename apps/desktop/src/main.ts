@@ -15,7 +15,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 app.setName('Dailywork')
-app.setAppUserModelId('com.lingzhi.dailywork')
+app.setAppUserModelId('com.dailywork.app')
 
 const isDev = !app.isPackaged
 const dataDir = process.env.DAILYWORK_DATA_DIR ?? join(app.getPath('appData'), 'Dailywork')
@@ -84,7 +84,7 @@ function readRuntime(): { url: string; port: number } | null {
 async function startLocalServer(): Promise<string> {
   const serverModule = join(process.resourcesPath, 'server', 'server.mjs')
   if (!existsSync(serverModule)) {
-    throw new Error(`找不到本地服务：${serverModule}`)
+    throw new Error(`找不到服务：${serverModule}`)
   }
   serverProcess = utilityProcess.fork(serverModule, [], {
     env: {
@@ -107,7 +107,7 @@ async function startLocalServer(): Promise<string> {
   })
   serverProcess.on('exit', (code) => {
     if (!quitting) {
-      dialog.showErrorBox('本地服务已停止', `服务进程退出（代码 ${code}）。请重启应用。`)
+      dialog.showErrorBox('服务已停止', `服务进程退出（代码 ${code}）。请重启应用。`)
     }
   })
   const deadline = Date.now() + 20_000
@@ -117,7 +117,7 @@ async function startLocalServer(): Promise<string> {
     if (url && (await waitForUrl(url, 1000))) return url
     await new Promise((resolve) => setTimeout(resolve, 250))
   }
-  throw new Error('本地服务启动超时')
+  throw new Error('服务启动超时')
 }
 
 async function resolveAppUrl(): Promise<string> {

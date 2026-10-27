@@ -1,7 +1,7 @@
 import { randomBytes, randomInt } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs'
 import type { AddressInfo } from 'node:net'
-import { applyPendingImport, createLogger, dataPaths, ensureDailyBackup, ensureDataDirs, resolveDataDir } from '@daily/platform'
+import { applyPendingImports, createLogger, dataPaths, ensureDailyBackup, ensureDataDirs, resolveDataDir } from '@daily/platform'
 import { cleanupStaleFocus } from '@daily/context-focus'
 import { createApp, launchHttp, launchHttps } from './app.js'
 
@@ -22,9 +22,9 @@ export async function startServer(opts: {
   const dataDir = resolveDataDir(opts.dataDir)
   const paths = dataPaths(dataDir)
   ensureDataDirs(paths)
-  const applied = applyPendingImport(dataDir)
+  const applied = applyPendingImports(dataDir)
 
-  const version = process.env.DAILYWORK_VERSION ?? '0.1.0'
+  const version = process.env.DAILYWORK_VERSION ?? '0.2.0'
   const logger = createLogger(paths)
   const tokenFile = `${paths.dataDir}/server-token`
   const token = existsSync(tokenFile)
@@ -101,7 +101,8 @@ export async function startServer(opts: {
       { mode: 0o600 },
     )
   }
-  if (applied.applied) logger.info({ backupPath: applied.backupPath }, 'applied pending import')
+  const appliedImport = applied.find((entry) => entry.applied)
+  if (appliedImport) logger.info({ backupPath: appliedImport.backupPath }, 'applied pending import')
   logger.info({ url, dataDir }, 'dailywork server ready')
   console.log(`[dailywork] listening on ${url}`)
   console.log(`[dailywork] data: ${paths.dbFile}`)

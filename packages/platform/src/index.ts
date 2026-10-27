@@ -1,3 +1,4 @@
+export * from './accounts.js'
 export * from './backup.js'
 export * from './db.js'
 export * from './db-utils.js'

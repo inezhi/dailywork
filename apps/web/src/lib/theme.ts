@@ -35,13 +35,17 @@ export function applyTheme(theme: ThemeSettings): void {
   root.dataset.neutral = theme.neutral
   root.dataset.density = theme.density
   root.style.setProperty('--accent', theme.accent)
+  root.style.setProperty(
+    '--accent-strong',
+    `color-mix(in oklab, ${theme.accent}, ${mode === 'dark' ? 'white 14%' : 'black 14%'})`,
+  )
   root.style.setProperty('--accent-contrast', contrastText(theme.accent))
   root.style.setProperty('--success', theme.success)
   root.style.setProperty('--warning', theme.warning)
   root.style.setProperty('--danger', theme.danger)
   root.style.setProperty('--info', theme.info)
   const meta = document.querySelector('meta[name="theme-color"]')
-  if (meta) meta.setAttribute('content', mode === 'dark' ? '#1B1A18' : '#FAF9F5')
+  if (meta) meta.setAttribute('content', mode === 'dark' ? '#17171A' : '#F5F7FA')
 }
 
 export function applySettings(settings: Settings | undefined): void {
@@ -59,17 +63,17 @@ export function watchSystemTheme(theme: ThemeSettings): () => void {
 }
 
 export const ACCENT_PRESETS = [
-  { name: '陶土橙', value: '#D97757' },
-  { name: '松林绿', value: '#5E7D6B' },
-  { name: '雾蓝', value: '#6A8CAF' },
-  { name: '山楂红', value: '#B5514A' },
-  { name: '麦金', value: '#B08A4C' },
-  { name: '紫灰', value: '#7C6C8A' },
+  { name: '经典蓝', value: '#1677FF' },
+  { name: '青蓝', value: '#13C2C2' },
+  { name: '品牌绿', value: '#00B42A' },
+  { name: '警告橙', value: '#FA8C16' },
+  { name: '品牌红', value: '#F53F3F' },
+  { name: '品牌紫', value: '#722ED1' },
 ]
 
 export const SEMANTIC_DEFAULTS = {
-  success: '#788C5D',
-  warning: '#A8761C',
-  danger: '#B5473C',
-  info: '#6A9BCC',
+  success: '#52C41A',
+  warning: '#FAAD14',
+  danger: '#FF4D4F',
+  info: '#13C2C2',
 }

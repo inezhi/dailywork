@@ -14,18 +14,36 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'setup',
+      testMatch: '**/auth.setup.ts',
+      use: { channel: 'chrome' },
+    },
+    {
       name: 'desktop-chrome',
-      testIgnore: '**/mobile.spec.ts',
+      testIgnore: ['**/mobile.spec.ts', '**/auth.setup.ts', '**/auth-ui.spec.ts'],
+      dependencies: ['setup'],
       use: {
         channel: 'chrome',
         viewport: { width: 1440, height: 960 },
+        storageState: 'e2e/.auth/user.json',
       },
     },
     {
       name: 'mobile-webkit',
       testMatch: '**/mobile.spec.ts',
+      dependencies: ['setup'],
       use: {
         ...devices['iPhone 13'],
+        storageState: 'e2e/.auth/user.json',
+      },
+    },
+    {
+      name: 'auth-ui',
+      testMatch: '**/auth-ui.spec.ts',
+      dependencies: ['setup'],
+      use: {
+        channel: 'chrome',
+        viewport: { width: 1440, height: 960 },
       },
     },
   ],

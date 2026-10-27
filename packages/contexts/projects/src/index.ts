@@ -112,7 +112,7 @@ export function createProject(db: Db, input: CreateProjectInput): Project {
     spaceId,
     input.name.trim(),
     input.description ?? '',
-    input.color ?? '#D97757',
+    input.color ?? '#1677FF',
     input.icon ?? 'folder',
     input.status ?? 'active',
     input.startDate ?? null,

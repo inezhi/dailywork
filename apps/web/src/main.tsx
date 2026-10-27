@@ -6,6 +6,7 @@ import '@fontsource-variable/inter'
 import '@fontsource-variable/source-serif-4'
 import './styles.css'
 import { router } from './router'
+import { AuthGate } from './components/AuthGate'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,7 +30,9 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator && !window.dailywork) {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <AuthGate>
+        <RouterProvider router={router} />
+      </AuthGate>
     </QueryClientProvider>
   </StrictMode>,
 )

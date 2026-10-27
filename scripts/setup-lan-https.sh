@@ -18,7 +18,7 @@ if [ -z "$IP" ]; then
 fi
 
 if command -v mkcert >/dev/null 2>&1; then
-  echo "使用 mkcert 生成证书（这会信任本机 CA）…"
+  echo "使用 mkcert 生成证书（这会信任当前设备的 CA）…"
   mkcert -install
   mkcert -cert-file "$CERT_DIR/server.crt" -key-file "$CERT_DIR/server.key" \
     localhost 127.0.0.1 "$IP"
@@ -37,7 +37,7 @@ else
   cp "$CERT_DIR/server.crt" "$CERT_DIR/dailywork-ca.crt"
   echo "已生成自签名证书（含 $IP）。"
   echo "iPhone/iPad：AirDrop $CERT_DIR/dailywork-ca.crt，"
-  echo "安装描述文件后，到 设置 → 通用 → 关于本机 → 证书信任设置 开启完全信任。"
+  echo "安装描述文件后，到系统设置的「证书信任设置」开启完全信任。"
 fi
 
 chmod 600 "$CERT_DIR/server.key" "$CERT_DIR/server.crt" "$CERT_DIR/dailywork-ca.crt"

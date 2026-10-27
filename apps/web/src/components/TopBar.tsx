@@ -6,6 +6,8 @@ import { useUi } from '@/stores/ui'
 import { useTimer } from '@/stores/timer'
 import { effectiveMode } from '@/lib/theme'
 import { FocusRing } from './FocusRing'
+import { UserAvatar } from './UserAvatar'
+import { useAuthStore } from '@/stores/auth'
 import { formatClock } from '@/lib/format'
 
 const CRUMBS: Record<string, string> = {
@@ -34,6 +36,7 @@ export function TopBar() {
   })
   const timer = useTimer()
   const navigate = useNavigate()
+  const user = useAuthStore((s) => s.user)
 
   const crumb =
     CRUMBS[pathname] ??
@@ -104,9 +107,13 @@ export function TopBar() {
           <Plus size={14} />
           <span className="hide-mobile">新建任务</span>
         </button>
-        <div className="avatar" title="本地账户">
-          我
-        </div>
+        <button
+          className="avatar-button"
+          title={user ? `${user.username} · 账户设置` : '账户设置'}
+          onClick={() => void navigate({ to: '/settings' })}
+        >
+          <UserAvatar user={user} size={30} />
+        </button>
       </div>
     </header>
   )

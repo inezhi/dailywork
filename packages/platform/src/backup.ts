@@ -11,7 +11,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { zipSync, unzipSync } from 'fflate'
 import type { Db } from './db-utils.js'
 import { SCHEMA_VERSION } from './db.js'
@@ -69,6 +69,7 @@ export function exportBackup(
   dataDir: string,
   appVersion: string,
   targetPath?: string,
+  options: { includeSecrets?: boolean } = {},
 ): BackupResult {
   const paths = dataPaths(dataDir)
   ensureDataDirs(paths)
@@ -92,11 +93,13 @@ export function exportBackup(
       'data.sqlite': data,
       'manifest.json': new TextEncoder().encode(JSON.stringify(manifest, null, 2)),
       'README.txt': new TextEncoder().encode(
-        '时序 · Dailywork 备份文件。\n包含本地 SQLite 数据库（任务、项目、文档、附件图片与审计日志）以及加密 AI 密钥的本地密钥文件。\n通过 设置 → 数据与备份 → 导入备份 恢复。请妥善保管此文件。\n',
+        '时序 · Dailywork 备份文件。\n包含 SQLite 数据库（任务、项目、文档、附件图片与审计日志）以及加密 AI 密钥的密钥文件。\n通过 设置 → 数据与备份 → 导入备份 恢复。请妥善保管此文件。\n',
       ),
     }
     const secretsFile = join(paths.dataDir, 'secrets.key')
-    if (existsSync(secretsFile)) entries['secrets.key'] = new Uint8Array(readFileSync(secretsFile))
+    if (options.includeSecrets !== false && existsSync(secretsFile)) {
+      entries['secrets.key'] = new Uint8Array(readFileSync(secretsFile))
+    }
     const zipped = zipSync(entries, { level: 6 })
     const out =
       targetPath ?? join(paths.backupsDir, `dailywork-${stamp()}.dailywork`)
@@ -155,54 +158,88 @@ export function inspectBackup(sourcePath: string): ImportInspection {
   return { manifest, data, secrets: files['secrets.key'] }
 }
 
-export function stageImport(dataDir: string, sourcePath: string): ImportInspection & { pendingPath: string } {
+export function stageImport(
+  dataDir: string,
+  sourcePath: string,
+  targetDbFile?: string,
+): ImportInspection & { pendingPath: string } {
   const inspection = inspectBackup(sourcePath)
   const paths = dataPaths(dataDir)
   ensureDataDirs(paths)
-  const pendingPath = join(paths.dataDir, 'data.sqlite.import-pending')
+  const dir = targetDbFile ? dirname(targetDbFile) : paths.dataDir
+  mkdirSync(dir, { recursive: true, mode: 0o700 })
+  const pendingPath = join(dir, 'data.sqlite.import-pending')
   writeFileSync(pendingPath, inspection.data, { mode: 0o600 })
-  if (inspection.secrets) {
+  if (inspection.secrets && !targetDbFile) {
     writeFileSync(join(paths.dataDir, 'secrets.key.import-pending'), inspection.secrets, {
       mode: 0o600,
     })
   }
   writeFileSync(
-    join(paths.dataDir, 'import-pending.json'),
+    join(dir, 'import-pending.json'),
     JSON.stringify({ stagedAt: nowIso(), sourcePath, manifest: inspection.manifest }, null, 2),
     { mode: 0o600 },
   )
   return { ...inspection, pendingPath }
 }
 
-export function applyPendingImport(dataDir: string): { applied: boolean; backupPath?: string } {
+function applyPendingAt(
+  dataDir: string,
+  dbFile: string,
+  includeSecrets: boolean,
+): { applied: boolean; backupPath?: string } {
   const paths = dataPaths(dataDir)
-  const pending = join(paths.dataDir, 'data.sqlite.import-pending')
-  const marker = join(paths.dataDir, 'import-pending.json')
+  const dir = dirname(dbFile)
+  const pending = join(dir, 'data.sqlite.import-pending')
+  const marker = join(dir, 'import-pending.json')
   if (!existsSync(pending) || !existsSync(marker)) return { applied: false }
   ensureDataDirs(paths)
   let backupPath: string | undefined
-  if (existsSync(paths.dbFile)) {
+  if (existsSync(dbFile)) {
     backupPath = join(paths.backupsDir, `before-import-${stamp()}.sqlite`)
-    copyFileSync(paths.dbFile, backupPath)
+    copyFileSync(dbFile, backupPath)
   }
   for (const suffix of ['-wal', '-shm']) {
     try {
-      rmSync(paths.dbFile + suffix, { force: true })
+      rmSync(dbFile + suffix, { force: true })
     } catch {
       // ignore
     }
   }
-  renameSync(pending, paths.dbFile)
-  const pendingSecrets = join(paths.dataDir, 'secrets.key.import-pending')
-  if (existsSync(pendingSecrets)) {
-    const secretsBackup = join(paths.backupsDir, `before-import-${stamp()}.secrets.key`)
-    if (existsSync(join(paths.dataDir, 'secrets.key'))) {
-      copyFileSync(join(paths.dataDir, 'secrets.key'), secretsBackup)
+  renameSync(pending, dbFile)
+  if (includeSecrets) {
+    const pendingSecrets = join(paths.dataDir, 'secrets.key.import-pending')
+    if (existsSync(pendingSecrets)) {
+      const secretsBackup = join(paths.backupsDir, `before-import-${stamp()}.secrets.key`)
+      if (existsSync(join(paths.dataDir, 'secrets.key'))) {
+        copyFileSync(join(paths.dataDir, 'secrets.key'), secretsBackup)
+      }
+      renameSync(pendingSecrets, join(paths.dataDir, 'secrets.key'))
     }
-    renameSync(pendingSecrets, join(paths.dataDir, 'secrets.key'))
   }
   rmSync(marker, { force: true })
   return { applied: true, backupPath }
+}
+
+export function applyPendingImport(dataDir: string): { applied: boolean; backupPath?: string } {
+  const paths = dataPaths(dataDir)
+  return applyPendingAt(dataDir, paths.dbFile, true)
+}
+
+/** Apply root and per-account staged imports at server startup. */
+export function applyPendingImports(dataDir: string): Array<{ applied: boolean; backupPath?: string }> {
+  const paths = dataPaths(dataDir)
+  const results = [applyPendingAt(dataDir, paths.dbFile, true)]
+  const usersDir = join(paths.dataDir, 'users')
+  if (existsSync(usersDir)) {
+    for (const entry of readdirSync(usersDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue
+      const dbFile = join(usersDir, entry.name, 'data.sqlite')
+      if (!existsSync(join(usersDir, entry.name, 'data.sqlite.import-pending'))) continue
+      results.push(applyPendingAt(dataDir, dbFile, false))
+    }
+  }
+  return results
 }
 
 

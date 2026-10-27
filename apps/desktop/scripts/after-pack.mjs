@@ -14,7 +14,7 @@ export default async function afterPack(context) {
   )
   execFileSync(
     'codesign',
-    ['--force', '--deep', '--sign', '-', '--identifier', 'com.lingzhi.dailywork', appPath],
+    ['--force', '--deep', '--sign', '-', '--identifier', 'com.dailywork.app', appPath],
     { stdio: 'inherit' },
   )
   execFileSync('codesign', ['--verify', '--deep', '--strict', appPath], { stdio: 'inherit' })

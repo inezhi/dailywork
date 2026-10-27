@@ -271,3 +271,31 @@ WHERE status = 'done' AND completed_at IS NULL;
 export const MIGRATION_3 = `
 ALTER TABLE op_log ADD COLUMN before_json TEXT;
 `
+
+
+export const MIGRATION_4 = `
+UPDATE settings
+SET value_json = json_set(
+  value_json,
+  '$.accent', '#1677FF',
+  '$.success', '#52C41A',
+  '$.warning', '#FAAD14',
+  '$.danger', '#FF4D4F',
+  '$.info', '#13C2C2',
+  '$.neutral', 'cool'
+)
+WHERE key = 'theme' AND json_extract(value_json, '$.accent') = '#D97757';
+
+UPDATE spaces SET color = '#1677FF' WHERE color = '#D97757';
+UPDATE projects SET color = '#1677FF' WHERE color = '#D97757';
+`
+
+
+export const MIGRATION_5 = `
+UPDATE settings
+SET value_json = json_set(value_json, '$.info', '#13C2C2')
+WHERE key = 'theme' AND json_extract(value_json, '$.info') = '#1677FF';
+
+UPDATE spaces SET color = '#1677FF' WHERE color = '#D97757';
+UPDATE projects SET color = '#1677FF' WHERE color = '#D97757';
+`

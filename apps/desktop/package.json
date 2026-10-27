@@ -1,6 +1,6 @@
 {
   "name": "@daily/desktop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "main": "dist/main.cjs",
@@ -14,6 +14,6 @@
     "electron-builder": "26.18.0",
     "esbuild": "0.28.2"
   },
-  "description": "时序 · Dailywork 本地优先任务与知识工作台",
-  "author": "Lingzhi"
+  "description": "时序 · Dailywork 任务与知识工作台",
+  "author": "Dailywork"
 }

@@ -1,7 +1,7 @@
 {
   "name": "时序 · Dailywork",
   "short_name": "时序",
-  "description": "本地优先的个人任务与知识工作台",
+  "description": "个人任务与知识工作台",
   "start_url": "/today",
   "scope": "/",
   "display": "standalone",

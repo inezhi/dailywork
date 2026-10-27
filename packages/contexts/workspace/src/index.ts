@@ -70,7 +70,7 @@ export function createSpace(db: Db, input: CreateSpaceInput): Space {
   db.prepare(
     `INSERT INTO spaces(id, name, color, icon, sort_order, created_at, updated_at)
      VALUES(?, ?, ?, ?, ?, ?, ?)`,
-  ).run(id, input.name.trim(), input.color ?? '#D97757', input.icon ?? 'layers', max.m + 1, at, at)
+  ).run(id, input.name.trim(), input.color ?? '#1677FF', input.icon ?? 'layers', max.m + 1, at, at)
   return getSpace(db, id)
 }
 

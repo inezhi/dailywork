@@ -1,8 +1,8 @@
 {
   "name": "dailywork",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "时序 · Dailywork — 本地优先的个人任务与知识工作台",
+  "description": "时序 · Dailywork — 个人任务与知识工作台",
   "type": "module",
   "packageManager": "pnpm@10.18.3",
   "engines": {

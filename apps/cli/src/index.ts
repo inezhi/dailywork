@@ -5,7 +5,7 @@ import { parseArgv, type ParsedArgs } from './args.js'
 import { callOp, ensureServer, resolveCliDataDir } from './client.js'
 import { serveMcp } from './mcp.js'
 
-const VERSION = '0.1.0'
+const VERSION = '0.2.0'
 const EXIT_BY_CODE: Record<string, number> = {
   VALIDATION_ERROR: 2,
   BAD_REQUEST: 2,
@@ -177,7 +177,7 @@ function printGlobalHelp(): void {
   --json        输出完整 JSON 信封（供 AI / 脚本使用）
   --yes         确认破坏性操作
   --data-dir    指定数据目录
-  --url         指定本地服务地址
+  --url         指定服务地址
 
 运行 daily ops 查看全部操作。`)
 }

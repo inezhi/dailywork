@@ -48,7 +48,7 @@ export async function ensureServer(dataDir: string): Promise<RuntimeInfo> {
   const bin = findServerBin()
   if (!bin) {
     throw new Error(
-      '本地服务未运行，且找不到 server 构建产物。请先运行 pnpm build（或启动桌面应用）后再试。',
+      '服务未运行，且找不到 server 构建产物。请先运行 pnpm build（或启动桌面应用）后再试。',
     )
   }
   const child = spawn(process.execPath, [bin], {
@@ -62,7 +62,7 @@ export async function ensureServer(dataDir: string): Promise<RuntimeInfo> {
     const runtime = readRuntime(dataDir)
     if (runtime && (await isHealthy(runtime.url))) return runtime
   }
-  throw new Error('本地服务启动超时。请查看数据目录下的 logs/dailywork.log。')
+  throw new Error('服务启动超时。请查看数据目录下的 logs/dailywork.log。')
 }
 
 export interface OpEnvelope<T = unknown> {
