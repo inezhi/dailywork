@@ -17,7 +17,7 @@
     "build:web": "pnpm --filter @daily/web build",
     "build:server": "pnpm --filter @daily/server build",
     "build:cli": "pnpm --filter @daily/cli build",
-    "build:desktop": "pnpm build:web && pnpm build:server && pnpm --filter @daily/desktop dist",
+    "build:desktop": "pnpm --filter @daily/desktop dist",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.web.json --noEmit",
     "test": "vitest run",
