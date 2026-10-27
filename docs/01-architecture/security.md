@@ -1,0 +1,41 @@
+# 安全设计
+
+更新：2026-10-27
+
+## 边界
+
+1. **本机**：HTTP 服务默认 loopback；CLI 通过 `runtime.json`（0600）发现端口与令牌。
+2. **局域网**：打包版监听 `0.0.0.0`，但除非设置开启「局域网访问」，非 loopback 请求一律 403；开启后要求配对 cookie 或 Bearer token。
+3. **外部**：仅 AI 请求会离开设备，且只发往用户配置的 Base URL；外链由系统浏览器打开。
+
+## 认证
+
+- 服务启动生成 24 字节随机 token；`runtime.json` 与配对 cookie 使用同一 token。
+- 配对码 6 位数字，10 分钟内同一 IP 最多 10 次尝试；成功后写 HttpOnly、SameSite=Lax cookie（有效期一年）。
+- 2026-10-27 前无账号体系；v1.0 不计划公网部署。
+
+## Electron
+
+- `contextIsolation: true`、`sandbox: true`、`nodeIntegration: false`、`webSecurity: true`。
+- preload 仅暴露 `dailywork` 白名单：打开数据目录、重启、版本、数据目录路径。
+- 阻止 window.open 与站外导航，外链交给 `shell.openExternal`。
+- 生产 HTML 带 CSP：`default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'`。
+- 关闭窗口隐藏到托盘；全局快捷键 `⌘⇧Space`。
+
+## 数据
+
+- SQLite WAL；文件权限继承用户目录；runtime/secrets 0600。
+- 图片：白名单 mime、20MB 上限、禁止 SVG（脚本执行风险）、sha256 去重。
+- 备份：导入前 `integrity_check`、schema 版本检查、当前库自动备份；导入暂存、重启原子替换。
+- 日志：pino 结构化；不记录任务正文、密钥、AI 对话。
+
+## 威胁与缓解
+
+| 威胁 | 缓解 |
+|---|---|
+| 局域网他人读取 | 默认关闭 LAN；配对码 + cookie；限流 |
+| 恶意网页 CSRF | 无 CORS 允许；JSON + SameSite cookie；LAN 需配对 |
+| XSS 通过文档内容 | TipTap 渲染 JSON 节点，不执行 HTML；链接由系统浏览器打开 |
+| 恶意附件 | mime/大小白名单、无 SVG、服务端不解析图片 |
+| 密钥泄漏 | AES-GCM 加密、0600、不回传、不入日志/备份之外的导出（备份包含加密值） |
+| AI 误删 | 破坏性操作恒需人工；变更开关；op_log 审计 |

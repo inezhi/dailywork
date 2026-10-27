@@ -1,0 +1,34 @@
+# 工程流程
+
+更新：2026-10-27
+
+## 分支与提交
+
+- 主分支 `main` 始终可构建。
+- 功能分支：`feat/<scope>`、`fix/<scope>`、`docs/<scope>`、`chore/<scope>`。
+- 提交信息遵循 [Conventional Commits](https://www.conventionalcommits.org/)：
+  - `feat(tasking): add optimistic concurrency to task.update`
+  - `fix(web): keep focus ring in sync after refresh`
+  - `docs(adr): record local-storage decision`
+  - `chore(repo): pin pnpm 10`
+- 单个提交应自洽：代码 + 测试 + 相关文档；不提交密钥、数据库、日志、截图原图之外的个人数据。
+- 合并策略：单人项目允许在里程碑分支完成后 `--no-ff` 合并到 `main`，打里程碑 tag（如 `m0a`、`m1`）。
+
+## 评审清单（自检）
+
+1. 改动是否只经 ops 写入？是否新增了跨上下文直接写表？
+2. 新增/修改 op 是否同步更新 CLI/MCP/AI 暴露、测试与本文档？
+3. 日期使用本地 `YYYY-MM-DD` 还是 UTC？是否误用？
+4. 是否写入 `op_log`（同事务）？破坏性操作是否要求确认？
+5. UI 是否覆盖 hover / focus / disabled / 空状态 / 深色？
+6. 是否有测试覆盖业务不变量与错误路径？
+
+## 版本
+
+- `0.x` 里程碑版本；`1.0.0` 首个可日常使用版本。
+- CHANGELOG 按 Keep a Changelog 结构维护；发布 tag 与 dmg 对应。
+
+## 环境
+
+- Node ≥ 22.5（开发机 26，Electron 内置 24.22）；pnpm 10.18；macOS 26+。
+- 本仓库使用 `pnpm`（已通过 corepack 启用）。`.npmrc` 使用 `node-linker=hoisted` 以兼容 Electron 打包。
