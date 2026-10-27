@@ -283,7 +283,7 @@ export function SettingsPage() {
                 <div className="setting-row">
                   <div>
                     <div className="label">局域网访问</div>
-                    <div className="hint">允许同一 Wi-Fi 下的手机 / 平板通过配对码访问。数据只在 Mac 上。</div>
+                    <div className="hint">允许同一 Wi-Fi 下的手机 / 平板通过配对码访问。数据保存在工作台服务中。</div>
                   </div>
                   <Toggle on={settings.general.lanEnabled} onChange={(v) => setGeneral({ lanEnabled: v })} />
                 </div>
