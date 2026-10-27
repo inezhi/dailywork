@@ -15,6 +15,8 @@
 - 单个提交应自洽：代码 + 测试 + 相关文档；不提交密钥、数据库、日志、截图原图之外的个人数据。
 - 合并策略：功能分支用 `--no-ff` 合入 `dev`；`main` 只接受 PR 合并，禁止直接 push。
 
+> GitHub Actions 工作流暂存于 `docs/04-process/github-actions-ci.yml`。当前 OAuth 凭据没有 `workflow` scope，无法推送 `.github/workflows/*`；执行 `gh auth refresh -s workflow` 后把文件移回即可启用。
+
 ## 评审清单（自检）
 
 1. 改动是否只经 ops 写入？是否新增了跨上下文直接写表？
