@@ -10,7 +10,7 @@
 
 ## 认证
 
-- 服务启动生成 24 字节随机 token；`runtime.json` 与配对 cookie 使用同一 token。
+- 服务首次启动生成 24 字节随机 token 并写入 `server-token`（0600），后续启动复用；`runtime.json` 与配对 cookie 使用同一 token，配对设备跨重启有效。
 - 配对码 6 位数字，10 分钟内同一 IP 最多 10 次尝试；成功后写 HttpOnly、SameSite=Lax cookie（有效期一年）。
 - 2026-10-27 前无账号体系；v1.0 不计划公网部署。
 

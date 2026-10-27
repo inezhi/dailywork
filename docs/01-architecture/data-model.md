@@ -100,6 +100,7 @@ zip 文件，包含：
   data.sqlite            # 权威数据（WAL）
   data.sqlite-wal / -shm
   runtime.json           # 端口 / token / 配对码 / pid（0600）
+  server-token           # 持久化服务 token，配对 cookie 重启后仍有效（0600）
   secrets.key            # AI 密钥加密根（0600）
   backups/               # 导出与导入前备份
   logs/dailywork.log     # 结构化日志，无正文/密钥

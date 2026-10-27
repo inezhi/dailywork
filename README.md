@@ -40,7 +40,7 @@ pnpm dev:web
 | `pnpm build` | 构建 Web / 服务 / CLI |
 | `pnpm build:desktop` | 构建并打包 macOS dmg（ad-hoc 签名） |
 | `pnpm test` | Vitest 单元与集成测试 |
-| `pnpm test:e2e` | Playwright 端到端测试 |
+| `pnpm test:e2e` | Playwright 核心旅程（自动启动服务与 Web） |
 | `pnpm typecheck` | TypeScript 全量类型检查 |
 | `pnpm lint` | ESLint |
 | `pnpm daily -- task list` | 通过 CLI 操作本地服务 |
@@ -79,7 +79,17 @@ design/      品牌标识、架构图、设计稿与参考图
 
 ## 项目状态
 
-v0.1.0 开发中。已完成：行走骨架、领域与存储内核、任务 / 项目 / 计划 / 专注 / 文档 / 仪表盘 / 速记 / 设置界面、CLI。进行中：AI、局域网 PWA、导出导入、打包发布。进度见 [CHANGELOG](docs/04-process/CHANGELOG.md)。
+**v0.1.0 · 可验收**。核心闭环已经打通：任务 / 项目 / 看板 / 四象限 / 日历 / 时间轴 / 专注 / 速记 / 文档 / 仪表盘 / AI 助理 / CLI / MCP / 局域网配对 / 备份导出导入。安装包：`apps/desktop/release/Dailywork-0.1.0-arm64.dmg`。进度与已知限制见 [CHANGELOG](docs/04-process/CHANGELOG.md)。
+
+### 验收路径（5 分钟）
+
+1. 打开 dmg，把「Dailywork」拖进 Applications（ad-hoc 签名，首次打开如被拦截请右键 → 打开）。
+2. 首次启动会看到「今天」与三步上手引导；在输入框写下任意一件事并回车。
+3. 点开任务，设置预估 / 计划时间，点「开始专注」；结束后任务会记录实际投入。
+4. 打开「文档」，阅读《欢迎使用时序》；打开「仪表盘」查看趋势；按 `⌘K` 搜索刚创建的任务。
+5. 设置 → 数据与备份 → 导出备份；设置 → 通用 → 局域网访问，用手机浏览器打开地址并输入配对码。
+
+设计证据：`design/qa/first-run.png`、`design/qa/matrix.png`、`design/qa/dark-today.png`、`design/qa/mobile-today.png`。
 
 ## 许可
 

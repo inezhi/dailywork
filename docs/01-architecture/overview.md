@@ -23,7 +23,7 @@ flowchart LR
 - **唯一写入口**：服务端 ops 执行器；Web / CLI / MCP / AI 都通过 `POST /api/ops/<name>`。
 - **生产形态**：Electron 用 `utilityProcess` 启动打包后的 `resources/server/server.mjs`，服务监听 `0.0.0.0`（局域网请求默认被设置开关拦截），用 `resources/web` 托管同源静态文件。
 - **开发形态**：`pnpm dev` 启动 tsx 服务（47821）、Vite（5173）与 Electron；Vite 代理 `/api`。
-- **单实例**：服务把 `{url, port, token, pairingCode, pid}` 写入 `<dataDir>/runtime.json`（0600）。CLI 先探测健康，再决定复用或拉起 headless 服务。
+- **单实例**：服务把 `{url, port, token, pairingCode, pid}` 写入 `<dataDir>/runtime.json`（0600）；token 持久化在 `<dataDir>/server-token`，CLI 先探测健康，再决定复用或拉起 headless 服务。
 
 ## 2. DDD 限界上下文
 
@@ -58,7 +58,7 @@ flowchart LR
 
 ### 3.3 AI
 
-AI 面板 → `ai.chat` → assistant 上下文拼系统提示与工具 schema → 供应商返回 tool_calls → ops 执行器递归执行工具（actor=ai）→ 工具结果回填 → 最终文本落库为 `ai_messages`。只读工具自动执行；变更需 UI 开关；破坏性操作永远返回 `CONFIRM_REQUIRED`。
+AI 面板 → `ai.chat` → assistant 上下文拼系统提示与工具 schema → 供应商返回 tool_calls → ops 执行器递归执行工具（actor=ai）→ 工具结果回填 → 最终文本落库为 `ai_messages`。只读工具自动执行；变更需 UI 开关；破坏性操作永远返回 `CONFIRM_REQUIRED`。任务抽屉、文档工具栏与周复盘通过 `openAi({context,draft})` 预填上下文。
 
 ## 4. 存储与同步
 
