@@ -15,7 +15,8 @@ All notable changes to this project are documented here. The same entries are sh
 - **文档**：AI 选区菜单、图片插入、自动保存。
 - **部署**：Docker 镜像与 compose，镜像内含 SQLite，数据通过 `/data` volume 持久化。
 - **客户端模式**：桌面端改为连接统一服务端；桌面、浏览器与后续 Android 客户端共享账户与同一份数据；桌面端不再内置服务或业务数据库。
-- **测试**：Vitest 58 项；Playwright 11 项（账户 setup、Chrome 桌面、WebKit iPhone、账户 UI）。
+- **账户安全**：注册增加邮箱、强密码规则与图片验证码；登录连续失败后要求验证码。
+- **测试**：Vitest 61 项；Playwright 11 项（账户 setup、Chrome 桌面、WebKit iPhone、账户 UI）。
 
 ### Changed
 

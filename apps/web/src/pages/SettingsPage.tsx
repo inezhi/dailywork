@@ -1023,12 +1023,12 @@ function AccountSettings() {
     <>
       <section className="settings-section">
         <h2>账户</h2>
-        <p className="desc">每个账户拥有独立的数据与设置。</p>
+        <p className="desc">账户资料与密码保存在服务端数据库。</p>
         <div className="account-head">
           <UserAvatar user={user} size={56} />
           <div style={{ flex: 1 }}>
             <div className="name">{user.username}</div>
-            <div className="sub">账户资料与密码保存在工作台数据库</div>
+            <div className="sub">{user.email ?? '未设置邮箱'} · 账户资料与密码保存在服务端数据库</div>
             <div className="account-actions">
               <input
                 ref={fileRef}
@@ -1088,7 +1088,7 @@ function AccountSettings() {
               autoComplete="new-password"
               value={newPassword}
               onChange={(event) => setNewPassword(event.target.value)}
-              placeholder="至少 8 位"
+              placeholder="至少 8 位，含字母和数字"
             />
           </div>
           <div className="form-row">
@@ -1104,7 +1104,13 @@ function AccountSettings() {
         </div>
         <button
           className="btn primary"
-          disabled={!currentPassword || newPassword.length < 8 || busy}
+          disabled={
+            !currentPassword ||
+            newPassword.length < 8 ||
+            !/[A-Za-z]/.test(newPassword) ||
+            !/\d/.test(newPassword) ||
+            busy
+          }
           onClick={async () => {
             if (newPassword !== confirmPassword) {
               toast.error('两次输入的新密码不一致')

@@ -70,7 +70,7 @@
 
 账户数据独立于业务数据库：`<dataDir>/accounts.sqlite`
 
-- `users(id, username UNIQUE COLLATE NOCASE, password_hash, password_salt, avatar BLOB, avatar_mime, created_at, updated_at)`
+- `users(id, username UNIQUE COLLATE NOCASE, email UNIQUE COLLATE NOCASE, password_hash, password_salt, avatar BLOB, avatar_mime, created_at, updated_at)`
   - 密码 scrypt（16 字节 salt，64 字节 hash），不存明文。
   - 头像 ≤5MB，允许 PNG/JPEG/WebP/GIF；默认头像由前端用用户名首字母生成，不落库。
 - `sessions(token PRIMARY KEY, user_id→users, created_at, expires_at)`

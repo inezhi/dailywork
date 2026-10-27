@@ -14,6 +14,7 @@ import { nowIso } from './time.js'
 export interface AccountUserRow {
   id: string
   username: string
+  email: string | null
   password_hash: string
   password_salt: string
   avatar: Uint8Array | null
@@ -44,6 +45,7 @@ export function openAccountsDb(dataDir: string): AccountsDb {
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+      email TEXT,
       password_hash TEXT NOT NULL,
       password_salt TEXT NOT NULL,
       avatar BLOB,
@@ -59,6 +61,13 @@ export function openAccountsDb(dataDir: string): AccountsDb {
     );
     CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
   `)
+  const columns = db.prepare('PRAGMA table_info(users)').all() as Array<{ name: string }>
+  if (!columns.some((column) => column.name === 'email')) {
+    db.exec('ALTER TABLE users ADD COLUMN email TEXT')
+  }
+  db.exec(
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email COLLATE NOCASE) WHERE email IS NOT NULL',
+  )
   db.prepare('DELETE FROM sessions WHERE expires_at < ?').run(nowIso())
   return db
 }
@@ -82,6 +91,14 @@ export function getUserById(db: AccountsDb, id: string): AccountUserRow | null {
   )
 }
 
+export function getUserByEmail(db: AccountsDb, email: string): AccountUserRow | null {
+  return (
+    (db.prepare('SELECT * FROM users WHERE email = ? COLLATE NOCASE').get(email) as
+      | AccountUserRow
+      | undefined) ?? null
+  )
+}
+
 export function getUserByUsername(db: AccountsDb, username: string): AccountUserRow | null {
   return (
     (db.prepare('SELECT * FROM users WHERE username = ? COLLATE NOCASE').get(username) as
@@ -102,19 +119,23 @@ export function verifyPassword(user: AccountUserRow, password: string): boolean 
 
 export function registerUser(
   db: AccountsDb,
-  input: { username: string; password: string },
+  input: { username: string; email: string; password: string },
 ): AccountUserRow {
   const username = input.username.trim()
+  const email = input.email.trim().toLowerCase()
   if (getUserByUsername(db, username)) {
     throw new OpError('CONFLICT', '这个用户名已经被注册')
+  }
+  if (getUserByEmail(db, email)) {
+    throw new OpError('CONFLICT', '这个邮箱已经被使用')
   }
   const id = newId('usr')
   const salt = randomBytes(16).toString('hex')
   const at = nowIso()
   db.prepare(
-    `INSERT INTO users(id, username, password_hash, password_salt, created_at, updated_at)
-     VALUES(?, ?, ?, ?, ?, ?)`,
-  ).run(id, username, hashPassword(input.password, salt), salt, at, at)
+    `INSERT INTO users(id, username, email, password_hash, password_salt, created_at, updated_at)
+     VALUES(?, ?, ?, ?, ?, ?, ?)`,
+  ).run(id, username, email, hashPassword(input.password, salt), salt, at, at)
   return getUserById(db, id)!
 }
 
@@ -213,6 +234,7 @@ export function toPublicUser(user: AccountUserRow): PublicUser {
   return {
     id: user.id,
     username: user.username,
+    email: user.email,
     avatarUrl: userAvatarUrl(user),
     createdAt: user.created_at,
     updatedAt: user.updated_at,

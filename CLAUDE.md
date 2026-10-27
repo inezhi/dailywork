@@ -31,7 +31,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `pnpm dev`：并行启动服务（47821）、Vite（5173）与 Electron（dev 模式 Electron 加载 Vite）。
 - `pnpm dev:server` / `pnpm dev:web` / `pnpm dev:desktop`：单独启动。
-- `pnpm test`：Vitest 单元 + 集成测试（58 个，含账户/会话/头像/服务器部署模式）（`packages/**/*.test.ts`、`apps/server/src/**/*.test.ts`、`apps/cli/src/**/*.test.ts`、`apps/web/src/lib/**/*.test.ts`）。
+- `pnpm test`：Vitest 单元 + 集成测试（61 个，含账户/会话/头像/邮箱/验证码/服务器部署模式）（`packages/**/*.test.ts`、`apps/server/src/**/*.test.ts`、`apps/cli/src/**/*.test.ts`、`apps/web/src/lib/**/*.test.ts`）。
 - `pnpm test:e2e`：Playwright（setup 创建测试账户 → 桌面 Chrome + WebKit iPhone + 账户 UI，共 11 个；webServer 自动启动 `.data-e2e` 服务与 Vite）。
 - `e2e/remote-client.mjs`：打包客户端连接 Docker 服务端的验收（注册、任务、服务端读回、重启会话、连接页恢复；需设置 `APP_PATH` 与 `SERVER_URL`）。
 - 视觉/交互 QA：`node e2e/qa-screenshots.mjs`、`e2e/*-qa.mjs`、`node e2e/packaged-*.mjs`（需已构建 dmg/app）。
@@ -49,7 +49,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **ops 契约**：`packages/ops/src/*-ops.ts` 用 `defineOp` 声明 name / zod input / exposure / annotations / handler。新增能力先加 op，再在 Web 或 CLI 消费；CLI 命令树由 `exposure.cli` 自动生成。
 - **DDD 上下文**：`packages/contexts/<context>/src/index.ts` 是每个上下文的公开应用接口；跨上下文只调用对方的导出函数，不跨包读表。`packages/analytics` 是允许跨表只读的投影层。
 - **数据库**：schema 在 `packages/platform/src/migrations/v1.ts`，启动时自动迁移 + 种子（默认空间、设置）。`packages/platform/src/db.ts` 暴露 `openDatabase`、`transaction`、`recordOp`。
-- **账户**：服务端 `<dataDir>/accounts.sqlite` 存 users/sessions（scrypt）；每个账户独立 `<dataDir>/users/<id>/data.sqlite`，所有客户端共享。`/api/auth/*` 管理注册/登录/改密/头像；未登录 `/api/*` 返回 401（首账户创建前除外）。CLI/MCP 用 runtime Bearer token 映射首个账户；局域网配对建立首个账户会话。Web 入口是 `AuthGate`，默认头像取用户名首字母。所有变更必须在事务内同时写业务表与 `op_log`。**服务器部署模式**由 `DAILYWORK_SERVER_MODE=1` 开启：允许远程登录、跳过 LAN 配对开关、静态首页直接进入登录页；`DAILYWORK_OPEN_REGISTRATION=1` 才允许首个账户之后继续公开注册。`DAILYWORK_SECURE_COOKIES`/`DAILYWORK_TRUST_PROXY` 控制 TLS 代理下的 Secure cookie。
+- **账户**：服务端 `<dataDir>/accounts.sqlite` 存 users/sessions（scrypt）；users 含唯一邮箱（迁移 v6 增加）；注册需邮箱与至少 8 位含字母和数字的密码，并完成验证码；登录同一用户名/地址连续失败 3 次后要求验证码；每个账户独立 `<dataDir>/users/<id>/data.sqlite`，所有客户端共享。`/api/auth/*` 管理注册/登录/改密/头像；未登录 `/api/*` 返回 401（首账户创建前除外）。CLI/MCP 用 runtime Bearer token 映射首个账户；局域网配对建立首个账户会话。Web 入口是 `AuthGate`，默认头像取用户名首字母。所有变更必须在事务内同时写业务表与 `op_log`。**服务器部署模式**由 `DAILYWORK_SERVER_MODE=1` 开启：允许远程登录、跳过 LAN 配对开关、静态首页直接进入登录页；`DAILYWORK_OPEN_REGISTRATION=1` 才允许首个账户之后继续公开注册。`DAILYWORK_SECURE_COOKIES`/`DAILYWORK_TRUST_PROXY` 控制 TLS 代理下的 Secure cookie。
 - **审计与幂等**：每个 command op 带 `opId`；`op_log.op_id` 唯一，重复请求返回已存结果。破坏性 op 在 HTTP 层要求 `confirm: true`。
 - **日期**：业务日期一律是用户所在时区的 `YYYY-MM-DD` 字符串（`packages/platform/src/time.ts`），时间戳是 UTC ISO。服务端可能运行在 UTC，因此客户端必须把浏览器计算出的 `today` 传给 `today.get`（今天页与侧栏已这样做）；不要依赖服务端时区推导「今天」。
 - **图片**：blobs 表按 sha256 去重存 BLOB，attachments 多态关联 task/document/memo；文档正文通过 `attachment://<id>` 引用。
