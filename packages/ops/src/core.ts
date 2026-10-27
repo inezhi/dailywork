@@ -15,6 +15,7 @@ export interface OpContext {
   source: string
   version: string
   port?: number
+  httpsPort?: number
   pairingCode?: string
 }
 

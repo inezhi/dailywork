@@ -26,7 +26,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "daily": "pnpm --filter @daily/cli exec tsx src/index.ts",
-    "db:reset": "rm -rf .data"
+    "db:reset": "rm -rf .data",
+    "lan:https": "bash scripts/setup-lan-https.sh"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",

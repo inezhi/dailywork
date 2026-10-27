@@ -1,4 +1,6 @@
 import { Hono } from 'hono'
+import { getRequestListener } from '@hono/node-server'
+import { createServer as createHttpsServer } from 'node:https'
 import { streamSSE } from 'hono/streaming'
 import { serve } from '@hono/node-server'
 import { readFile } from 'node:fs/promises'
@@ -17,9 +19,9 @@ import {
   type Db,
   type Logger,
 } from '@daily/platform'
-import { allOps, getOp, listOpsMeta, opMeta, runOp, type OpContext } from '@daily/ops'
+import { allOps, getOp, listOpsMeta, opMeta, runAssistantChat, runOp, type OpContext } from '@daily/ops'
 import { getAttachmentContent, saveAttachment } from '@daily/attachments'
-import { OwnerType } from '@daily/contracts'
+import { ChatInput, OwnerType } from '@daily/contracts'
 import { getSettings } from '@daily/context-workspace'
 
 export interface AppOptions {
@@ -40,6 +42,7 @@ export interface AppBundle {
   sseClients: Set<ReadableStreamDefaultController<Uint8Array>>
   closeDb: () => void
   setPort: (port: number) => void
+  setHttpsPort: (port: number) => void
 }
 
 const MIME: Record<string, string> = {
@@ -93,6 +96,7 @@ export function createApp(options: AppOptions): AppBundle {
   const app = new Hono()
 
   let actualPort = options.port ?? 0
+  let actualHttpsPort = 0
 
   const pairingAttempts = new Map<string, { count: number; resetAt: number }>()
 
@@ -269,6 +273,7 @@ export function createApp(options: AppOptions): AppBundle {
       source,
       version,
       port: actualPort,
+      httpsPort: actualHttpsPort,
       pairingCode: options.pairingCode,
     }
     const result = await runOp(op, ctx, body)
@@ -352,6 +357,63 @@ export function createApp(options: AppOptions): AppBundle {
     }
   })
 
+  app.post('/api/ai/chat/stream', async (c) => {
+    let body: unknown = {}
+    try {
+      body = await c.req.json()
+    } catch {
+      body = {}
+    }
+    const parsed = ChatInput.safeParse(body)
+    if (!parsed.success) {
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: '输入参数校验失败',
+            details: parsed.error.issues,
+          },
+          meta: { opId: '', version: 1 },
+        },
+        422,
+      )
+    }
+    const { actor, source } = actorFrom(c.req.raw.headers)
+    const ctx: OpContext = {
+      db,
+      dataDir: paths.dataDir,
+      actor,
+      source,
+      version,
+      port: actualPort,
+      httpsPort: actualHttpsPort,
+      pairingCode: options.pairingCode,
+    }
+    return streamSSE(c, async (stream) => {
+      try {
+        const result = await runAssistantChat(ctx, parsed.data, allOps, {
+          stream: true,
+          onEvent: async (event) => {
+            await stream.writeSSE({ event: event.type, data: JSON.stringify(event) })
+          },
+        })
+        await stream.writeSSE({
+          event: 'done',
+          data: JSON.stringify({ type: 'done', result }),
+        })
+      } catch (error) {
+        await stream.writeSSE({
+          event: 'error',
+          data: JSON.stringify({
+            type: 'error',
+            message: error instanceof Error ? error.message : String(error),
+          }),
+        })
+      }
+    })
+  })
+
   app.get('/api/events', (c) => {
     return streamSSE(c, async (stream) => {
       let closed = false
@@ -418,6 +480,9 @@ export function createApp(options: AppOptions): AppBundle {
     setPort: (port: number) => {
       actualPort = port
     },
+    setHttpsPort: (port: number) => {
+      actualHttpsPort = port
+    },
     closeDb: () => {
       try {
         db.close()
@@ -426,6 +491,21 @@ export function createApp(options: AppOptions): AppBundle {
       }
     },
   }
+}
+
+export function launchHttps(
+  app: Hono,
+  port: number,
+  host: string,
+  cert: Buffer | string,
+  key: Buffer | string,
+): Promise<Server> {
+  return new Promise((resolvePromise, reject) => {
+    const listener = getRequestListener(app.fetch)
+    const server = createHttpsServer({ cert, key }, listener)
+    server.on('error', reject)
+    server.listen(port, host, () => resolvePromise(server))
+  })
 }
 
 export function launchHttp(app: Hono, port = 0, host = '127.0.0.1'): Promise<Server> {

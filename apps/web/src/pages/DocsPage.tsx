@@ -227,6 +227,8 @@ function DocEditor({ detail }: { detail: DocumentDetail }) {
   const [title, setTitle] = useState(doc.title)
   const [status, setStatus] = useState<'saved' | 'saving'>('saved')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [aiMenuOpen, setAiMenuOpen] = useState(false)
+  const [aiSelection, setAiSelection] = useState('')
   const [linkedTask, setLinkedTask] = useState<Task | null>(null)
   const loadedRef = useRef<string | null>(null)
   const openAi = useUi((s) => s.openAi)
@@ -396,20 +398,64 @@ function DocEditor({ detail }: { detail: DocumentDetail }) {
           }
         }}
       />
-      <DocToolbar
-        editor={editor}
-        onImage={() => imageRef.current?.click()}
-        onAi={() => {
-          const { from, to } = editor.state.selection
-          const selected = from !== to ? editor.state.doc.textBetween(from, to, ' ') : ''
-          openAi({
-            context: { kind: 'document', id: doc.id },
-            draft: selected
-              ? `请润色下面这段文字，保持原意，语气克制，直接给我改写后的版本：\n\n${selected}`
-              : '请根据这篇文档，给我三个要点和一条下一步建议。',
-          })
-        }}
-      />
+      <div className="doc-toolbar-wrap">
+        <DocToolbar
+          editor={editor}
+          onImage={() => imageRef.current?.click()}
+          onAi={() => {
+            const { from, to } = editor.state.selection
+            setAiSelection(from !== to ? editor.state.doc.textBetween(from, to, ' ') : '')
+            setAiMenuOpen((value) => !value)
+            if (!aiMenuOpen) {
+              const selected = from !== to ? editor.state.doc.textBetween(from, to, ' ') : ''
+              setAiSelection(selected)
+            }
+          }}
+        />
+        {aiMenuOpen && (
+          <div className="ai-doc-menu">
+            <div className="hint">
+              {aiSelection ? `已选中 ${aiSelection.length} 个字符` : '未选中文字时，AI 会阅读整篇文档'}
+            </div>
+            {[
+              {
+                label: '润色选段',
+                prompt: aiSelection
+                  ? `请润色下面这段文字，保持原意，语气克制，直接给我改写后的版本：\n\n${aiSelection}`
+                  : '请润色这篇文档的开头，让表达更克制、更清楚，给出改写版本。',
+              },
+              {
+                label: '继续写下去',
+                prompt: aiSelection
+                  ? `基于下面这段内容，顺着它的语气继续写 2–3 段，不要重复原文：\n\n${aiSelection}`
+                  : '基于这篇文档，继续写 2–3 段，延续它的语气与主题。',
+              },
+              {
+                label: '提取三个要点',
+                prompt: aiSelection
+                  ? `把下面内容压缩成三个要点，每个一句话：\n\n${aiSelection}`
+                  : '把这篇文档压缩成三个要点，每个一句话。',
+              },
+              {
+                label: '提取可执行任务',
+                prompt: aiSelection
+                  ? `从下面内容里提取 3–5 个可执行的下一步，用列表给出，并说明建议的先后顺序：\n\n${aiSelection}`
+                  : '从这篇文档里提取 3–5 个可执行任务，用列表给出，并说明建议的先后顺序。',
+              },
+            ].map((item) => (
+              <button
+                key={item.label}
+                onClick={() => {
+                  setAiMenuOpen(false)
+                  openAi({ context: { kind: 'document', id: doc.id }, draft: item.prompt })
+                }}
+              >
+                <Sparkles size={12} /> {item.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       <EditorContent editor={editor} />
 

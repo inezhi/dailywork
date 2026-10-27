@@ -58,7 +58,7 @@ export function BoardPage() {
     },
   })
 
-  const tasks = data?.items ?? []
+  const tasks = useMemo(() => data?.items ?? [], [data])
   const byStatus = useMemo(() => {
     const map = new Map<TaskStatus, Task[]>()
     for (const col of COLUMNS) map.set(col.status, [])

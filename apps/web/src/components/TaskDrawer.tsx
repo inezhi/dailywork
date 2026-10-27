@@ -103,6 +103,8 @@ function DrawerContent({ taskId }: { taskId: string }) {
     if (!task) return
     setTitle(task.title)
     setNotes(task.notes)
+    // Only reset the editor when switching tasks, not on every background refresh.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task?.id])
 
   useEffect(() => {

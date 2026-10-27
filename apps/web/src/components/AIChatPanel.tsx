@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { AlertTriangle, Check, Loader2, Plus, Send, Sparkles, X } from 'lucide-react'
-import type { ChatResult, Settings } from '@daily/contracts'
+import { AlertTriangle, Check, History, Loader2, Plus, Send, Sparkles, X } from 'lucide-react'
+import type { ChatMessage, ChatResult, Conversation, Settings } from '@daily/contracts'
 import { useOp } from '@/lib/query'
-import { callOp } from '@/lib/api'
+import { callOp, streamAiChat } from '@/lib/api'
 import { useUi } from '@/stores/ui'
+import { relativeTime } from '@/lib/format'
 import { toast } from '@/stores/toast'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -14,7 +15,7 @@ interface AiStatus {
   provider: { name: string; model: string; baseUrl: string } | null
 }
 
-type ToolStatus = 'executed' | 'requires_confirmation' | 'failed'
+type ToolStatus = 'executed' | 'requires_confirmation' | 'failed' | 'running'
 interface ToolCallView {
   name: string
   input: unknown
@@ -52,6 +53,12 @@ export function AIChatPanel() {
   const [conversationId, setConversationId] = useState<string | undefined>()
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const { data: conversations } = useOp<Conversation[]>(
+    'ai.conversations.list',
+    { limit: 30 },
+    { enabled: open && historyOpen },
+  )
   const [allowActions, setAllowActions] = useState(
     () => localStorage.getItem('daily:ai-actions') === '1',
   )
@@ -83,33 +90,81 @@ export function AIChatPanel() {
       toast.error('请先在设置中配置 AI 供应商')
       return
     }
-    setMessages((prev) => [...prev, { id: `local-${Date.now()}`, role: 'user', content: text }])
+    setHistoryOpen(false)
+    const assistantId = `stream-${Date.now()}`
+    setMessages((prev) => [
+      ...prev,
+      { id: `local-${Date.now()}`, role: 'user', content: text },
+      { id: assistantId, role: 'assistant', content: '', toolCalls: [] },
+    ])
     setInput('')
     setBusy(true)
+    const updateAssistant = (updater: (message: UIMessage) => UIMessage) => {
+      setMessages((prev) => prev.map((message) => (message.id === assistantId ? updater(message) : message)))
+    }
     try {
-      const result = await callOp<ChatResult>('ai.chat', {
-        message: text,
-        conversationId,
-        confirmTools: allowActions,
-        context: aiContext,
-      })
-      setConversationId(result.conversationId)
-      setMessages((prev) => [
-        ...prev,
+      await streamAiChat(
         {
-          id: result.message.id,
-          role: 'assistant',
-          content: result.message.content,
-          toolCalls: result.toolCalls as ToolCallView[],
+          message: text,
+          conversationId,
+          confirmTools: allowActions,
+          context: aiContext,
         },
-      ])
-      void queryClient.invalidateQueries()
+        (event) => {
+          if (event.type === 'start' && event.conversationId) {
+            setConversationId(event.conversationId)
+          } else if (event.type === 'delta' && event.text) {
+            updateAssistant((message) => ({ ...message, content: message.content + event.text }))
+          } else if (event.type === 'tool_start' && event.name) {
+            updateAssistant((message) => ({
+              ...message,
+              toolCalls: [
+                ...(message.toolCalls ?? []),
+                { name: event.name!, input: event.input, status: 'running' as ToolStatus },
+              ],
+            }))
+          } else if (event.type === 'tool_result' && event.name) {
+            updateAssistant((message) => {
+              const calls = [...(message.toolCalls ?? [])]
+              const index = calls.map((call) => call.name).lastIndexOf(event.name!)
+              const next = {
+                name: event.name!,
+                input: index >= 0 ? calls[index]!.input : undefined,
+                result: event.result,
+                status: (event.status ?? 'executed') as ToolStatus,
+              }
+              if (index >= 0) calls[index] = next
+              else calls.push(next)
+              return { ...message, toolCalls: calls }
+            })
+          } else if (event.type === 'done') {
+            const result = (event as unknown as { result?: ChatResult }).result
+            if (result) {
+              setConversationId(result.conversationId)
+              updateAssistant(() => ({
+                id: result.message.id,
+                role: 'assistant',
+                content: result.message.content,
+                toolCalls: result.toolCalls as ToolCallView[],
+              }))
+            }
+            void queryClient.invalidateQueries()
+          } else if (event.type === 'error') {
+            updateAssistant((message) => ({
+              ...message,
+              content: message.content || event.message || 'AI 请求失败',
+              failed: true,
+            }))
+          }
+        },
+      )
     } catch (error) {
       const message = error instanceof Error ? error.message : 'AI 请求失败'
-      setMessages((prev) => [
-        ...prev,
-        { id: `err-${Date.now()}`, role: 'assistant', content: message, failed: true },
-      ])
+      updateAssistant((current) => ({
+        ...current,
+        content: current.content || message,
+        failed: true,
+      }))
     } finally {
       setBusy(false)
     }
@@ -119,6 +174,7 @@ export function AIChatPanel() {
     setMessages([])
     setConversationId(undefined)
     setInput('')
+    setHistoryOpen(false)
     openAi()
     inputRef.current?.focus()
   }
@@ -140,6 +196,14 @@ export function AIChatPanel() {
             </div>
           </div>
           <div className="actions">
+            <button
+              className="icon-btn ghost"
+              style={{ width: 28, height: 28 }}
+              onClick={() => setHistoryOpen((v) => !v)}
+              title="对话记录"
+            >
+              <History size={15} />
+            </button>
             <button className="icon-btn ghost" style={{ width: 28, height: 28 }} onClick={newChat} title="新对话">
               <Plus size={15} />
             </button>
@@ -150,7 +214,51 @@ export function AIChatPanel() {
         </div>
 
         <div className="ai-body">
-          {messages.length === 0 && (
+          {historyOpen && (
+            <div className="ai-history">
+              <div className="ai-history-head">
+                <History size={12} /> 最近的对话
+                <button className="icon-btn ghost" style={{ width: 22, height: 22, marginLeft: 'auto' }} onClick={() => setHistoryOpen(false)}>
+                  <X size={12} />
+                </button>
+              </div>
+              {(conversations ?? []).length === 0 && (
+                <div style={{ fontSize: 11, color: 'var(--ink-3)', padding: '8px 2px' }}>还没有对话记录。</div>
+              )}
+              {(conversations ?? []).map((conversation) => (
+                <button
+                  key={conversation.id}
+                  className="ai-history-item"
+                  onClick={async () => {
+                    try {
+                      const detail = await callOp<{ conversation: Conversation; messages: ChatMessage[] }>(
+                        'ai.conversations.get',
+                        { id: conversation.id },
+                      )
+                      setConversationId(detail.conversation.id)
+                      setMessages(
+                        detail.messages
+                          .filter((message) => message.role === 'user' || message.role === 'assistant')
+                          .map((message) => ({
+                            id: message.id,
+                            role: message.role as 'user' | 'assistant',
+                            content: message.content,
+                          })),
+                      )
+                      setHistoryOpen(false)
+                    } catch (error) {
+                      toast.error(error instanceof Error ? error.message : '无法读取对话')
+                    }
+                  }}
+                >
+                  <span className="t">{conversation.title}</span>
+                  <span className="when">{relativeTime(conversation.updatedAt)}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {!historyOpen && messages.length === 0 && (
             <div className="ai-welcome">
               <h2>今天想推进什么？</h2>
               <p>
@@ -185,7 +293,7 @@ export function AIChatPanel() {
             </div>
           )}
 
-          {messages.map((message) => (
+          {!historyOpen && messages.map((message) => message.content || message.failed || (message.toolCalls?.length ?? 0) > 0 ? (
             <div key={message.id} className={`ai-msg ${message.role}`}>
               {message.role === 'assistant' && (
                 <span className="ai-avatar">
@@ -208,10 +316,10 @@ export function AIChatPanel() {
                     {message.toolCalls.map((tool, index) => (
                       <span
                         key={`${tool.name}-${index}`}
-                        className={`ai-tool ${tool.status === 'executed' ? 'ok' : tool.status === 'requires_confirmation' ? 'warn' : 'fail'}`}
+                        className={`ai-tool ${tool.status === 'executed' ? 'ok' : tool.status === 'running' ? '' : tool.status === 'requires_confirmation' ? 'warn' : 'fail'}`}
                         title={JSON.stringify(tool.result ?? tool.input).slice(0, 500)}
                       >
-                        {tool.status === 'executed' ? <Check size={9} /> : <AlertTriangle size={9} />}
+                        {tool.status === 'executed' ? <Check size={9} /> : tool.status === 'running' ? <Loader2 size={9} className="spin" /> : <AlertTriangle size={9} />}
                         {tool.name}
                         {tool.status === 'requires_confirmation' ? ' · 待确认' : ''}
                       </span>
@@ -220,9 +328,9 @@ export function AIChatPanel() {
                 )}
               </div>
             </div>
-          ))}
+          ) : null)}
 
-          {busy && (
+          {!historyOpen && busy && (
             <div className="ai-thinking">
               <Loader2 size={12} className="spin" /> 正在读取数据并思考…
             </div>

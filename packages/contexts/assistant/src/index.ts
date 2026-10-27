@@ -208,10 +208,22 @@ export function getConversation(db: Db, id: string): ConversationRow {
   return row
 }
 
-export function listConversations(db: Db, limit = 30): ConversationRow[] {
-  return db
+export function conversationDto(row: ConversationRow) {
+  return {
+    id: row.id,
+    title: row.title,
+    contextKind: row.context_kind,
+    contextId: row.context_id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+export function listConversations(db: Db, limit = 30) {
+  const rows = db
     .prepare('SELECT * FROM ai_conversations ORDER BY updated_at DESC LIMIT ?')
     .all(limit) as unknown as ConversationRow[]
+  return rows.map(conversationDto)
 }
 
 export function listMessages(db: Db, conversationId: string, limit = 40): MessageRow[] {
@@ -342,4 +354,122 @@ export function providerInfo(db: Db): {
     name: row.name,
     hasKey: Boolean(row.api_key_encrypted),
   }
+}
+
+// ---------- OpenAI-compatible streaming ----------
+
+export interface StreamChatOptions {
+  onDelta?: (delta: string) => void | Promise<void>
+  signal?: AbortSignal
+  temperature?: number
+  maxTokens?: number
+}
+
+interface StreamDelta {
+  choices?: Array<{
+    delta?: {
+      content?: string | null
+      tool_calls?: Array<{
+        index?: number
+        id?: string
+        type?: string
+        function?: { name?: string; arguments?: string }
+      }>
+    }
+  }>
+}
+
+export async function chatCompletionStream(
+  provider: { baseUrl: string; model: string; apiKey: string },
+  messages: LlmMessage[],
+  tools: ChatTool[],
+  options: StreamChatOptions = {},
+): Promise<ChatCompletionResult> {
+  const body: Record<string, unknown> = {
+    model: provider.model,
+    messages,
+    temperature: options.temperature ?? 0.3,
+    max_tokens: options.maxTokens ?? 2000,
+    stream: true,
+  }
+  if (tools.length > 0) {
+    body.tools = tools
+    body.tool_choice = 'auto'
+  }
+  const res = await fetch(`${provider.baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${provider.apiKey}` },
+    body: JSON.stringify(body),
+    signal: options.signal ?? AbortSignal.timeout(90_000),
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new OpError('UPSTREAM_ERROR', `模型请求失败（HTTP ${res.status}）：${text.slice(0, 300)}`)
+  }
+  if (!res.body) throw new OpError('UPSTREAM_ERROR', '模型没有返回流式响应')
+
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let content = ''
+  const toolCalls = new Map<number, LlmToolCall>()
+
+  const handleBlock = async (block: string) => {
+    const lines = block.split(/\r?\n/)
+    const dataLines = lines.filter((line) => line.startsWith('data:'))
+    for (const line of dataLines) {
+      const data = line.slice(5).trim()
+      if (!data || data === '[DONE]') continue
+      let json: StreamDelta
+      try {
+        json = JSON.parse(data) as StreamDelta
+      } catch {
+        continue
+      }
+      const delta = json.choices?.[0]?.delta
+      if (!delta) continue
+      if (delta.content) {
+        content += delta.content
+        await options.onDelta?.(delta.content)
+      }
+      for (const call of delta.tool_calls ?? []) {
+        const index = call.index ?? 0
+        const existing = toolCalls.get(index) ?? {
+          id: '',
+          type: 'function' as const,
+          function: { name: '', arguments: '' },
+        }
+        if (call.id) existing.id = call.id
+        if (call.function?.name && !existing.function.name) existing.function.name = call.function.name
+        if (call.function?.arguments) existing.function.arguments += call.function.arguments
+        toolCalls.set(index, existing)
+      }
+    }
+  }
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    let match = buffer.match(/\r?\n\r?\n/)
+    while (match && match.index !== undefined) {
+      const block = buffer.slice(0, match.index)
+      buffer = buffer.slice(match.index + match[0].length)
+      await handleBlock(block)
+      match = buffer.match(/\r?\n\r?\n/)
+    }
+  }
+  if (buffer.trim()) await handleBlock(buffer)
+
+  const calls = Array.from(toolCalls.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([index, call]) => ({
+      ...call,
+      id: call.id || `call_${index}`,
+      function: {
+        name: call.function.name,
+        arguments: call.function.arguments || '{}',
+      },
+    }))
+  return { content: content || null, toolCalls: calls }
 }

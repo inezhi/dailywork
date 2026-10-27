@@ -29,6 +29,7 @@ export function ProjectPage() {
     sort: 'manual',
   })
   const { data: deliverables } = useOp<Deliverable[]>('deliverable.list', { projectId })
+  const { data: activity } = useOp<Array<{ opId: string; command: string; summary: string; ts: string; actor: string }>>('project.activity', { id: projectId, limit: 12 })
   const [editOpen, setEditOpen] = useState(false)
   const [archiveOpen, setArchiveOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -42,6 +43,9 @@ export function ProjectPage() {
       setTemplateOpen(false)
       setTemplateName('')
     },
+  })
+  const deleteTemplate = useOpMutation<{ id: string; confirm: boolean }, { id: string }>('template.delete', {
+    onSuccess: () => toast.success('模板已删除'),
   })
   const applyTemplate = useOpMutation<{ id: string; projectId: string }, { created: number }>('template.apply', {
     onSuccess: (result) => toast.success(`已从模板创建 ${result.created} 个任务`),
@@ -226,6 +230,14 @@ export function ProjectPage() {
                   >
                     应用
                   </button>
+                  <button
+                    className="icon-btn ghost"
+                    style={{ width: 24, height: 24 }}
+                    title="删除模板"
+                    onClick={() => deleteTemplate.mutate({ id: template.id, confirm: true })}
+                  >
+                    <Trash2 size={12} />
+                  </button>
                 </div>
               ))
             )}
@@ -284,6 +296,26 @@ export function ProjectPage() {
               {overdue} 项任务逾期
             </div>
           )}
+
+          <section className="panel" style={{ marginTop: 14 }}>
+            <div className="panel-head">
+              <div>
+                <h3>最近记录</h3>
+                <p>项目与任务的创建、更新、完成与移动。</p>
+              </div>
+            </div>
+            {(activity ?? []).length === 0 && (
+              <div style={{ fontSize: 11, color: 'var(--ink-3)' }}>还没有操作记录。</div>
+            )}
+            {(activity ?? []).map((entry) => (
+              <div key={entry.opId} style={{ padding: '7px 0', borderBottom: '1px solid var(--line-soft)' }}>
+                <div style={{ fontSize: 11.5 }}>{entry.summary || entry.command}</div>
+                <div style={{ fontSize: 9.5, color: 'var(--ink-3)', marginTop: 2 }}>
+                  {relativeTime(entry.ts)} · {entry.actor === 'ai' ? 'AI' : entry.actor === 'cli' ? '命令行' : '界面'} · {entry.command}
+                </div>
+              </div>
+            ))}
+          </section>
         </div>
       </div>
 

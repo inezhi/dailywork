@@ -1,7 +1,11 @@
-import { useState } from 'react'
-import { ArrowRight, Copy, Pin, PinOff, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { ArrowRight, Copy, FileText, Paperclip, Pin, PinOff, Plus, Sparkles, Trash2, X } from 'lucide-react'
 import type { ListResult, Memo, MemoStats, Task } from '@daily/contracts'
 import { useOp, useOpMutation } from '@/lib/query'
+import { useQueryClient } from '@tanstack/react-query'
+import type { Attachment } from '@daily/contracts'
+import { callOp } from '@/lib/api'
+import { uploadOwnerFile } from '@/lib/upload'
 import { relativeTime } from '@/lib/format'
 import { useUi } from '@/stores/ui'
 import { toast } from '@/stores/toast'
@@ -116,58 +120,14 @@ export function MemosPage() {
       ) : (
         <div className="memo-grid">
           {memos.map((memo) => (
-            <article className="memo-card" key={memo.id}>
-              {memo.pinned && (
-                <span style={{ position: 'absolute', top: 10, right: 10, color: 'var(--accent-strong)' }} title="已置顶">
-                  <Pin size={12} />
-                </span>
-              )}
-              <div className="memo-content">
-                {renderContent(memo.content)}
-              </div>
-              <div className="memo-tags">
-                {memo.tags.map((t) => (
-                  <button key={t} className="chip tag" onClick={() => setTag(t)}>
-                    #{t}
-                  </button>
-                ))}
-              </div>
-              <div className="memo-foot">
-                <span>{relativeTime(memo.createdAt)}</span>
-                {memo.convertedTaskId && <span className="chip soft">已转任务</span>}
-                <div className="actions">
-                  <button
-                    className="memo-action"
-                    title={memo.pinned ? '取消置顶' : '置顶'}
-                    onClick={() => update.mutate({ id: memo.id, pinned: !memo.pinned })}
-                  >
-                    {memo.pinned ? <PinOff size={12} /> : <Pin size={12} />}
-                  </button>
-                  {!memo.convertedTaskId && (
-                    <button
-                      className="memo-action"
-                      title="转为任务"
-                      onClick={() => toTask.mutate({ id: memo.id })}
-                    >
-                      <ArrowRight size={12} />
-                    </button>
-                  )}
-                  <button
-                    className="memo-action"
-                    title="复制"
-                    onClick={() => {
-                      void navigator.clipboard?.writeText(memo.content)
-                      toast.info('已复制')
-                    }}
-                  >
-                    <Copy size={12} />
-                  </button>
-                  <button className="memo-action" title="删除" onClick={() => setDeleteTarget(memo)}>
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              </div>
-            </article>
+            <MemoCard
+              key={memo.id}
+              memo={memo}
+              onTag={setTag}
+              onPin={() => update.mutate({ id: memo.id, pinned: !memo.pinned })}
+              onConvert={() => toTask.mutate({ id: memo.id })}
+              onDelete={() => setDeleteTarget(memo)}
+            />
           ))}
         </div>
       )}
@@ -194,5 +154,136 @@ function renderContent(content: string) {
     ) : (
       <span key={index}>{part}</span>
     ),
+  )
+}
+
+
+function MemoCard({
+  memo,
+  onTag,
+  onPin,
+  onConvert,
+  onDelete,
+}: {
+  memo: Memo
+  onTag: (tag: string) => void
+  onPin: () => void
+  onConvert: () => void
+  onDelete: () => void
+}) {
+  const [attachmentsOpen, setAttachmentsOpen] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const queryClient = useQueryClient()
+  const { data: attachments } = useOp<Attachment[]>(
+    'attachment.list',
+    { ownerType: 'memo', ownerId: memo.id },
+    { enabled: attachmentsOpen },
+  )
+
+  const upload = async (files: FileList) => {
+    setUploading(true)
+    try {
+      for (const file of Array.from(files)) {
+        await uploadOwnerFile('memo', memo.id, file)
+      }
+      toast.success('附件已添加')
+      void queryClient.invalidateQueries({ queryKey: ['attachment.list'] })
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '上传失败')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const remove = async (id: string) => {
+    try {
+      await callOp('attachment.delete', { id, confirm: true })
+      void queryClient.invalidateQueries({ queryKey: ['attachment.list'] })
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '删除失败')
+    }
+  }
+
+  return (
+    <article className="memo-card">
+      {memo.pinned && (
+        <span style={{ position: 'absolute', top: 10, right: 10, color: 'var(--accent-strong)' }} title="已置顶">
+          <Pin size={12} />
+        </span>
+      )}
+      <div className="memo-content">{renderContent(memo.content)}</div>
+      <div className="memo-tags">
+        {memo.tags.map((tag) => (
+          <button key={tag} className="chip tag" onClick={() => onTag(tag)}>
+            #{tag}
+          </button>
+        ))}
+      </div>
+      {attachmentsOpen && (
+        <div className="memo-attachments">
+          <input
+            ref={fileRef}
+            type="file"
+            hidden
+            multiple
+            accept="image/png,image/jpeg,image/webp,image/gif,application/pdf"
+            onChange={(event) => {
+              if (event.target.files?.length) void upload(event.target.files)
+              event.target.value = ''
+            }}
+          />
+          {(attachments ?? []).map((file) => (
+            <div className="attach-thumb" key={file.id}>
+              {file.mime === 'application/pdf' ? (
+                <a href={file.url} target="_blank" rel="noreferrer" style={{ display: 'grid', placeItems: 'center', height: '100%', color: 'var(--ink-3)' }}>
+                  <FileText size={18} />
+                </a>
+              ) : (
+                <a href={file.url} target="_blank" rel="noreferrer">
+                  <img src={file.thumbUrl ?? file.url} alt={file.filename} />
+                </a>
+              )}
+              <button onClick={() => void remove(file.id)} aria-label="删除附件">
+                <X size={9} />
+              </button>
+            </div>
+          ))}
+          <button className="attach-drop" style={{ padding: '6px 8px', fontSize: 9.5 }} onClick={() => fileRef.current?.click()} disabled={uploading}>
+            <Paperclip size={11} /> {uploading ? '上传中…' : '添加'}
+          </button>
+        </div>
+      )}
+      <div className="memo-foot">
+        <span>{relativeTime(memo.createdAt)}</span>
+        {memo.convertedTaskId && <span className="chip soft">已转任务</span>}
+        <div className="actions">
+          <button className="memo-action" title="附件" onClick={() => setAttachmentsOpen((v) => !v)}>
+            <Paperclip size={12} />
+          </button>
+          <button className="memo-action" title={memo.pinned ? '取消置顶' : '置顶'} onClick={onPin}>
+            {memo.pinned ? <PinOff size={12} /> : <Pin size={12} />}
+          </button>
+          {!memo.convertedTaskId && (
+            <button className="memo-action" title="转为任务" onClick={onConvert}>
+              <ArrowRight size={12} />
+            </button>
+          )}
+          <button
+            className="memo-action"
+            title="复制"
+            onClick={() => {
+              void navigator.clipboard?.writeText(memo.content)
+              toast.info('已复制')
+            }}
+          >
+            <Copy size={12} />
+          </button>
+          <button className="memo-action" title="删除" onClick={onDelete}>
+            <Trash2 size={12} />
+          </button>
+        </div>
+      </div>
+    </article>
   )
 }

@@ -2,53 +2,9 @@ import { useState } from 'react'
 import { CornerDownLeft, Plus } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import type { CreateTaskInput, Tag } from '@daily/contracts'
+import { parseQuickAdd } from '@/lib/quick-add'
 import { callOp } from '@/lib/api'
-import { addDays, todayIso } from '@/lib/format'
 import { toast } from '@/stores/toast'
-
-const PRIORITY_TOKENS: Record<string, CreateTaskInput['priority']> = {
-  '!1': 'urgent',
-  '!2': 'high',
-  '!3': 'medium',
-  '!4': 'low',
-}
-
-export function parseQuickAdd(raw: string): {
-  title: string
-  tags: string[]
-  priority?: CreateTaskInput['priority']
-  scheduledDate?: string
-} {
-  const tags: string[] = []
-  let priority: CreateTaskInput['priority'] | undefined
-  let scheduledDate: string | undefined
-  const words: string[] = []
-  for (const token of raw.trim().split(/\s+/)) {
-    if (token.startsWith('#') && token.length > 1) {
-      tags.push(token.slice(1))
-      continue
-    }
-    if (PRIORITY_TOKENS[token]) {
-      priority = PRIORITY_TOKENS[token]
-      continue
-    }
-    const lowered = token.toLowerCase()
-    if (lowered === '@today' || token === '@今天') {
-      scheduledDate = todayIso()
-      continue
-    }
-    if (lowered === '@tomorrow' || token === '@明天') {
-      scheduledDate = addDays(todayIso(), 1)
-      continue
-    }
-    if (/^@\d{4}-\d{2}-\d{2}$/.test(token)) {
-      scheduledDate = token.slice(1)
-      continue
-    }
-    words.push(token)
-  }
-  return { title: words.join(' '), tags, priority, scheduledDate }
-}
 
 export function QuickAdd({
   placeholder = '添加一个任务，按 Enter 保存',

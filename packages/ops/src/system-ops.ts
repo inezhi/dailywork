@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import {
+  OpError,
   BackupFileInput,
   DashboardInput,
   ImportInput,
@@ -16,6 +17,9 @@ import { getSettings } from '@daily/context-workspace'
 import { listProviders, saveProvider, deleteProvider, testProvider, getProviderRow } from '@daily/context-assistant'
 import { dataPaths, exportBackup, stageImport } from '@daily/platform'
 import { networkInterfaces } from 'node:os'
+import { execFileSync } from 'node:child_process'
+import { chmodSync, copyFileSync, existsSync, mkdirSync } from 'node:fs'
+import { join } from 'node:path'
 import { defineOp } from './core.js'
 
 const APP_VERSION = '0.1.0'
@@ -116,21 +120,92 @@ export const systemOps = [
     aggregate: 'system',
     handler: (ctx) => {
       const settings = getSettings(ctx.db)
-      const urls: string[] = []
+      const httpUrls: string[] = []
+      const httpsUrls: string[] = []
       if (settings.general.lanEnabled && ctx.port) {
         for (const list of Object.values(networkInterfaces())) {
           for (const info of list ?? []) {
             if (info.family === 'IPv4' && !info.internal) {
-              urls.push(`http://${info.address}:${ctx.port}`)
+              httpUrls.push(`http://${info.address}:${ctx.port}`)
+              if (ctx.httpsPort) httpsUrls.push(`https://${info.address}:${ctx.httpsPort}`)
             }
           }
         }
       }
       return {
         enabled: settings.general.lanEnabled,
-        urls,
+        urls: ctx.httpsPort ? httpsUrls : httpUrls,
+        httpUrls,
+        httpsUrls,
+        secure: Boolean(ctx.httpsPort),
         port: ctx.port ?? null,
+        httpsPort: ctx.httpsPort ?? null,
         pairingCode: ctx.pairingCode ?? null,
+      }
+    },
+  }),
+  defineOp({
+    name: 'lan.setupHttps',
+    version: 1,
+    kind: 'command',
+    summary: '生成局域网 HTTPS 自签名证书（重启后启用）',
+    input: z.object({}),
+    exposure: { http: true, cli: ['lan', 'setup-https'], mcp: false, ai: false },
+    annotations: { idempotent: false },
+    aggregate: 'system',
+    handler: (ctx) => {
+      const ips = new Set<string>(['127.0.0.1'])
+      for (const list of Object.values(networkInterfaces())) {
+        for (const info of list ?? []) {
+          if (info.family === 'IPv4' && !info.internal) ips.add(info.address)
+        }
+      }
+      const certDir = join(ctx.dataDir, 'certs')
+      mkdirSync(certDir, { recursive: true, mode: 0o700 })
+      const certFile = join(certDir, 'server.crt')
+      const keyFile = join(certDir, 'server.key')
+      const alreadyExisted = existsSync(certFile) && existsSync(keyFile)
+      const san = ['DNS:localhost', ...Array.from(ips).map((ip) => `IP:${ip}`)].join(',')
+      const openssl = process.env.OPENSSL_BIN ?? 'openssl'
+      try {
+        execFileSync(openssl, [
+          'req',
+          '-x509',
+          '-newkey',
+          'rsa:2048',
+          '-sha256',
+          '-days',
+          '825',
+          '-nodes',
+          '-keyout',
+          keyFile,
+          '-out',
+          certFile,
+          '-subj',
+          '/CN=Dailywork Local',
+          '-addext',
+          `subjectAltName=${san}`,
+          '-addext',
+          'basicConstraints=critical,CA:TRUE',
+          '-addext',
+          'keyUsage=critical,keyCertSign,digitalSignature,keyEncipherment',
+        ])
+      } catch (error) {
+        throw new OpError(
+          'UNSUPPORTED',
+          `无法生成证书。请确认 openssl 可用，或运行 pnpm lan:https。${error instanceof Error ? `（${error.message.slice(0, 120)}）` : ''}`,
+        )
+      }
+      copyFileSync(certFile, join(certDir, 'dailywork-ca.crt'))
+      chmodSync(keyFile, 0o600)
+      chmodSync(certFile, 0o600)
+      chmodSync(join(certDir, 'dailywork-ca.crt'), 0o600)
+      return {
+        certPath: certFile,
+        caPath: join(certDir, 'dailywork-ca.crt'),
+        ips: Array.from(ips),
+        restartRequired: true,
+        alreadyExisted,
       }
     },
   }),

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { AlertCircle, ArrowUpRight, ChevronDown, ChevronRight, CheckCircle2, Sparkles, Sunset, Timer } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
-import type { Settings, Task, TodayResult } from '@daily/contracts'
+import type { Routine, Settings, Task, TodayResult } from '@daily/contracts'
 import { useOp, useOpMutation } from '@/lib/query'
 import { useTimer } from '@/stores/timer'
 import { FocusRing } from '@/components/FocusRing'
@@ -24,6 +24,7 @@ export function TodayPage() {
   const today = todayIso()
   const { data, isLoading } = useOp<TodayResult>('today.get', {}, { staleTime: 15_000, refetchInterval: 60_000 })
   const { data: settings } = useOp<Settings>('settings.get')
+  const { data: routines } = useOp<Routine[]>('routine.list', {})
   const timer = useTimer()
   const navigate = useNavigate()
   const [capacityOpen, setCapacityOpen] = useState(false)
@@ -223,6 +224,34 @@ export function TodayPage() {
           </div>
         </section>
       )}
+
+      {(() => {
+        const day = new Date().getDay()
+        const todays = (routines ?? []).filter((routine) => routine.enabled && routine.weekdays.includes(day))
+        if (todays.length === 0) return null
+        return (
+          <section>
+            <div className="section-title">
+              <span>今日例程</span>
+              <span className="count">{todays.length}</span>
+              <span className="line" />
+            </div>
+            <div className="list-card">
+              {todays.map((routine) => (
+                <div key={routine.id} className="task-row" style={{ cursor: 'default', paddingTop: 9, paddingBottom: 9 }}>
+                  <span className="icon-pill" style={{ width: 48 }}>
+                    {routine.time ?? '—'}
+                  </span>
+                  <span className="task-main">
+                    <span className="task-title" style={{ fontWeight: 500 }}>{routine.name}</span>
+                  </span>
+                  <span className="chip soft">例程</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )
+      })()}
 
       {STATUS_ORDER.filter((s) => s !== 'done' && s !== 'inbox').map((status) => {
         const tasks = grouped.get(status) ?? []

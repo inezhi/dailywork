@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, GanttChart } from 'lucide-react'
 import type { TimelineItem } from '@daily/contracts'
-import { useOp } from '@/lib/query'
+import { useOp, useOpMutation } from '@/lib/query'
 import { useUi } from '@/stores/ui'
 import { EmptyState } from '@/components/EmptyState'
+import { toast } from '@/stores/toast'
 import { addDays, dateRange, monthLabel, startOfWeek, todayIso, weekdayLabel } from '@/lib/format'
 
 const DAYS = 28
@@ -15,6 +16,10 @@ export function TimelinePage() {
   const days = useMemo(() => dateRange(from, to), [from, to])
   const { data, isLoading } = useOp<{ items: TimelineItem[] }>('timeline.range', { from, to })
   const openTask = useUi((s) => s.openTask)
+  const update = useOpMutation<Record<string, unknown>, unknown>('task.update', {
+    silent: true,
+    onSuccess: () => toast.success('已调整计划日期'),
+  })
 
   const items = (data?.items ?? []).slice().sort((a, b) => a.start.localeCompare(b.start))
 
@@ -86,6 +91,18 @@ export function TimelinePage() {
                 </div>
                 <div
                   className="timeline-track"
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={(event) => {
+                    event.preventDefault()
+                    const taskId = event.dataTransfer.getData('application/x-dailywork-task')
+                    if (!taskId) return
+                    const rect = event.currentTarget.getBoundingClientRect()
+                    const index = Math.max(
+                      0,
+                      Math.min(days.length - 1, Math.floor(((event.clientX - rect.left) / rect.width) * days.length)),
+                    )
+                    update.mutate({ id: taskId, scheduledDate: days[index] })
+                  }}
                   style={{
                     gridTemplateColumns: `repeat(${days.length}, 1fr)`,
                     backgroundImage: `repeating-linear-gradient(to right, var(--line-soft) 0 1px, transparent 1px calc(100% / ${days.length}))`,
@@ -105,6 +122,11 @@ export function TimelinePage() {
                   )}
                   <button
                     className={`timeline-bar ${item.task.status === 'done' ? 'done' : ''}`}
+                    draggable
+                    onDragStart={(event) => {
+                      event.dataTransfer.setData('application/x-dailywork-task', item.task.id)
+                      event.dataTransfer.effectAllowed = 'move'
+                    }}
                     style={{
                       left: `calc(${(startIndex / days.length) * 100}% + 2px)`,
                       width: `calc(${(span / days.length) * 100}% - 4px)`,

@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react'
 import { useSearch } from '@tanstack/react-router'
 import { Grid2X2, List, Search, SlidersHorizontal } from 'lucide-react'
 import type { ListResult, Project, Task, TaskStatus } from '@daily/contracts'
-import { useOp } from '@/lib/query'
+import { useOp, useOpMutation } from '@/lib/query'
 import { useUi } from '@/stores/ui'
+import { toast } from '@/stores/toast'
 import { TaskRow } from '@/components/TaskRow'
 import { QuickAdd } from '@/components/QuickAdd'
 import { EmptyState } from '@/components/EmptyState'
@@ -183,6 +184,11 @@ export function TasksPage() {
 
 function MatrixView({ tasks }: { tasks: Task[] }) {
   const openTask = useUi((s) => s.openTask)
+  const [dragOver, setDragOver] = useState<string | null>(null)
+  const update = useOpMutation<Record<string, unknown>, Task>('task.update', {
+    silent: true,
+    onSuccess: () => toast.success('已调整优先级与截止日期'),
+  })
   const today = todayIso()
   const soon = addDays(today, 2)
   const buckets = [
@@ -237,7 +243,36 @@ function MatrixView({ tasks }: { tasks: Task[] }) {
   return (
     <div className="matrix-grid">
       {buckets.map((bucket) => (
-        <section className="matrix-card" key={bucket.key}>
+        <section
+          className={`matrix-card ${dragOver === bucket.key ? 'drag-over' : ''}`}
+          key={bucket.key}
+          onDragOver={(event) => {
+            event.preventDefault()
+            setDragOver(bucket.key)
+          }}
+          onDragLeave={() => setDragOver((current) => (current === bucket.key ? null : current))}
+          onDrop={(event) => {
+            event.preventDefault()
+            setDragOver(null)
+            try {
+              const taskId = event.dataTransfer.getData('application/x-dailywork-task')
+              if (!taskId) return
+              const today = todayIso()
+              const urgentDate = addDays(today, 1)
+              const patch =
+                bucket.key === 'do'
+                  ? { priority: 'high', dueDate: urgentDate }
+                  : bucket.key === 'plan'
+                    ? { priority: 'high', dueDate: null }
+                    : bucket.key === 'delegate'
+                      ? { priority: 'low', dueDate: urgentDate }
+                      : { priority: 'low', dueDate: null }
+              update.mutate({ id: taskId, ...patch })
+            } catch {
+              // ignore
+            }
+          }}
+        >
           <div className="matrix-head">
             <b>{bucket.title}</b>
             <span>{bucket.hint} · {bucket.items.length}</span>
@@ -250,6 +285,11 @@ function MatrixView({ tasks }: { tasks: Task[] }) {
               className="matrix-item"
               role="button"
               tabIndex={0}
+              draggable
+              onDragStart={(event) => {
+                event.dataTransfer.setData('application/x-dailywork-task', task.id)
+                event.dataTransfer.effectAllowed = 'move'
+              }}
               onClick={() => openTask(task.id)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {

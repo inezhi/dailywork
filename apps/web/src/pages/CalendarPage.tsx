@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { CalendarEvent, Task } from '@daily/contracts'
-import { useOp } from '@/lib/query'
+import { useOp, useOpMutation } from '@/lib/query'
 import { useUi } from '@/stores/ui'
 import { QuickAdd } from '@/components/QuickAdd'
+import { toast } from '@/stores/toast'
 import {
   addDays,
   dateRange,
@@ -34,6 +35,8 @@ export function CalendarPage() {
   const [anchor, setAnchor] = useState(today)
   const [selected, setSelected] = useState(today)
   const [showCompleted, setShowCompleted] = useState(false)
+  const [dragOver, setDragOver] = useState<string | null>(null)
+  const moveTask = useOpMutation<Record<string, unknown>, Task>('task.update', { silent: true })
   const { data } = useOp<{ events: CalendarEvent[] }>(
     'calendar.range',
     { from: fromFor(view, anchor), to: toFor(view, anchor), includeCompleted: showCompleted },
@@ -42,7 +45,7 @@ export function CalendarPage() {
   const { data: dayPlan } = useOp<DayPlan>('day.get', { date: selected })
   const openTask = useUi((s) => s.openTask)
 
-  const events = data?.events ?? []
+  const events = useMemo(() => data?.events ?? [], [data])
   const byDate = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>()
     for (const event of events) {
@@ -69,6 +72,37 @@ export function CalendarPage() {
     }
     return map
   }, [events])
+
+  const startDrag = (event: React.DragEvent, calendarEvent: CalendarEvent) => {
+    event.dataTransfer.setData(
+      'application/x-dailywork-task',
+      JSON.stringify({ id: calendarEvent.task.id, kind: calendarEvent.kind }),
+    )
+    event.dataTransfer.effectAllowed = 'move'
+  }
+  const dropOn = (event: React.DragEvent, date: string) => {
+    event.preventDefault()
+    setDragOver(null)
+    try {
+      const payload = JSON.parse(
+        event.dataTransfer.getData('application/x-dailywork-task') || '{}',
+      ) as { id?: string; kind?: 'scheduled' | 'due' }
+      if (!payload.id) return
+      if (payload.kind === 'due') {
+        moveTask.mutate(
+          { id: payload.id, dueDate: date },
+          { onSuccess: () => toast.success(`截止日期改为 ${date}`) },
+        )
+      } else {
+        moveTask.mutate(
+          { id: payload.id, scheduledDate: date },
+          { onSuccess: () => toast.success(`已安排到 ${date}`) },
+        )
+      }
+    } catch {
+      // ignore non-task drags
+    }
+  }
 
   const step = (direction: -1 | 1) => {
     if (view === 'month') {
@@ -156,8 +190,14 @@ export function CalendarPage() {
                   return (
                     <div
                       key={date}
-                      className={`cal-cell ${isOther ? 'other' : ''} ${date === today ? 'today' : ''} ${date === selected ? 'selected' : ''}`}
+                      className={`cal-cell ${isOther ? 'other' : ''} ${date === today ? 'today' : ''} ${date === selected ? 'selected' : ''} ${dragOver === date ? 'drag-over' : ''}`}
                       onClick={() => setSelected(date)}
+                      onDragOver={(event) => {
+                        event.preventDefault()
+                        setDragOver(date)
+                      }}
+                      onDragLeave={() => setDragOver((current) => (current === date ? null : current))}
+                      onDrop={(event) => dropOn(event, date)}
                     >
                       <span className="cal-num">{Number(date.slice(8))}</span>
                       <div className="cal-events">
@@ -166,6 +206,8 @@ export function CalendarPage() {
                             key={`${event.task.id}-${event.kind}`}
                             className={`cal-ev ${event.kind === 'due' ? 'due' : ''}`}
                             style={{ ['--space-color' as string]: event.task.spaceColor ?? 'var(--accent)' }}
+                            draggable
+                            onDragStart={(dragEvent) => startDrag(dragEvent, event)}
                             onClick={(e) => {
                               e.stopPropagation()
                               openTask(event.task.id)
@@ -191,7 +233,17 @@ export function CalendarPage() {
               {days.map((date) => {
                 const dateEvents = byDate.get(date) ?? []
                 return (
-                  <div className="cal-week-col" key={date} onClick={() => setSelected(date)}>
+                  <div
+                    className={`cal-week-col ${dragOver === date ? 'drag-over' : ''}`}
+                    key={date}
+                    onClick={() => setSelected(date)}
+                    onDragOver={(event) => {
+                      event.preventDefault()
+                      setDragOver(date)
+                    }}
+                    onDragLeave={() => setDragOver((current) => (current === date ? null : current))}
+                    onDrop={(event) => dropOn(event, date)}
+                  >
                     <div className={`cal-week-head ${date === today ? 'today' : ''}`}>
                       {weekdayLabel(date)}
                       <b>{Number(date.slice(8))}</b>
@@ -202,6 +254,8 @@ export function CalendarPage() {
                           key={`${event.task.id}-${event.kind}`}
                           className={`cal-week-ev ${event.kind === 'due' ? 'due' : ''}`}
                           style={{ ['--space-color' as string]: event.task.spaceColor ?? 'var(--accent)' }}
+                          draggable
+                          onDragStart={(dragEvent) => startDrag(dragEvent, event)}
                           onClick={(e) => {
                             e.stopPropagation()
                             openTask(event.task.id)

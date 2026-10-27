@@ -5,11 +5,15 @@ import {
   ConversationSchema,
   Id,
   ListConversationsInput,
+  OpError,
   type ChatMessage,
+  type ChatResult,
 } from '@daily/contracts'
 import {
   addMessage,
   chatCompletion,
+  chatCompletionStream,
+  conversationDto,
   createConversation,
   getConversation,
   listConversations,
@@ -25,11 +29,34 @@ import { getTask } from '@daily/context-tasking'
 import { getDocumentDetail } from '@daily/context-documents'
 import { getProject } from '@daily/context-projects'
 import { weekReview } from '@daily/context-planning'
-import { OpError } from '@daily/contracts'
 import { opMeta, runOp, defineOp, type AnyOpDefinition, type OpContext } from './core.js'
 
 const MAX_TOOL_ROUNDS = 5
 const MAX_TOOL_RESULT_CHARS = 6000
+
+export type AssistantToolStatus = 'executed' | 'requires_confirmation' | 'failed'
+
+export interface AssistantToolSummary {
+  name: string
+  input: unknown
+  result?: unknown
+  status: AssistantToolStatus
+}
+
+export interface AssistantChatEvent {
+  type: 'start' | 'delta' | 'tool_start' | 'tool_result'
+  conversationId?: string
+  text?: string
+  name?: string
+  input?: unknown
+  result?: unknown
+  status?: AssistantToolStatus
+}
+
+export interface AssistantChatOptions {
+  stream?: boolean
+  onEvent?: (event: AssistantChatEvent) => void | Promise<void>
+}
 
 function toolName(opName: string): string {
   return opName.replaceAll('.', '_')
@@ -142,6 +169,160 @@ function toChatMessage(row: {
   }
 }
 
+export async function runAssistantChat(
+  ctx: OpContext,
+  input: z.infer<typeof ChatInput>,
+  ops: AnyOpDefinition[],
+  options: AssistantChatOptions = {},
+): Promise<ChatResult> {
+  const emit = async (event: AssistantChatEvent) => {
+    if (options.onEvent) await options.onEvent(event)
+  }
+  const settings = getSettings(ctx.db)
+  if (!settings.general.aiEnabled) {
+    throw new OpError('AI_DISABLED', 'AI 功能已在设置中关闭')
+  }
+  const provider = resolveProvider(ctx.db, ctx.dataDir)
+  const conversation = input.conversationId
+    ? getConversation(ctx.db, input.conversationId)
+    : createConversation(ctx.db, {
+        contextKind: input.context?.kind ?? 'global',
+        contextId: input.context?.id ?? null,
+      })
+  const history = listMessages(ctx.db, conversation.id, 30)
+  if (history.length === 0) {
+    renameConversation(ctx.db, conversation.id, input.message.slice(0, 40))
+  }
+  addMessage(ctx.db, {
+    conversationId: conversation.id,
+    role: 'user',
+    content: input.message,
+  })
+  await emit({ type: 'start', conversationId: conversation.id })
+
+  const { tools, byName } = buildTools(ops)
+  const messages: LlmMessage[] = [
+    { role: 'system', content: buildSystemPrompt(ctx, input) },
+    ...history
+      .filter((m) => m.role === 'user' || m.role === 'assistant')
+      .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+    { role: 'user', content: input.message },
+  ]
+  const summary: AssistantToolSummary[] = []
+  let finalContent = ''
+  for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+    const completion = options.stream
+      ? await chatCompletionStream(provider, messages, tools, {
+          onDelta: async (text) => emit({ type: 'delta', text }),
+        })
+      : await chatCompletion(provider, messages, tools)
+    if (completion.toolCalls.length === 0) {
+      finalContent = completion.content ?? ''
+      break
+    }
+    messages.push({
+      role: 'assistant',
+      content: completion.content,
+      tool_calls: completion.toolCalls,
+    })
+    for (const call of completion.toolCalls) {
+      const op = byName.get(call.function.name)
+      let args: Record<string, unknown> = {}
+      let argError: string | null = null
+      try {
+        args = JSON.parse(call.function.arguments || '{}') as Record<string, unknown>
+      } catch {
+        argError = '工具参数不是合法 JSON'
+      }
+      let toolResult: unknown
+      let status: AssistantToolStatus = 'executed'
+      if (!op) {
+        status = 'failed'
+        toolResult = { ok: false, error: { code: 'NOT_FOUND', message: '未知工具' } }
+      } else if (argError) {
+        status = 'failed'
+        toolResult = { ok: false, error: { code: 'VALIDATION_ERROR', message: argError } }
+      } else if (opMeta(op).annotations.destructive) {
+        status = 'requires_confirmation'
+        toolResult = {
+          ok: false,
+          error: {
+            code: 'CONFIRM_REQUIRED',
+            message: '破坏性操作不能由 AI 自行确认。请让用户在界面中手动执行或明确授权。',
+          },
+        }
+      } else if (op.kind === 'command' && !input.confirmTools) {
+        status = 'requires_confirmation'
+        toolResult = {
+          ok: false,
+          error: {
+            code: 'CONFIRM_REQUIRED',
+            message: '用户尚未开启「允许执行变更」。请先说明将要做的变更，等待用户开启后再执行。',
+          },
+        }
+      } else {
+        try {
+          await emit({ type: 'tool_start', name: op.name, input: args })
+          const result = await runOp(op, { ...ctx, actor: 'ai', source: 'ai' }, args)
+          toolResult = result.envelope
+          if (!result.envelope.ok) status = 'failed'
+        } catch (error) {
+          status = 'failed'
+          toolResult = {
+            ok: false,
+            error: { code: 'INTERNAL', message: error instanceof Error ? error.message : String(error) },
+          }
+        }
+      }
+      const serialized = JSON.stringify(toolResult)
+      const summaryItem: AssistantToolSummary = {
+        name: op?.name ?? call.function.name,
+        input: args,
+        result:
+          serialized.length > 2000
+            ? { truncated: true, preview: serialized.slice(0, 2000) }
+            : toolResult,
+        status,
+      }
+      summary.push(summaryItem)
+      await emit({
+        type: 'tool_result',
+        name: summaryItem.name,
+        result: summaryItem.result,
+        status,
+      })
+      messages.push({
+        role: 'tool',
+        tool_call_id: call.id,
+        content:
+          serialized.length > MAX_TOOL_RESULT_CHARS
+            ? serialized.slice(0, MAX_TOOL_RESULT_CHARS) + '…（已截断）'
+            : serialized,
+      })
+    }
+    if (round === MAX_TOOL_ROUNDS - 1) {
+      finalContent =
+        completion.content ||
+        '我已经完成了前面几步查询与操作。需要我继续整理或给出下一步建议吗？'
+    }
+  }
+  if (!finalContent.trim()) {
+    finalContent = summary.some((s) => s.status === 'executed')
+      ? '操作已完成。还需要我继续整理吗？'
+      : '我需要更多信息才能继续。'
+  }
+  const assistantRow = addMessage(ctx.db, {
+    conversationId: conversation.id,
+    role: 'assistant',
+    content: finalContent,
+  })
+  return {
+    conversationId: conversation.id,
+    message: toChatMessage(assistantRow),
+    toolCalls: summary,
+  }
+}
+
 export function createAiOps(getOps: () => AnyOpDefinition[]): AnyOpDefinition[] {
   return [
     defineOp({
@@ -155,142 +336,7 @@ export function createAiOps(getOps: () => AnyOpDefinition[]): AnyOpDefinition[] 
       exposure: { http: true, cli: ['ai', 'chat'], mcp: false, ai: false },
       annotations: { idempotent: false },
       aggregate: 'ai',
-      handler: async (ctx, input) => {
-        const settings = getSettings(ctx.db)
-        if (!settings.general.aiEnabled) {
-          throw new OpError('AI_DISABLED', 'AI 功能已在设置中关闭')
-        }
-        const provider = resolveProvider(ctx.db, ctx.dataDir)
-        const conversation = input.conversationId
-          ? getConversation(ctx.db, input.conversationId)
-          : createConversation(ctx.db, {
-              contextKind: input.context?.kind ?? 'global',
-              contextId: input.context?.id ?? null,
-            })
-        const history = listMessages(ctx.db, conversation.id, 30)
-        if (history.length === 0) {
-          renameConversation(ctx.db, conversation.id, input.message.slice(0, 40))
-        }
-        addMessage(ctx.db, {
-          conversationId: conversation.id,
-          role: 'user',
-          content: input.message,
-        })
-        const { tools, byName } = buildTools(getOps())
-        const messages: LlmMessage[] = [
-          { role: 'system', content: buildSystemPrompt(ctx, input) },
-          ...history
-            .filter((m) => m.role === 'user' || m.role === 'assistant')
-            .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
-          { role: 'user', content: input.message },
-        ]
-        const summary: Array<{
-          name: string
-          input: unknown
-          result?: unknown
-          status: 'executed' | 'requires_confirmation' | 'failed'
-        }> = []
-        let finalContent = ''
-        for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-          const completion = await chatCompletion(provider, messages, tools)
-          if (completion.toolCalls.length === 0) {
-            finalContent = completion.content ?? ''
-            break
-          }
-          messages.push({
-            role: 'assistant',
-            content: completion.content,
-            tool_calls: completion.toolCalls,
-          })
-          for (const call of completion.toolCalls) {
-            const op = byName.get(call.function.name)
-            let args: Record<string, unknown> = {}
-            let argError: string | null = null
-            try {
-              args = JSON.parse(call.function.arguments || '{}') as Record<string, unknown>
-            } catch {
-              argError = '工具参数不是合法 JSON'
-            }
-            let toolResult: unknown
-            let status: 'executed' | 'requires_confirmation' | 'failed' = 'executed'
-            if (!op) {
-              status = 'failed'
-              toolResult = { ok: false, error: { code: 'NOT_FOUND', message: '未知工具' } }
-            } else if (argError) {
-              status = 'failed'
-              toolResult = { ok: false, error: { code: 'VALIDATION_ERROR', message: argError } }
-            } else if (opMeta(op).annotations.destructive) {
-              status = 'requires_confirmation'
-              toolResult = {
-                ok: false,
-                error: {
-                  code: 'CONFIRM_REQUIRED',
-                  message: '破坏性操作不能由 AI 自行确认。请让用户在界面中手动执行或明确授权。',
-                },
-              }
-            } else if (op.kind === 'command' && !input.confirmTools) {
-              status = 'requires_confirmation'
-              toolResult = {
-                ok: false,
-                error: {
-                  code: 'CONFIRM_REQUIRED',
-                  message: '用户尚未开启「允许执行变更」。请先说明将要做的变更，等待用户开启后再执行。',
-                },
-              }
-            } else {
-              try {
-                const result = await runOp(op, { ...ctx, actor: 'ai', source: 'ai' }, args)
-                toolResult = result.envelope
-                if (!result.envelope.ok) status = 'failed'
-              } catch (error) {
-                status = 'failed'
-                toolResult = {
-                  ok: false,
-                  error: { code: 'INTERNAL', message: error instanceof Error ? error.message : String(error) },
-                }
-              }
-            }
-            const serialized = JSON.stringify(toolResult)
-            summary.push({
-              name: op?.name ?? call.function.name,
-              input: args,
-              result:
-                serialized.length > 2000
-                  ? { truncated: true, preview: serialized.slice(0, 2000) }
-                  : toolResult,
-              status,
-            })
-            messages.push({
-              role: 'tool',
-              tool_call_id: call.id,
-              content:
-                serialized.length > MAX_TOOL_RESULT_CHARS
-                  ? serialized.slice(0, MAX_TOOL_RESULT_CHARS) + '…（已截断）'
-                  : serialized,
-            })
-          }
-          if (round === MAX_TOOL_ROUNDS - 1) {
-            finalContent =
-              completion.content ||
-              '我已经完成了前面几步查询与操作。需要我继续整理或给出下一步建议吗？'
-          }
-        }
-        if (!finalContent.trim()) {
-          finalContent = summary.some((s) => s.status === 'executed')
-            ? '操作已完成。还需要我继续整理吗？'
-            : '我需要更多信息才能继续。'
-        }
-        const assistantRow = addMessage(ctx.db, {
-          conversationId: conversation.id,
-          role: 'assistant',
-          content: finalContent,
-        })
-        return {
-          conversationId: conversation.id,
-          message: toChatMessage(assistantRow),
-          toolCalls: summary,
-        }
-      },
+      handler: (ctx, input) => runAssistantChat(ctx, input, getOps()),
     }),
     defineOp({
       name: 'ai.conversations.list',
@@ -313,7 +359,7 @@ export function createAiOps(getOps: () => AnyOpDefinition[]): AnyOpDefinition[] 
       handler: (ctx, input) => {
         const conversation = getConversation(ctx.db, input.id)
         return {
-          conversation,
+          conversation: conversationDto(conversation),
           messages: listMessages(ctx.db, input.id, 200).map(toChatMessage),
         }
       },

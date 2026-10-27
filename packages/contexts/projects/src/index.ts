@@ -375,3 +375,25 @@ export function applyTemplate(
   }
   return { created: taskIds.length, taskIds }
 }
+
+
+export interface ProjectActivityEntry {
+  opId: string
+  command: string
+  summary: string
+  ts: string
+  actor: string
+  aggregateType: string
+}
+
+export function projectActivity(db: Db, projectId: string, limit = 30): ProjectActivityEntry[] {
+  return db
+    .prepare(
+      `SELECT op_id AS opId, command, summary, ts, actor, aggregate_type AS aggregateType
+       FROM op_log
+       WHERE (aggregate_type = 'project' AND aggregate_id = ?)
+          OR (aggregate_type = 'task' AND aggregate_id IN (SELECT id FROM tasks WHERE project_id = ?))
+       ORDER BY ts DESC LIMIT ?`,
+    )
+    .all(projectId, projectId, limit) as unknown as ProjectActivityEntry[]
+}

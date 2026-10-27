@@ -25,7 +25,7 @@ export function FocusPage() {
     if (settings?.general.defaultFocusMinutes) setMinutes(settings.general.defaultFocusMinutes)
   }, [settings?.general.defaultFocusMinutes])
 
-  const available = tasks?.items ?? []
+  const available = useMemo(() => tasks?.items ?? [], [tasks])
   const active = timer.session
   const today = todayIso()
   const todaySessions = (sessions?.items ?? []).filter(

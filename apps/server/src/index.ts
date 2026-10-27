@@ -3,7 +3,7 @@ import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs'
 import type { AddressInfo } from 'node:net'
 import { applyPendingImport, createLogger, dataPaths, ensureDailyBackup, ensureDataDirs, resolveDataDir } from '@daily/platform'
 import { cleanupStaleFocus } from '@daily/context-focus'
-import { createApp, launchHttp } from './app.js'
+import { createApp, launchHttp, launchHttps } from './app.js'
 
 export interface StartedServer {
   url: string
@@ -55,6 +55,30 @@ export async function startServer(opts: {
   const displayHost = host === '0.0.0.0' ? '127.0.0.1' : host
   const url = `http://${displayHost}:${address.port}`
 
+  let httpsServer: Awaited<ReturnType<typeof launchHttps>> | null = null
+  let httpsUrl: string | null = null
+  const certFile = `${paths.dataDir}/certs/server.crt`
+  const keyFile = `${paths.dataDir}/certs/server.key`
+  if (existsSync(certFile) && existsSync(keyFile)) {
+    try {
+      const httpsPort = Number(process.env.DAILYWORK_HTTPS_PORT ?? 47822)
+      httpsServer = await launchHttps(
+        bundle.app,
+        httpsPort,
+        host,
+        readFileSync(certFile),
+        readFileSync(keyFile),
+      )
+      const httpsAddress = httpsServer.address() as AddressInfo
+      bundle.setHttpsPort(httpsAddress.port)
+      httpsUrl = `https://${displayHost}:${httpsAddress.port}`
+      logger.info({ httpsUrl }, 'dailywork https ready')
+    } catch (error) {
+      logger.error({ error }, 'failed to start https listener')
+      httpsServer = null
+    }
+  }
+
   if (opts.writeRuntime !== false) {
     writeFileSync(
       paths.runtimeFile,
@@ -66,6 +90,8 @@ export async function startServer(opts: {
           token,
           pairingCode,
           pid: process.pid,
+          httpsUrl,
+          httpsPort: httpsUrl ? Number(new URL(httpsUrl).port) : null,
           version,
           startedAt: new Date().toISOString(),
         },
@@ -82,6 +108,9 @@ export async function startServer(opts: {
 
   const close = async () => {
     await new Promise<void>((resolveClose) => server.close(() => resolveClose()))
+    if (httpsServer) {
+      await new Promise<void>((resolveClose) => httpsServer!.close(() => resolveClose()))
+    }
     bundle.closeDb()
     if (opts.writeRuntime !== false) {
       try {

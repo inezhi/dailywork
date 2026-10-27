@@ -16,7 +16,9 @@ import {
   Upload,
 } from 'lucide-react'
 import type {
+  CreateRoutineInput,
   GeneralSettings,
+  Routine,
   MetaInfo,
   Provider,
   SaveProviderInput,
@@ -251,6 +253,8 @@ export function SettingsPage() {
                 </div>
               </section>
 
+              <RoutinesSettings />
+
               <section className="settings-section">
                 <h2>体验</h2>
                 <div className="setting-row">
@@ -292,12 +296,126 @@ export function SettingsPage() {
   )
 }
 
-function LanInfo() {
-  const { data } = useOp<{ enabled: boolean; urls: string[]; port: number | null; pairingCode: string | null }>(
-    'lan.info',
-    {},
-    { refetchInterval: 15_000 },
+function RoutinesSettings() {
+  const { data: routines } = useOp<Routine[]>('routine.list', {})
+  const [open, setOpen] = useState(false)
+  const [name, setName] = useState('')
+  const [time, setTime] = useState('09:00')
+  const [weekdays, setWeekdays] = useState<number[]>([1, 2, 3, 4, 5])
+  const create = useOpMutation<CreateRoutineInput, Routine>('routine.create', {
+    onSuccess: () => {
+      toast.success('例程已添加')
+      setOpen(false)
+      setName('')
+    },
+  })
+  const toggle = useOpMutation<{ id: string; enabled: boolean }, Routine>('routine.toggle', { silent: true })
+  const remove = useOpMutation<{ id: string; confirm: boolean }, { id: string }>('routine.delete', {
+    onSuccess: () => toast.success('例程已删除'),
+  })
+  const labels = ['日', '一', '二', '三', '四', '五', '六']
+  return (
+    <>
+      <section className="settings-section">
+        <h2>每日例程</h2>
+        <p className="desc">重复发生的小节奏，会出现在当天的「今天」页。例程只是提醒，不占任务与容量。</p>
+        {(routines ?? []).map((routine) => (
+          <div key={routine.id} className="setting-row">
+            <div style={{ flex: 1 }}>
+              <div className="label">{routine.name}</div>
+              <div className="hint">
+                {routine.time ? `${routine.time} · ` : ''}
+                {routine.weekdays.map((day) => `周${labels[day]}`).join(' · ')}
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Toggle on={routine.enabled} onChange={(enabled) => toggle.mutate({ id: routine.id, enabled })} />
+              <button className="icon-btn ghost" style={{ width: 28, height: 28 }} onClick={() => remove.mutate({ id: routine.id, confirm: true })} title="删除例程">
+                <Trash2 size={13} />
+              </button>
+            </div>
+          </div>
+        ))}
+        {(routines ?? []).length === 0 && (
+          <div style={{ fontSize: 11, color: 'var(--ink-3)', padding: '4px 0 10px' }}>
+            还没有例程。可以添加「早晨回顾」「晚间收尾」之类的固定节奏。
+          </div>
+        )}
+        <button className="btn sm" style={{ marginTop: 8 }} onClick={() => setOpen(true)}>
+          <Plus size={12} /> 添加例程
+        </button>
+      </section>
+
+      <Modal open={open} onClose={() => setOpen(false)} width={460} label="添加例程">
+        <ModalHeader title="添加每日例程" description="例程会在选定星期的今天页出现。" onClose={() => setOpen(false)} />
+        <div className="modal-body">
+          <div className="form-row">
+            <label>名称</label>
+            <input className="field" autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="例如：晚间收尾" />
+          </div>
+          <div className="form-row">
+            <label>时间（可选）</label>
+            <input type="time" className="field" value={time} onChange={(event) => setTime(event.target.value)} />
+          </div>
+          <div className="form-row">
+            <label>重复</label>
+            <div className="seg">
+              {labels.map((label, day) => (
+                <button
+                  key={day}
+                  className={weekdays.includes(day) ? 'on' : ''}
+                  onClick={() =>
+                    setWeekdays((current) =>
+                      current.includes(day) ? current.filter((d) => d !== day) : [...current, day],
+                    )
+                  }
+                >
+                  周{label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="modal-foot">
+          <button className="btn" onClick={() => setOpen(false)}>取消</button>
+          <button
+            className="btn primary"
+            disabled={!name.trim() || weekdays.length === 0 || create.isPending}
+            onClick={() => create.mutate({ name: name.trim(), time: time || null, weekdays })}
+          >
+            {create.isPending ? '保存中…' : '添加例程'}
+          </button>
+        </div>
+      </Modal>
+    </>
   )
+}
+
+function LanInfo() {
+  const [certBusy, setCertBusy] = useState(false)
+  const [cert, setCert] = useState<{ caPath: string } | null>(null)
+  const generateCert = async () => {
+    setCertBusy(true)
+    try {
+      const result = await callOp<{ caPath: string; restartRequired: boolean }>('lan.setupHttps', {})
+      setCert(result)
+      toast.success('证书已生成，重启应用后启用 HTTPS')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '证书生成失败')
+    } finally {
+      setCertBusy(false)
+    }
+  }
+  const { data } = useOp<{
+    enabled: boolean
+    urls: string[]
+    httpUrls: string[]
+    httpsUrls: string[]
+    secure: boolean
+    port: number | null
+    httpsPort: number | null
+    pairingCode: string | null
+  }>('lan.info', {}, { refetchInterval: 15_000 })
   if (!data) return null
   if (data.urls.length === 0) {
     return (
@@ -310,7 +428,12 @@ function LanInfo() {
   }
   return (
     <div style={{ background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 8, padding: '11px 12px', margin: '4px 0 10px' }}>
-      <div style={{ fontSize: 10.5, color: 'var(--ink-3)', marginBottom: 6 }}>在手机或平板的浏览器打开：</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10.5, color: 'var(--ink-3)', marginBottom: 6 }}>
+        在手机或平板的浏览器打开：
+        <span className="chip" style={{ background: data.secure ? 'var(--success-soft)' : 'var(--sunken)', color: data.secure ? 'var(--success)' : 'var(--ink-3)' }}>
+          {data.secure ? 'HTTPS · 可离线安装' : 'HTTP · 无离线缓存'}
+        </span>
+      </div>
       {data.urls.map((url) => (
         <div key={url} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
           <code style={{ fontSize: 11.5, color: 'var(--accent-strong)', flex: 1 }}>{url}</code>
@@ -330,6 +453,36 @@ function LanInfo() {
         <b className="tnum" style={{ fontSize: 18, letterSpacing: 4 }}>{data.pairingCode ?? '······'}</b>
         <span style={{ fontSize: 9.5, color: 'var(--ink-3)', marginLeft: 'auto' }}>打开地址后输入配对码</span>
       </div>
+      {!data.secure && (
+        <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--line-soft)' }}>
+          <div style={{ fontSize: 9.5, color: 'var(--ink-3)', lineHeight: 1.55 }}>
+            需要 PWA 离线安装，可生成本地 HTTPS 证书；手机首次连接前需信任证书。
+          </div>
+          <button className="btn sm" style={{ marginTop: 7 }} onClick={() => void generateCert()} disabled={certBusy}>
+            {certBusy ? '生成中…' : '生成 HTTPS 证书'}
+          </button>
+          {cert && (
+            <div style={{ marginTop: 8, fontSize: 9.5, color: 'var(--ink-3)', lineHeight: 1.6 }}>
+              证书：<code>{cert.caPath}</code>
+              <br />
+              把它隔空投送到 iPhone，安装描述文件后，在「通用 → 关于本机 → 证书信任设置」中开启完全信任。
+              <div style={{ marginTop: 6, display: 'flex', gap: 6 }}>
+                {window.dailywork && (
+                  <button className="btn sm" onClick={() => void window.dailywork?.restart()}>
+                    立即重启
+                  </button>
+                )}
+                <span style={{ alignSelf: 'center' }}>重启后这里会显示 HTTPS 地址。</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {data.secure && (
+        <div style={{ fontSize: 9.5, color: 'var(--ink-3)', marginTop: 7, lineHeight: 1.55 }}>
+          HTTPS 已启用。若更换网络或 IP，请重新生成证书。
+        </div>
+      )}
     </div>
   )
 }
@@ -475,7 +628,7 @@ function ProviderModal({ open, onClose, provider }: { open: boolean; onClose: ()
     <Modal open={open} onClose={onClose} width={500} label="AI 供应商">
       <ModalHeader
         title={provider ? '编辑 AI 供应商' : '添加 AI 供应商'}
-        description="支持 DeepSeek、OpenAI 或任意 OpenAI 兼容端点（含 Ollama）。"
+        description="支持 DeepSeek、OpenAI 或任意 OpenAI 兼容端点。"
         onClose={onClose}
       />
       <div className="modal-body">
