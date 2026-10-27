@@ -23,7 +23,7 @@ README.md     # 项目说明与文档入口
 1. **`old/` 是冻结参考。** 禁止修改、构建、import，或把旧 TypeScript 实现直接复制进新代码。可以阅读其 PRD、设计系统、数据模型、ops 契约与测试断言，作为新规格参考。
 2. **文档先行。** 产品范围、服务边界、API 契约、数据模型未在飞书文档中写清楚之前，不开始实现。实现与文档冲突时，先改文档再改代码。
 3. **`main` 只收 PR。** 新工作从 `v2` 切 `feat/<scope>`；完成后合回 `v2`；发布时 `v2` → `main` 提 PR。不要直接提交 `main`。
-4. **一个服务一个数据库。** `identity`/`task` 用 PostgreSQL，`docs`/`assistant` 用 MongoDB；禁止跨服务读表/集合；跨服务只走 API 或事件。
+4. **一个服务一个数据库。** `identity`/`task` 用 MySQL 8，`docs`/`assistant` 用 MongoDB；禁止跨服务读表/集合；跨服务只走 API 或事件。
 5. **不要造分布式单体。** 强耦合的聚合放在同一个服务；只有确实需要独立生命周期、独立扩容或独立数据所有权时才拆服务。
 6. **有场景才用技术。** MongoDB 只用于文档型数据，Eino 只用于多步 Agent；简单 CRUD、单轮问答不要套框架。
 
@@ -36,7 +36,7 @@ README.md     # 项目说明与文档入口
 | 平台网关 | APISIX（M6 可选：TLS、限流、灰度、API Key） |
 | 内部 RPC | Kitex + Thrift |
 | IDL / 代码生成 | Thrift + `kitex` / `thriftgo` |
-| 关系数据库 | PostgreSQL + `pgx` + `sqlc` + `golang-migrate` |
+| 关系数据库 | MySQL 8 + GORM + `golang-migrate` |
 | 文档数据库 | MongoDB + `mongo-go-driver`（docs / assistant） |
 | 缓存 / 会话 | Redis + `go-redis` |
 | 事件 | Kafka（KRaft；本地单节点，生产多 broker） |
@@ -53,11 +53,11 @@ README.md     # 项目说明与文档入口
 | 服务 | 职责 | 数据 |
 |---|---|---|
 | `gateway` | Hertz HTTP 入口、鉴权、限流、按需 BFF 聚合、SSE | 无业务数据库 |
-| `identity` | 账户、密码、会话、验证码、内部 JWT | PostgreSQL `identity` + Redis |
-| `task` | 空间、项目、任务、标签、今天查询、outbox | PostgreSQL `task` + Kafka |
+| `identity` | 账户、密码、会话、验证码、内部 JWT | MySQL `identity` + Redis |
+| `task` | 空间、项目、任务、标签、今天查询、outbox | MySQL `task` + Kafka |
 | `docs`（M7） | 文档树、块正文、反向链接 | MongoDB `docs` + MinIO |
 | `assistant`（M8） | AI 对话、工具调用、流式输出 | MongoDB `assistant` |
-| `planning`（后续） | 日历、容量、专注 | PostgreSQL `planning` |
+| `planning`（后续） | 日历、容量、专注 | MySQL `planning` |
 | `search` / `notification` / `calendar`（后续） | 按需拆 | 各自服务 |
 
 MVP 只实现 `gateway + identity + task`；`docs`/`assistant` 是后续学习服务，不提前建空目录或空服务。
@@ -109,17 +109,23 @@ docs/           # 本地只放索引；正式文档在飞书
 - Kitex 业务错误用 `kerrors.NewBizStatusError` 表达，gateway 映射为统一 HTTP 错误信封。
 - M1 用 `client.WithHostPorts` 直连；M3 接 etcd：服务端 `server.WithRegistry`，客户端 `client.WithResolver`。
 
-## PostgreSQL + sqlc
+## MySQL + GORM
 
-- 每个服务独立 database 与 role；迁移放 `services/<name>/migrations/`，用 `golang-migrate`。
-- 使用显式 SQL + `sqlc` 生成类型，不使用 GORM；事务、outbox、幂等键都写显式 SQL。
-- 只做向前兼容迁移：先加列 → 回填 → 改代码 → 最后加约束；删除列分两次发布。
+- MySQL 8 + InnoDB；每个服务独立 database 与账号；迁移放 `services/<name>/migrations/`，用 `golang-migrate`。
+- GORM 只负责 repository；领域模型与 GORM model 分开，不要把 GORM model 直接传到 handler。
+- **不用 AutoMigrate 管生产 schema。** 表结构由迁移 SQL 创建；GORM model 只做字段映射。
+- DSN：`parseTime=true&loc=UTC&charset=utf8mb4&collation=utf8mb4_0900_ai_ci`；时间戳统一 UTC。
+- 事务：`db.WithContext(ctx).Transaction(func(tx *gorm.DB) error { ... })`；业务表与 outbox 必须同一事务。
+- 乐观锁：`Where("id = ? AND version = ?", id, expected).Updates(...)`，检查 `RowsAffected` 是否为 0。
+- 复杂查询、批量 upsert、部分索引替代用 `Raw`/显式 SQL；不要为了纯 GORM 把查询拧成难读的链式调用。
+- MySQL 无部分索引：用生成列 `active_name` + 唯一索引；无 `RETURNING`：应用生成 UUID；无 `NULLS LAST`：`ORDER BY (col IS NULL), col`。
+- GORM 日志接 `slog`，慢查询阈值 200ms；连接池通过底层 `sql.DB` 设置；链路用 GORM 的 OpenTelemetry 插件/回调。
 - 业务表与 outbox 的写入必须在同一事务。
-- 附件与大对象不进 PostgreSQL；docs 附件进 MinIO。
+- 附件与大对象不进 MySQL；docs 附件进 MinIO。
 
 ## MongoDB
 
-- 只用于 `docs` 与 `assistant`；`identity`/`task` 继续用 PostgreSQL。
+- 只用于 `docs` 与 `assistant`；`identity`/`task` 继续用 MySQL。
 - `docs` 集合：`documents`、`document_bodies`、`document_links`；`assistant` 集合：`conversations`、`messages`、`tool_calls`、`ai_providers`。
 - 常用索引：`documents(user_id, parent_id, sort_order)`、`document_links(target_type, target_id)`、`conversations(user_id, updated_at desc)`、`messages(conversation_id, created_at)`、`tool_calls(conversation_id, created_at)`。
 - 文档正文存 JSON，带 `schema_version`；标题/图标/树位置与正文不做双写。
@@ -155,7 +161,7 @@ docs/           # 本地只放索引；正式文档在飞书
 ## 测试
 
 - 单元：领域规则、状态机、校验、纯函数；表驱动，关键路径用 `go test -race`。
-- 集成：testcontainers 启动 PostgreSQL、Redis、Kafka、etcd、MongoDB；迁移与索引脚本在测试启动时执行。
+- 集成：testcontainers 启动 MySQL、Redis、Kafka、etcd、MongoDB；迁移与索引脚本在测试启动时执行。
 - 契约：OpenAPI lint/生成漂移；Thrift/kitex 生成漂移；事件 JSON Schema。
 - 端到端：Playwright 覆盖注册 → 创建任务 → 今天 → 完成 → 第二标签页 SSE 更新。
 - Agent：用假模型/固定工具结果测试工具选择、确认、超时、最大步数；不依赖真实模型做 CI。
@@ -165,7 +171,7 @@ docs/           # 本地只放索引；正式文档在飞书
 
 - 日志：`slog` JSON，字段含 `service`、`request_id`、`trace_id`、`user_id`、`route`、`status`、`latency_ms`；不记录正文/密钥。
 - 指标：HTTP RED、数据库连接池、Kafka consumer lag、outbox 积压、SSE 连接数、MongoDB 慢查询、Agent token/工具耗时。
-- 链路：OpenTelemetry 贯穿 Hertz → Kitex → PostgreSQL/Redis/Kafka/MongoDB；Kafka 消息头带 `traceparent`。
+- 链路：OpenTelemetry 贯穿 Hertz → Kitex → MySQL/Redis/Kafka/MongoDB；Kafka 消息头带 `traceparent`。
 - 健康：`/healthz` 存活、`/readyz` 检查 DB/Redis/Kafka/etcd/Mongo；失败返回 503。
 - 告警：5xx、p95、outbox 积压、consumer lag、DLQ、健康检查失败。
 
@@ -216,8 +222,8 @@ make codegen      # thrift/kitex 与 OpenAPI 生成
 
 - 不要修改 `old/`，不要从中 import 或复制实现。
 - 不要跨服务读表/集合；不要共享数据库；不要跨库 JOIN。
-- 不要用 GORM/MySQL 替换当前 PostgreSQL + pgx + sqlc；不要为了追新引入 hz/GORM/MySQL。
-- 不要把 MongoDB 当万能库；任务、账户仍用 PostgreSQL。
+- 不要用 AutoMigrate 管生产 schema；不要在 GORM 关联里隐藏 N+1；不要把 GORM model 直接当领域模型。
+- 不要把 MongoDB 当万能库；任务、账户仍用 MySQL。
 - 不要把所有 AI 调用都套 Eino；单轮问答直接调模型 SDK。
 - 不要在文档、代码、注释中出现公司名、内部项目名或个人信息。
 - 不要把密钥、Token、完整 prompt、用户正文写进日志。

@@ -22,6 +22,7 @@ v1 是一个 TypeScript 单体（Hono + SQLite + React/Electron），功能已�
 - 每个服务独立数据库，跨服务只走 API 或事件；
 - 同步查询与异步事件的边界、outbox、幂等与最终一致；
 - 用 Kitex + Thrift 练内部 RPC，用 Hertz 做 HTTP 网关；
+- 用 MySQL 8 + GORM 练 repository、事务、乐观锁和迁移；
 - 用 etcd 练服务注册与发现（M3），用 APISIX 练平台网关（M6）；
 - Redis 会话/缓存、Kafka 事件流（分区、消费组、offset、重平衡）；
 - 用 MongoDB 练文档型数据，用 Eino 练 Agent 编排与工具调用；
@@ -44,7 +45,7 @@ v1 是一个 TypeScript 单体（Hono + SQLite + React/Electron），功能已�
    ├── docs        文档、正文、反向链接（Kitex，MongoDB，后续）
    └── assistant   AI 对话、工具调用、流式输出（Kitex + Eino，MongoDB，后续）
         │
-        ├── PostgreSQL（identity / task）
+        ├── MySQL（identity / task）
         ├── MongoDB（docs / assistant）
         ├── Redis（会话、缓存、限流）
         ├── Kafka（KRaft，领域事件）
@@ -64,8 +65,8 @@ MVP 只实现 **gateway + identity + task**，跑通注册、登录、创建任�
 | 平台网关（M6 可选） | **APISIX**（TLS、限流、灰度、API Key） |
 | 内部 RPC | **Kitex + Thrift** |
 | IDL / 代码生成 | Thrift + `kitex` / `thriftgo` |
-| 数据库 | PostgreSQL（identity / task）+ MongoDB（docs / assistant） |
-| 数据访问 | PostgreSQL：`pgx` + `sqlc` + `golang-migrate`；MongoDB：`mongo-go-driver` |
+| 数据库 | MySQL 8（identity / task）+ MongoDB（docs / assistant） |
+| 数据访问 | MySQL：GORM + `golang-migrate`；MongoDB：`mongo-go-driver` |
 | 缓存/会话 | Redis + `go-redis` |
 | 事件 | **Kafka**（本地 KRaft 单节点；生产多 broker） |
 | 服务发现 | M1 直连，M3 接 etcd（`kitex-contrib/registry-etcd`） |
@@ -88,7 +89,7 @@ MVP 只实现 **gateway + identity + task**，跑通注册、登录、创建任�
 
 - `docs` 服务：文档树、块正文 JSON、反向链接、文档搜索投影。文档天然是嵌套结构，MongoDB 的文档模型比关系表更自然。
 - `assistant` 服务：对话、消息、工具调用轨迹、Agent 运行记录。消息是追加型文档，读写模式简单。
-- **不用于** `identity`/`task`：账户、任务、项目、标签仍是 PostgreSQL；不做跨库 JOIN，不把任务数据复制到 Mongo。
+- **不用于** `identity`/`task`：账户、任务、项目、标签仍是 MySQL；不做跨库 JOIN，不把任务数据复制到 Mongo。
 
 ### Eino：只用于多步 Agent 场景
 
@@ -146,7 +147,7 @@ docs/       本地只放索引；正式文档在飞书
 - [biz-demo](https://github.com/cloudwego/biz-demo) — 业务示例仓库：Hertz + Kitex、`hz`/`kitex` 代码生成、etcd 注册、GORM/MySQL、Hertz 中间件、OpenTelemetry。重点看工程接线和多服务拆分。
 - [Wild Workouts](https://github.com/ThreeDotsLabs/wild-workouts-go-ddd-example) — Go DDD / Clean Architecture / CQRS 教学项目：领域分层、Repository、CQRS、微服务测试架构。重点看架构演进和测试方式。
 
-两个仓库只作参考，不改变本项目的技术选型；我们仍使用 Kitex + Thrift、Hertz、Kafka、etcd、PostgreSQL + pgx/sqlc。
+两个仓库只作参考，不改变本项目的技术选型；我们仍使用 Kitex + Thrift、Hertz、Kafka、etcd、MySQL 8 + GORM。
 
 ## v1 归档
 
