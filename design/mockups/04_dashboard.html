@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>仪表盘 · 时序</title><link rel="stylesheet" href="styles.css"></head>
+<body class="dashboard-page">
+<div class="app">
+
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark"><img src="logo-carton.png" alt=""></div>
+    <div><div class="brand-name">时序</div><div class="brand-sub">Dailywork</div></div>
+    <div class="brand-collapse"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A857D" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div>
+  </div>
+  <nav class="nav"><div class="nav-title">项目</div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg><span>项目概览</span></div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>每日容量</span></div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 13h5l2 3h2l2-3h5"/></svg><span>收件箱</span><span class="nav-count">3</span></div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>交付成果</span></div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 13V9M9 2h6"/></svg><span>完成复盘</span></div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>每日收尾</span></div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h4M9 12h6M9 16h6"/></svg><span>模板库</span></div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>操作历史</span></div><div class="nav-title">计划</div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg><span>时间轴</span></div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg><span>日历</span></div><div class="nav-title">任务</div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>今天</span><span class="nav-count">6</span></div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg><span>全部任务</span></div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg><span>看板</span></div><div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>四象限</span></div>
+    <div class="nav-title space-title">空间 <span class="nav-plus">+</span></div>
+    <div class="nav-item space-item"><span class="dot" style="background:#D97757;width:8px;height:8px"></span><span>工作</span><span class="nav-count">2</span></div><div class="nav-item space-item"><span class="dot" style="background:#6A9BCC;width:8px;height:8px"></span><span>学习</span><span class="nav-count">2</span></div><div class="nav-item space-item"><span class="dot" style="background:#788C5D;width:8px;height:8px"></span><span>生活</span><span class="nav-count">1</span></div>
+  </nav>
+  <div class="sidebar-foot">
+    <div class="foot-card">
+      <div><div class="ring" style="width:38px;height:38px"><svg width="38" height="38" viewBox="0 0 38 38"><circle cx="19.0" cy="19.0" r="17.0" fill="none" stroke="#EFE9DD" stroke-width="4"/><circle cx="19.0" cy="19.0" r="17.0" fill="none" stroke="#D97757" stroke-width="4" stroke-linecap="round" stroke-dasharray="106.8" stroke-dashoffset="88.7" transform="rotate(-90 19.0 19.0)"/></svg><span class="ring-label" style="font-size:9.1px">17%</span></div></div>
+      <div><div class="foot-title">今日进度</div><div class="foot-sub">已完成 1 项任务</div></div>
+    </div>
+  </div>
+</aside>
+<div class="workspace">
+
+<header class="topbar">
+  <div class="crumb">分析 / 仪表盘</div>
+  <div class="search"><span class="search-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></span><span class="search-text">搜索任务、项目、文档…</span><span class="kbd">⌘ K</span></div>
+  <div class="top-actions">
+    <button class="icon-btn" title="通知"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg><i class="notice-dot"></i></button>
+    <button class="icon-btn" title="主题"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg></button>
+    <button class="primary-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span>新建任务</span></button>
+  </div>
+</header>
+<div class="content-row">
+<main class="main">
+<div class="page-head">
+  <div><h1>仪表盘</h1><p class="page-sub">10月21日 – 10月27日 · 本周概览</p></div>
+  <div class="head-right"><span class="filter-chip">本周</span><span class="filter-chip">全部空间</span><button class="ghost-btn">导出</button></div>
+</div>
+<div class="dash-grid">
+  <section class="dash-hero">
+    <div class="hero-copy"><div class="hero-eyebrow">本周完成率</div><div class="hero-num">68<span>%</span></div><div class="hero-sub">完成 34 / 50 项 · 比上周 +6%</div></div>
+    <div class="hero-ring"><div class="ring" style="width:150px;height:150px"><svg width="150" height="150" viewBox="0 0 150 150"><circle cx="75.0" cy="75.0" r="70.0" fill="none" stroke="#EFE9DD" stroke-width="10"/><circle cx="75.0" cy="75.0" r="70.0" fill="none" stroke="#D97757" stroke-width="10" stroke-linecap="round" stroke-dasharray="439.8" stroke-dashoffset="140.7" transform="rotate(-90 75.0 75.0)"/></svg><span class="ring-label" style="font-size:36.0px">34/50</span></div></div>
+    <div class="hero-side">
+      <div class="mini-stat"><span class="mini-label">专注时长</span><b>12h 30m</b><span class="mini-delta up">+21%</span></div>
+      <div class="mini-stat"><span class="mini-label">连续完成</span><b>12 天</b><span class="mini-delta">最佳 21 天</span></div>
+      <div class="mini-stat"><span class="mini-label">逾期</span><b>3</b><span class="mini-delta down">需要关注</span></div>
+    </div>
+  </section>
+  <section class="dash-card kpi-card">
+    <div class="card-head"><span>12 周完成趋势</span><span class="card-more"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18" cy="12" r="1.2"/></svg></span></div>
+    <div class="bar-chart"><div class="bar-col"><div class="bar" style="height:41px"></div><span>7/28</span></div><div class="bar-col"><div class="bar" style="height:62px"></div><span>8/4</span></div><div class="bar-col"><div class="bar" style="height:51px"></div><span>8/11</span></div><div class="bar-col"><div class="bar" style="height:75px"></div><span>8/18</span></div><div class="bar-col"><div class="bar" style="height:89px"></div><span>8/25</span></div><div class="bar-col"><div class="bar" style="height:68px"></div><span>9/1</span></div><div class="bar-col"><div class="bar" style="height:96px"></div><span>9/8</span></div><div class="bar-col"><div class="bar" style="height:82px"></div><span>9/15</span></div><div class="bar-col"><div class="bar" style="height:106px"></div><span>9/22</span></div><div class="bar-col"><div class="bar" style="height:92px"></div><span>9/29</span></div><div class="bar-col"><div class="bar" style="height:116px"></div><span>10/6</span></div><div class="bar-col"><div class="bar current" style="height:130px"></div><span>10/13</span></div></div>
+    <div class="chart-foot"><span>周完成数</span><span class="legend-dot"></span><span>本周 38 项</span></div>
+  </section>
+  <section class="dash-card insight-card">
+    <div class="insight-badge">模式发现</div>
+    <div class="insight-num">+42<span>%</span></div>
+    <div class="insight-title">周三的专注时长最高</div>
+    <p>过去 60 天里，你在周三平均专注 2h 40m，比全周平均高 42%。可以把高难度任务安排在这一天。</p>
+    <button class="insight-btn">查看专注记录 →</button>
+  </section>
+  <section class="dash-card waterfall-card">
+    <div class="card-head"><span>时间都花在哪</span><span class="card-sub">本周 50 项任务</span></div>
+    <div class="wf-row"><span class="wf-label">已完成</span><div class="wf-track"><i style="width:68%;background:#788C5D"></i></div><span class="wf-val">34</span></div>
+    <div class="wf-row"><span class="wf-label">进行中</span><div class="wf-track"><i style="width:18%;background:#D97757"></i></div><span class="wf-val">9</span></div>
+    <div class="wf-row"><span class="wf-label">等待中</span><div class="wf-track"><i style="width:8%;background:#A8761C"></i></div><span class="wf-val">4</span></div>
+    <div class="wf-row"><span class="wf-label">受阻/逾期</span><div class="wf-track"><i style="width:6%;background:#B5473C"></i></div><span class="wf-val">3</span></div>
+    <div class="wf-note">工作占 62%，学习占 26%，生活占 12%。</div>
+  </section>
+  <section class="dash-card attention-card">
+    <div class="card-head"><span>需要关注</span><span class="card-sub">3 类</span></div>
+    <div class="attention-list"><div class="attention-item"><span class="att-ico danger"></span><div><div class="att-title">3 个任务已逾期</div><div class="att-sub">最早逾期 2 天 · 都在「新版发布与交付」</div></div><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8A857D" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div><div class="attention-item"><span class="att-ico warn"></span><div><div class="att-title">2 个任务等待外部</div><div class="att-sub">客户文案确认 · 设计素材</div></div><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8A857D" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div><div class="attention-item"><span class="att-ico info"></span><div><div class="att-title">本周专注 12h 30m</div><div class="att-sub">比上周多 2h 10m</div></div><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8A857D" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div></div>
+  </section>
+  <section class="dash-card focus-week">
+    <div class="card-head"><span>专注分布</span><span class="card-sub">按空间</span></div>
+    <div class="donut-wrap">
+      <div class="donut"></div>
+      <div class="donut-legend">
+        <div><span style="background:#D97757"></span>工作 <b>62%</b></div>
+        <div><span style="background:#6A9BCC"></span>学习 <b>26%</b></div>
+        <div><span style="background:#788C5D"></span>生活 <b>12%</b></div>
+      </div>
+    </div>
+  </section>
+</div></main>
+
+</div>
+</div>
+</div>
+</body></html>

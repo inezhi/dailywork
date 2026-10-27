@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="720" viewBox="0 0 1240 720">
+<rect width="1240" height="720" fill="#FAF9F5"/>
+<defs>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+  <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#191919" flood-opacity="0.06"/>
+</filter>
+</defs>
+<text x="48" y="58" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="27" font-weight="700" fill="#141413" text-anchor="start" opacity="1">信息架构与导航</text>
+<text x="48" y="84" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">桌面左侧栏 · 移动端底部 Tab · 右侧上下文抽屉</text>
+<rect x="1119.6" y="42" width="70.4" height="24" rx="12.0" fill="#D97757" stroke="none" stroke-width="0" opacity="1"/>
+<text x="1154.8" y="58.32" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#FFFFFF" text-anchor="middle" opacity="1">PRODUCT</text>
+<rect x="520" y="124" width="200" height="62" rx="14" fill="#F4E5DD" stroke="#D97757" stroke-width="1.4" opacity="1"/>
+<text x="620" y="152" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="15" font-weight="700" fill="#C6613F" text-anchor="middle" opacity="1">时序 · Dailywork</text>
+<text x="620" y="173" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">工作台</text>
+<rect x="64" y="240" width="162" height="300" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="82" y="272" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#D97757" text-anchor="start" opacity="1">今天</text>
+<line x1="82" y1="284" x2="208" y2="284" stroke="#E8E6DC" stroke-width="1"/>
+<circle cx="88" cy="308" r="3" fill="#D97757" stroke="none" stroke-width="1" opacity="1"/>
+<text x="100" y="312" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">今日任务</text>
+<circle cx="88" cy="340" r="3" fill="#D97757" stroke="none" stroke-width="1" opacity="1"/>
+<text x="100" y="344" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">逾期</text>
+<circle cx="88" cy="372" r="3" fill="#D97757" stroke="none" stroke-width="1" opacity="1"/>
+<text x="100" y="376" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">快速捕获</text>
+<rect x="82" y="500" width="28.0" height="20" rx="10.0" fill="#F6F3EC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="96.0" y="513.6" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#D97757" text-anchor="middle" opacity="1">01</text>
+<polyline points="620,186 145,240" fill="none" stroke="#D6D2C4" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="145,240 154.41681709637805,243.15651006229385 153.46798146731476,234.81027073257056" fill="#D6D2C4"/>
+<rect x="254" y="240" width="162" height="300" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="272" y="272" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#6A9BCC" text-anchor="start" opacity="1">计划</text>
+<line x1="272" y1="284" x2="398" y2="284" stroke="#E8E6DC" stroke-width="1"/>
+<circle cx="278" cy="308" r="3" fill="#6A9BCC" stroke="none" stroke-width="1" opacity="1"/>
+<text x="290" y="312" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">日历</text>
+<circle cx="278" cy="340" r="3" fill="#6A9BCC" stroke="none" stroke-width="1" opacity="1"/>
+<text x="290" y="344" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">时间轴</text>
+<circle cx="278" cy="372" r="3" fill="#6A9BCC" stroke="none" stroke-width="1" opacity="1"/>
+<text x="290" y="376" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">每日容量</text>
+<circle cx="278" cy="404" r="3" fill="#6A9BCC" stroke="none" stroke-width="1" opacity="1"/>
+<text x="290" y="408" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">每日收尾</text>
+<rect x="272" y="500" width="28.0" height="20" rx="10.0" fill="#F6F3EC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="286.0" y="513.6" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#6A9BCC" text-anchor="middle" opacity="1">02</text>
+<polyline points="620,186 335,240" fill="none" stroke="#D6D2C4" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="335,240 344.62455078180955,242.45112673037704 343.0607939816703,234.1979658407531" fill="#D6D2C4"/>
+<rect x="444" y="240" width="162" height="300" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="462" y="272" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#D97757" text-anchor="start" opacity="1">任务</text>
+<line x1="462" y1="284" x2="588" y2="284" stroke="#E8E6DC" stroke-width="1"/>
+<circle cx="468" cy="308" r="3" fill="#D97757" stroke="none" stroke-width="1" opacity="1"/>
+<text x="480" y="312" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">全部任务</text>
+<circle cx="468" cy="340" r="3" fill="#D97757" stroke="none" stroke-width="1" opacity="1"/>
+<text x="480" y="344" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">看板</text>
+<circle cx="468" cy="372" r="3" fill="#D97757" stroke="none" stroke-width="1" opacity="1"/>
+<text x="480" y="376" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">四象限</text>
+<circle cx="468" cy="404" r="3" fill="#D97757" stroke="none" stroke-width="1" opacity="1"/>
+<text x="480" y="408" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">模板库</text>
+<rect x="462" y="500" width="28.0" height="20" rx="10.0" fill="#F6F3EC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="476.0" y="513.6" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#D97757" text-anchor="middle" opacity="1">03</text>
+<polyline points="620,186 525,240" fill="none" stroke="#D6D2C4" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="525,240 534.8998047197739,239.2038426598074 530.748805070218,231.90115809114448" fill="#D6D2C4"/>
+<rect x="634" y="240" width="162" height="300" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="652" y="272" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#788C5D" text-anchor="start" opacity="1">项目与空间</text>
+<line x1="652" y1="284" x2="778" y2="284" stroke="#E8E6DC" stroke-width="1"/>
+<circle cx="658" cy="308" r="3" fill="#788C5D" stroke="none" stroke-width="1" opacity="1"/>
+<text x="670" y="312" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">项目工作台</text>
+<circle cx="658" cy="340" r="3" fill="#788C5D" stroke="none" stroke-width="1" opacity="1"/>
+<text x="670" y="344" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">空间分组</text>
+<circle cx="658" cy="372" r="3" fill="#788C5D" stroke="none" stroke-width="1" opacity="1"/>
+<text x="670" y="376" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">交付成果</text>
+<circle cx="658" cy="404" r="3" fill="#788C5D" stroke="none" stroke-width="1" opacity="1"/>
+<text x="670" y="408" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">操作历史</text>
+<rect x="652" y="500" width="28.0" height="20" rx="10.0" fill="#F6F3EC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="666.0" y="513.6" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#788C5D" text-anchor="middle" opacity="1">04</text>
+<polyline points="620,186 715,240" fill="none" stroke="#D6D2C4" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="715,240 709.251194929782,231.90115809114448 705.1001952802261,239.2038426598074" fill="#D6D2C4"/>
+<rect x="824" y="240" width="162" height="300" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="842" y="272" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#A8761C" text-anchor="start" opacity="1">知识</text>
+<line x1="842" y1="284" x2="968" y2="284" stroke="#E8E6DC" stroke-width="1"/>
+<circle cx="848" cy="308" r="3" fill="#A8761C" stroke="none" stroke-width="1" opacity="1"/>
+<text x="860" y="312" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">收件箱</text>
+<circle cx="848" cy="340" r="3" fill="#A8761C" stroke="none" stroke-width="1" opacity="1"/>
+<text x="860" y="344" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">速记</text>
+<circle cx="848" cy="372" r="3" fill="#A8761C" stroke="none" stroke-width="1" opacity="1"/>
+<text x="860" y="376" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">文档中心</text>
+<rect x="842" y="500" width="28.0" height="20" rx="10.0" fill="#F6F3EC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="856.0" y="513.6" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#A8761C" text-anchor="middle" opacity="1">05</text>
+<polyline points="620,186 905,240" fill="none" stroke="#D6D2C4" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="905,240 896.9392060183297,234.1979658407531 895.3754492181904,242.45112673037704" fill="#D6D2C4"/>
+<rect x="1014" y="240" width="162" height="300" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="1032" y="272" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#6A9BCC" text-anchor="start" opacity="1">分析</text>
+<line x1="1032" y1="284" x2="1158" y2="284" stroke="#E8E6DC" stroke-width="1"/>
+<circle cx="1038" cy="308" r="3" fill="#6A9BCC" stroke="none" stroke-width="1" opacity="1"/>
+<text x="1050" y="312" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">仪表盘</text>
+<circle cx="1038" cy="340" r="3" fill="#6A9BCC" stroke="none" stroke-width="1" opacity="1"/>
+<text x="1050" y="344" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">智能复盘</text>
+<rect x="1032" y="500" width="28.0" height="20" rx="10.0" fill="#F6F3EC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="1046.0" y="513.6" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#6A9BCC" text-anchor="middle" opacity="1">06</text>
+<polyline points="620,186 1095,240" fill="none" stroke="#D6D2C4" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="1095,240 1086.5320185326852,234.81027073257056 1085.5831829036222,243.15651006229385" fill="#D6D2C4"/>
+<rect x="64" y="580" width="500" height="74" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1"/>
+<text x="84" y="606" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#141413" text-anchor="start" opacity="1">右侧上下文抽屉（桌面 ≥1024px）</text>
+<text x="84" y="630" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">详情 · 子待办 · 记录 · 备注/附件 · 专注卡片；&lt;1024px 改为 Sheet。</text>
+<rect x="584" y="580" width="592" height="74" rx="12" fill="#F4E5DD" stroke="none" stroke-width="1" opacity="1"/>
+<text x="604" y="606" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#C6613F" text-anchor="start" opacity="1">移动端底部 Tab</text>
+<text x="604" y="630" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">今天 · 计划 · 看板 · 文档 · 更多；详情全屏，速记浮动按钮。</text>
+<line x1="48" y1="678" x2="1192" y2="678" stroke="#E8E6DC" stroke-width="1"/>
+<text x="48" y="700" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">时序 · Dailywork ｜ v1.0 ｜ 2026-10-27</text>
+<text x="1192" y="700" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">飞书画板 · 可编辑</text>
+</svg>

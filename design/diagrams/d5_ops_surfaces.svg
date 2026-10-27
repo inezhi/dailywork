@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="720" viewBox="0 0 1240 720">
+<rect width="1240" height="720" fill="#FAF9F5"/>
+<defs>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+  <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#191919" flood-opacity="0.06"/>
+</filter>
+</defs>
+<text x="48" y="58" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="27" font-weight="700" fill="#141413" text-anchor="start" opacity="1">Ops 目录：一套操作，四个入口</text>
+<text x="48" y="84" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">UI / CLI / MCP / AI 共用同一份 schema、鉴权与确认策略</text>
+<rect x="1148.4" y="42" width="41.599999999999994" height="24" rx="12.0" fill="#D97757" stroke="none" stroke-width="0" opacity="1"/>
+<text x="1169.2" y="58.32" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#FFFFFF" text-anchor="middle" opacity="1">OPS</text>
+<rect x="72" y="122" width="1096" height="112" rx="14" fill="#FFFFFF" stroke="#D97757" stroke-width="1.4" opacity="1" filter="url(#soft)"/>
+<text x="94" y="150" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12.5" font-weight="600" fill="#C6613F" text-anchor="start" opacity="1">defineOp({ name, version, kind, input, output, annotations, exposure, auth, scope, errors, handler })</text>
+<rect x="94" y="168" width="110.19999999999999" height="24" rx="12.0" fill="#F4E5DD" stroke="none" stroke-width="0" opacity="1"/>
+<text x="149.1" y="183.96" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#C6613F" text-anchor="middle" opacity="1">zod 入参 / 出参</text>
+<rect x="212.2" y="168" width="165.2" height="24" rx="12.0" fill="#EAF1F7" stroke="none" stroke-width="0" opacity="1"/>
+<text x="294.79999999999995" y="183.96" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#6A9BCC" text-anchor="middle" opacity="1">readOnly / destructive</text>
+<rect x="385.4" y="168" width="86.0" height="24" rx="12.0" fill="#EEF1E7" stroke="none" stroke-width="0" opacity="1"/>
+<text x="428.4" y="183.96" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#788C5D" text-anchor="middle" opacity="1">idempotent</text>
+<rect x="479.4" y="168" width="94.8" height="24" rx="12.0" fill="#F7EFDF" stroke="none" stroke-width="0" opacity="1"/>
+<text x="526.8" y="183.96" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#A8761C" text-anchor="middle" opacity="1">confirm 策略</text>
+<rect x="582.1999999999999" y="168" width="112.4" height="24" rx="12.0" fill="#F6F3EC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="638.4" y="183.96" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">ops.list 自描述</text>
+<rect x="520" y="310" width="200" height="140" rx="14" fill="#FFFFFF" stroke="#D97757" stroke-width="1.6" opacity="1" filter="url(#soft)"/>
+<circle cx="549.0" cy="339.0" r="6.0" fill="none" stroke="#D97757" stroke-width="1.6" opacity="1"/>
+<line x1="549.0" y1="326.0" x2="549.0" y2="331.85" stroke="#D97757" stroke-width="1.6"/>
+<line x1="549.0" y1="352.0" x2="549.0" y2="346.15" stroke="#D97757" stroke-width="1.6"/>
+<line x1="536.0" y1="339.0" x2="541.85" y2="339.0" stroke="#D97757" stroke-width="1.6"/>
+<line x1="562.0" y1="339.0" x2="556.15" y2="339.0" stroke="#D97757" stroke-width="1.6"/>
+<text x="570" y="340" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="16" font-weight="700" fill="#141413" text-anchor="start" opacity="1">ops 注册表</text>
+<text x="536" y="370" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">packages/ops</text>
+<text x="536" y="392" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">统一校验 · 分发</text>
+<text x="536" y="412" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">执行 application 用例</text>
+<text x="536" y="432" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">写入 op_log（同事务）</text>
+<rect x="92" y="220" width="246" height="110" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="110" y="250" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="15" font-weight="700" fill="#D97757" text-anchor="start" opacity="1">HTTP RPC</text>
+<text x="110" y="274" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">POST /api/ops/&lt;name&gt;</text>
+<text x="110" y="298" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">Web UI · 局域网</text>
+<rect x="92" y="430" width="246" height="110" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="110" y="460" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="15" font-weight="700" fill="#788C5D" text-anchor="start" opacity="1">daily CLI</text>
+<text x="110" y="484" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">daily task complete &lt;id&gt;</text>
+<text x="110" y="508" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">脚本 · 终端 · --json</text>
+<rect x="902" y="220" width="246" height="110" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="920" y="250" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="15" font-weight="700" fill="#6A9BCC" text-anchor="start" opacity="1">MCP Server</text>
+<text x="920" y="274" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">daily mcp serve</text>
+<text x="920" y="298" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">Claude Code 等 AI 客户端</text>
+<rect x="902" y="430" width="246" height="110" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="920" y="460" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="15" font-weight="700" fill="#A8761C" text-anchor="start" opacity="1">AI 工具</text>
+<text x="920" y="484" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">OpenAI function schema</text>
+<text x="920" y="508" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">应用内助手 · 需确认</text>
+<polyline points="338,275 410,275 410,350 520,350" fill="none" stroke="#D97757" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="520,350 511.0,345.8 511.0,354.2" fill="#D97757"/>
+<polyline points="338,485 420,485 420,420 520,420" fill="none" stroke="#788C5D" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="520,420 511.0,415.8 511.0,424.2" fill="#788C5D"/>
+<polyline points="902,275 820,275 820,350 720,350" fill="none" stroke="#6A9BCC" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="720,350 729.0,354.2 729.0,345.8" fill="#6A9BCC"/>
+<polyline points="902,485 820,485 820,420 720,420" fill="none" stroke="#A8761C" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="720,420 729.0,424.2 729.0,415.8" fill="#A8761C"/>
+<polyline points="620,310 620,234" fill="none" stroke="#D97757" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="620,234 615.8,243.0 624.2,243.0" fill="#D97757"/>
+<rect x="72" y="574" width="1096" height="78" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1"/>
+<text x="94" y="602" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12.5" font-weight="700" fill="#C6613F" text-anchor="start" opacity="1">共同契约</text>
+<rect x="180" y="590" width="225.79999999999998" height="22" rx="11.0" fill="#F6F3EC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="292.9" y="604.78" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">统一信封 { ok, data, error, meta }</text>
+<rect x="413.79999999999995" y="590" width="152.29999999999998" height="22" rx="11.0" fill="#F6F3EC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="489.94999999999993" y="604.78" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">稳定错误码 ↔ CLI 退出码</text>
+<rect x="574.0999999999999" y="590" width="72.5" height="22" rx="11.0" fill="#F6F3EC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="610.3499999999999" y="604.78" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">opId 幂等</text>
+<rect x="654.5999999999999" y="590" width="162.79999999999998" height="22" rx="11.0" fill="#F6F3EC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="735.9999999999999" y="604.78" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">expectedVersion 并发控制</text>
+<rect x="825.3999999999999" y="590" width="95.60000000000001" height="22" rx="11.0" fill="#F6F3EC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="873.1999999999998" y="604.78" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">服务端 dryRun</text>
+<rect x="928.9999999999999" y="590" width="62.0" height="22" rx="11.0" fill="#F6F3EC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="959.9999999999999" y="604.78" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">确认令牌</text>
+<text x="94" y="628" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">能力不漂移：任何入口新增的操作，其余三个入口自动获得；AI 与 CLI 的工具描述始终同源。</text>
+<line x1="48" y1="678" x2="1192" y2="678" stroke="#E8E6DC" stroke-width="1"/>
+<text x="48" y="700" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">时序 · Dailywork ｜ v1.0 ｜ 2026-10-27</text>
+<text x="1192" y="700" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">飞书画板 · 可编辑</text>
+</svg>

@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="700" viewBox="0 0 1240 700">
+<rect width="1240" height="700" fill="#FAF9F5"/>
+<defs>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+  <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#191919" flood-opacity="0.06"/>
+</filter>
+</defs>
+<text x="48" y="58" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="27" font-weight="700" fill="#141413" text-anchor="start" opacity="1">本地存储、备份与导出</text>
+<text x="48" y="84" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">SQLite 单文件（含图片 BLOB） · 每日快照 · .dailywork 导出/导入</text>
+<rect x="1119.6" y="42" width="70.4" height="24" rx="12.0" fill="#D97757" stroke="none" stroke-width="0" opacity="1"/>
+<text x="1154.8" y="58.32" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#FFFFFF" text-anchor="middle" opacity="1">STORAGE</text>
+<rect x="56" y="122" width="360" height="430" rx="18" fill="#F3F0E8" stroke="#D6D2C4" stroke-width="1.1" opacity="1" stroke-dasharray="7 6"/>
+<text x="76" y="150" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#C6613F" text-anchor="start" opacity="1">写入</text>
+<rect x="452" y="122" width="360" height="430" rx="18" fill="#EEF3F8" stroke="#6A9BCC" stroke-width="1.1" opacity="1" stroke-dasharray="7 6"/>
+<text x="472" y="150" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#6A9BCC" text-anchor="start" opacity="1">SQLite 单文件</text>
+<rect x="848" y="122" width="336" height="430" rx="18" fill="#F0F2EA" stroke="#788C5D" stroke-width="1.1" opacity="1" stroke-dasharray="7 6"/>
+<text x="868" y="150" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#788C5D" text-anchor="start" opacity="1">备份与迁移</text>
+<rect x="80" y="178" width="312" height="74" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="107" cy="205" r="15" fill="#D97757" stroke="none" stroke-width="1" opacity="1"/>
+<text x="107" y="210" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" opacity="1">1</text>
+<text x="134" y="204" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">UI / CLI 发起操作</text>
+<text x="134" y="225" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">ops 校验 → application 用例</text>
+<rect x="80" y="278" width="312" height="74" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="107" cy="305" r="15" fill="#D97757" stroke="none" stroke-width="1" opacity="1"/>
+<text x="107" y="310" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" opacity="1">2</text>
+<text x="134" y="304" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">同一 SQLite 事务</text>
+<text x="134" y="325" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">业务表 + blobs + op_log + outbox</text>
+<rect x="80" y="378" width="312" height="74" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="107" cy="405" r="15" fill="#D97757" stroke="none" stroke-width="1" opacity="1"/>
+<text x="107" y="410" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" opacity="1">3</text>
+<text x="134" y="404" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">提交并刷新</text>
+<text x="134" y="425" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">WAL · 写入确认 · 投影异步</text>
+<text x="108" y="480" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">图片通过 attachment://&lt;id&gt; 引用</text>
+<text x="108" y="500" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">不保存任何外部文件路径</text>
+<rect x="476" y="176" width="312" height="72" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="494" y="202" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#141413" text-anchor="start" opacity="1">业务表</text>
+<text x="494" y="226" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">tasks · projects · documents · focus</text>
+<rect x="476" y="264" width="312" height="72" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="494" y="290" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#141413" text-anchor="start" opacity="1">blobs / attachments</text>
+<text x="494" y="314" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">图片 BLOB · sha256 去重 · 缩略图</text>
+<rect x="476" y="352" width="312" height="72" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="494" y="378" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#141413" text-anchor="start" opacity="1">op_log / outbox</text>
+<text x="494" y="402" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">审计 · 撤销 · 导出重放</text>
+<text x="494" y="466" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#6A9BCC" text-anchor="start" opacity="1">data.sqlite 是唯一数据源</text>
+<text x="494" y="486" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">含图片，导出不会漏文件</text>
+<rect x="872" y="176" width="288" height="74" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="899" cy="203" r="15" fill="#788C5D" stroke="none" stroke-width="1" opacity="1"/>
+<text x="899" y="208" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" opacity="1">4</text>
+<text x="926" y="202" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">每日快照</text>
+<text x="926" y="223" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">VACUUM INTO → integrity_check</text>
+<rect x="872" y="264" width="288" height="90" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="899" cy="291" r="15" fill="#788C5D" stroke="none" stroke-width="1" opacity="1"/>
+<text x="899" y="296" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" opacity="1">5</text>
+<text x="926" y="290" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">导出 .dailywork</text>
+<text x="926" y="311" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">data.sqlite + manifest + markdown</text>
+<text x="926" y="330" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">包含图片 BLOB · 不含 AI Key</text>
+<rect x="872" y="368" width="288" height="90" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="899" cy="395" r="15" fill="#788C5D" stroke="none" stroke-width="1" opacity="1"/>
+<text x="899" y="400" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" opacity="1">6</text>
+<text x="926" y="394" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">导入恢复</text>
+<text x="926" y="415" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">校验 → 备份当前库 → 整体替换</text>
+<text x="926" y="434" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">失败自动回滚，不破坏现有数据</text>
+<polyline points="392,215 476,215" fill="none" stroke="#D97757" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="476,215 467.0,210.8 467.0,219.2" fill="#D97757"/>
+<rect x="415.0" y="190" width="38.0" height="21" rx="5" fill="#FAF9F5" opacity="0.96"/>
+<text x="434" y="205" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">写入</text>
+<polyline points="392,315 476,315" fill="none" stroke="#D97757" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="476,315 467.0,310.8 467.0,319.2" fill="#D97757"/>
+<rect x="412.6" y="290" width="42.8" height="21" rx="5" fill="#FAF9F5" opacity="0.96"/>
+<text x="434" y="305" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">BLOB</text>
+<polyline points="788,215 872,215" fill="none" stroke="#788C5D" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="872,215 863.0,210.8 863.0,219.2" fill="#788C5D"/>
+<rect x="811.0" y="190" width="38.0" height="21" rx="5" fill="#FAF9F5" opacity="0.96"/>
+<text x="830" y="205" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">快照</text>
+<polyline points="788,315 872,315" fill="none" stroke="#788C5D" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="872,315 863.0,310.8 863.0,319.2" fill="#788C5D"/>
+<rect x="811.0" y="290" width="38.0" height="21" rx="5" fill="#FAF9F5" opacity="0.96"/>
+<text x="830" y="305" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">导出</text>
+<polyline points="872,408 788,408" fill="none" stroke="#6A9BCC" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="788,408 797.0,412.2 797.0,403.8" fill="#6A9BCC"/>
+<rect x="811.0" y="383" width="38.0" height="21" rx="5" fill="#FAF9F5" opacity="0.96"/>
+<text x="830" y="398" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">导入</text>
+<rect x="80" y="576" width="1104" height="56" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1"/>
+<text x="100" y="600" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#C6613F" text-anchor="start" opacity="1">一致性原则</text>
+<text x="180" y="600" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">图片与业务数据同库同事务；快照与导出都基于一致性副本；导入失败只回滚，不写半份数据。</text>
+<text x="100" y="620" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">体积控制：20MB/文件 · sha256 去重 · 缩略图 · 数据库超过 2GB 时提示归档或导出。</text>
+<line x1="48" y1="658" x2="1192" y2="658" stroke="#E8E6DC" stroke-width="1"/>
+<text x="48" y="680" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">时序 · Dailywork ｜ v1.0 ｜ 2026-10-27</text>
+<text x="1192" y="680" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">飞书画板 · 可编辑</text>
+</svg>

@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2023"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": false,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": false,
+    "noEmit": true,
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@daily/contracts": ["packages/contracts/src/index.ts"],
+      "@daily/platform": ["packages/platform/src/index.ts"],
+      "@daily/ops": ["packages/ops/src/index.ts"],
+      "@daily/context-workspace": ["packages/contexts/workspace/src/index.ts"],
+      "@daily/context-tasking": ["packages/contexts/tasking/src/index.ts"],
+      "@daily/context-projects": ["packages/contexts/projects/src/index.ts"],
+      "@daily/context-capture": ["packages/contexts/capture/src/index.ts"],
+      "@daily/context-planning": ["packages/contexts/planning/src/index.ts"],
+      "@daily/context-focus": ["packages/contexts/focus/src/index.ts"],
+      "@daily/context-documents": ["packages/contexts/documents/src/index.ts"],
+      "@daily/context-assistant": ["packages/contexts/assistant/src/index.ts"]
+    }
+  }
+}

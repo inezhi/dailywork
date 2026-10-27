@@ -1,0 +1,23 @@
+sequenceDiagram
+    autonumber
+    actor U as 用户
+    participant UI as Web UI / CLI
+    participant OPS as ops 目录
+    participant APP as tasking 应用层
+    participant DB as SQLite
+    participant OB as outbox
+    participant AN as analytics
+
+    U->>UI: task.create（自然语言或命令）
+    UI->>OPS: POST /api/ops/task.create
+    OPS->>OPS: zod 校验 · 鉴权 · expectedVersion
+    OPS->>APP: createTask(input)
+    APP->>DB: BEGIN
+    APP->>DB: INSERT task
+    APP->>DB: INSERT op_log（同一事务）
+    APP->>DB: INSERT outbox
+    APP->>DB: COMMIT
+    APP-->>OPS: Task DTO
+    OPS-->>UI: { ok, data, meta }
+    OB-->>AN: TaskCreated（异步投影）
+    UI-->>U: 列表刷新 / CLI 输出 JSON

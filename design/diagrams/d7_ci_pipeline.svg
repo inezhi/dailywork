@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="540" viewBox="0 0 1320 540">
+<rect width="1320" height="540" fill="#FAF9F5"/>
+<defs>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+  <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#191919" flood-opacity="0.06"/>
+</filter>
+</defs>
+<text x="48" y="58" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="27" font-weight="700" fill="#141413" text-anchor="start" opacity="1">CI 与发布流水线</text>
+<text x="48" y="84" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">PR 门禁 · 每晚 macOS/WebKit · 打包安装验证 · 可回滚发布</text>
+<rect x="1199.6" y="42" width="70.4" height="24" rx="12.0" fill="#D97757" stroke="none" stroke-width="0" opacity="1"/>
+<text x="1234.8" y="58.32" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#FFFFFF" text-anchor="middle" opacity="1">PROCESS</text>
+<rect x="64" y="170" width="104" height="112" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="116.0" cy="196" r="13" fill="#5B5750" stroke="none" stroke-width="1" opacity="0.14"/>
+<text x="116.0" y="201" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="700" fill="#5B5750" text-anchor="middle" opacity="1">1</text>
+<text x="116.0" y="228" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#141413" text-anchor="middle" opacity="1">提交</text>
+<text x="116.0" y="250" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">Conventional</text>
+<text x="116.0" y="266" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">Commits</text>
+<polyline points="168,226 186,226" fill="none" stroke="#B3ADA0" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="186,226 177.0,221.8 177.0,230.2" fill="#B3ADA0"/>
+<rect x="186" y="170" width="104" height="112" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="238.0" cy="196" r="13" fill="#6A9BCC" stroke="none" stroke-width="1" opacity="0.14"/>
+<text x="238.0" y="201" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="700" fill="#6A9BCC" text-anchor="middle" opacity="1">2</text>
+<text x="238.0" y="228" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#141413" text-anchor="middle" opacity="1">Lint</text>
+<text x="238.0" y="250" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">ESLint +</text>
+<text x="238.0" y="266" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">Prettier</text>
+<polyline points="290,226 308,226" fill="none" stroke="#B3ADA0" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="308,226 299.0,221.8 299.0,230.2" fill="#B3ADA0"/>
+<rect x="308" y="170" width="104" height="112" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="360.0" cy="196" r="13" fill="#6A9BCC" stroke="none" stroke-width="1" opacity="0.14"/>
+<text x="360.0" y="201" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="700" fill="#6A9BCC" text-anchor="middle" opacity="1">3</text>
+<text x="360.0" y="228" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#141413" text-anchor="middle" opacity="1">类型</text>
+<text x="360.0" y="250" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">tsc --noEmit</text>
+<text x="360.0" y="266" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">strict</text>
+<polyline points="412,226 430,226" fill="none" stroke="#B3ADA0" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="430,226 421.0,221.8 421.0,230.2" fill="#B3ADA0"/>
+<rect x="430" y="170" width="104" height="112" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="482.0" cy="196" r="13" fill="#788C5D" stroke="none" stroke-width="1" opacity="0.14"/>
+<text x="482.0" y="201" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="700" fill="#788C5D" text-anchor="middle" opacity="1">4</text>
+<text x="482.0" y="228" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#141413" text-anchor="middle" opacity="1">单元</text>
+<text x="482.0" y="250" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">Vitest</text>
+<text x="482.0" y="266" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">domain ≥90%</text>
+<polyline points="534,226 552,226" fill="none" stroke="#B3ADA0" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="552,226 543.0,221.8 543.0,230.2" fill="#B3ADA0"/>
+<rect x="552" y="170" width="104" height="112" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="604.0" cy="196" r="13" fill="#D97757" stroke="none" stroke-width="1" opacity="0.14"/>
+<text x="604.0" y="201" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="700" fill="#D97757" text-anchor="middle" opacity="1">5</text>
+<text x="604.0" y="228" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#141413" text-anchor="middle" opacity="1">契约</text>
+<text x="604.0" y="250" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">ops × 4 表面</text>
+<text x="604.0" y="266" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">幂等 / dryRun</text>
+<polyline points="656,226 674,226" fill="none" stroke="#B3ADA0" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="674,226 665.0,221.8 665.0,230.2" fill="#B3ADA0"/>
+<rect x="674" y="170" width="104" height="112" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="726.0" cy="196" r="13" fill="#5B5750" stroke="none" stroke-width="1" opacity="0.14"/>
+<text x="726.0" y="201" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="700" fill="#5B5750" text-anchor="middle" opacity="1">6</text>
+<text x="726.0" y="228" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#141413" text-anchor="middle" opacity="1">构建</text>
+<text x="726.0" y="250" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">Vite 8 +</text>
+<text x="726.0" y="266" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">electron-vite</text>
+<polyline points="778,226 796,226" fill="none" stroke="#B3ADA0" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="796,226 787.0,221.8 787.0,230.2" fill="#B3ADA0"/>
+<rect x="796" y="170" width="104" height="112" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="848.0" cy="196" r="13" fill="#D97757" stroke="none" stroke-width="1" opacity="0.14"/>
+<text x="848.0" y="201" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="700" fill="#D97757" text-anchor="middle" opacity="1">7</text>
+<text x="848.0" y="228" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#141413" text-anchor="middle" opacity="1">E2E</text>
+<text x="848.0" y="250" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">Playwright</text>
+<text x="848.0" y="266" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">核心旅程</text>
+<polyline points="900,226 918,226" fill="none" stroke="#B3ADA0" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="918,226 909.0,221.8 909.0,230.2" fill="#B3ADA0"/>
+<rect x="918" y="170" width="104" height="112" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="970.0" cy="196" r="13" fill="#A8761C" stroke="none" stroke-width="1" opacity="0.14"/>
+<text x="970.0" y="201" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="700" fill="#A8761C" text-anchor="middle" opacity="1">8</text>
+<text x="970.0" y="228" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#141413" text-anchor="middle" opacity="1">打包</text>
+<text x="970.0" y="250" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">electron-builder</text>
+<text x="970.0" y="266" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">dmg + rebuild</text>
+<polyline points="1022,226 1040,226" fill="none" stroke="#B3ADA0" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="1040,226 1031.0,221.8 1031.0,230.2" fill="#B3ADA0"/>
+<rect x="1040" y="170" width="104" height="112" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="1092.0" cy="196" r="13" fill="#B5473C" stroke="none" stroke-width="1" opacity="0.14"/>
+<text x="1092.0" y="201" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="700" fill="#B5473C" text-anchor="middle" opacity="1">9</text>
+<text x="1092.0" y="228" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#141413" text-anchor="middle" opacity="1">安装验证</text>
+<text x="1092.0" y="250" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">全新账户</text>
+<text x="1092.0" y="266" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">创建 + 重启</text>
+<polyline points="1144,226 1162,226" fill="none" stroke="#B3ADA0" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="1162,226 1153.0,221.8 1153.0,230.2" fill="#B3ADA0"/>
+<rect x="1162" y="170" width="104" height="112" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<circle cx="1214.0" cy="196" r="13" fill="#788C5D" stroke="none" stroke-width="1" opacity="0.14"/>
+<text x="1214.0" y="201" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="700" fill="#788C5D" text-anchor="middle" opacity="1">10</text>
+<text x="1214.0" y="228" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13" font-weight="700" fill="#141413" text-anchor="middle" opacity="1">发布</text>
+<text x="1214.0" y="250" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">tag v1.0</text>
+<text x="1214.0" y="266" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#8A857D" text-anchor="middle" opacity="1">CHANGELOG</text>
+<rect x="64" y="316" width="900" height="76" rx="12" fill="#EEF1E7" stroke="none" stroke-width="1" opacity="1"/>
+<text x="84" y="344" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#788C5D" text-anchor="start" opacity="1">每次 PR 必过</text>
+<text x="84" y="368" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">lint · typecheck · 单元/集成 · ops 契约 · Web 构建 · Chromium 核心旅程 e2e</text>
+<rect x="984" y="316" width="272" height="76" rx="12" fill="#EAF1F7" stroke="none" stroke-width="1" opacity="1"/>
+<text x="1004" y="344" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#6A9BCC" text-anchor="start" opacity="1">每晚附加</text>
+<text x="1004" y="368" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">macOS e2e · WebKit · Storybook · 依赖审计</text>
+<rect x="64" y="404" width="1192" height="46" rx="10" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1"/>
+<text x="84" y="440" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">发布前：数据库迁移试跑 · 快照恢复演练 · 导出/导入演练 · 真机 iPhone Safari · 1 万任务性能 · 明暗主题截图归档</text>
+<line x1="48" y1="498" x2="1272" y2="498" stroke="#E8E6DC" stroke-width="1"/>
+<text x="48" y="520" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">时序 · Dailywork ｜ v1.0 ｜ 2026-10-27</text>
+<text x="1272" y="520" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">飞书画板 · 可编辑</text>
+</svg>

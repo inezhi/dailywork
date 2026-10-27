@@ -1,0 +1,17 @@
+stateDiagram-v2
+    state "下一步" as next
+    state "进行中" as doing
+    state "等待中" as waiting
+    state "受阻" as blocked
+    state "已完成" as done
+
+    [*] --> next: 创建
+    next --> doing: 开始
+    doing --> waiting: 等待外部
+    doing --> blocked: 遇到阻塞（填原因）
+    waiting --> doing: 恢复
+    blocked --> doing: 解除
+    doing --> done: 完成（记录 completedAt）
+    waiting --> done: 直接完成
+    done --> doing: 重新打开
+    done --> [*]: 归档

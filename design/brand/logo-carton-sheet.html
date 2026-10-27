@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>时序 · 品牌标识</title>
+<style>
+:root{--bg:#FAF9F5;--card:#fff;--line:#E8E6DC;--ink:#141413;--ink2:#5B5750;--ink3:#8A857D;--pine:#2F5D57;--sand:#D9BC8C}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Inter","PingFang SC","Noto Sans SC",sans-serif}
+.sheet{width:1200px;height:760px;padding:44px 56px;position:relative;overflow:hidden}
+.top{display:flex;justify-content:space-between;align-items:flex-start}
+h1{font-size:28px;margin:0;letter-spacing:-.4px}
+.sub{font-size:13px;color:var(--ink3);margin-top:7px}
+.tag{font-size:10px;color:#fff;background:var(--pine);padding:5px 10px;border-radius:12px;letter-spacing:.4px}
+.grid{display:grid;grid-template-columns:380px 1fr;gap:36px;margin-top:34px}
+.hero{background:var(--card);border:1px solid var(--line);border-radius:16px;height:320px;display:flex;align-items:center;justify-content:center;position:relative}
+.hero img{width:270px;height:270px;object-fit:contain}
+.hero .corner{position:absolute;left:18px;top:16px;font-size:10px;color:var(--ink3)}
+.lockup{background:var(--card);border:1px solid var(--line);border-radius:16px;height:140px;display:flex;align-items:center;gap:16px;padding:0 28px}
+.lockup img{width:64px;height:64px;object-fit:contain}
+.word{font-size:30px;font-weight:750;letter-spacing:2px;line-height:1.1}
+.word small{display:block;font-size:10px;font-weight:500;letter-spacing:1.6px;color:var(--ink3);margin-top:5px}
+.sizes{display:flex;align-items:flex-end;gap:26px;margin-top:16px;padding:18px 22px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.size{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:9px;color:var(--ink3)}
+.size img{display:block}
+.notes{position:absolute;left:56px;right:56px;bottom:34px;display:flex;gap:28px;border-top:1px solid var(--line);padding-top:18px}
+.note{flex:1;font-size:10.5px;color:var(--ink2);line-height:1.65}
+.note b{display:block;font-size:11px;color:var(--ink);margin-bottom:3px}
+.swatch{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.sw{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--ink3)}
+.sw i{width:12px;height:12px;border-radius:4px;display:inline-block}
+.footer{position:absolute;right:56px;bottom:12px;font-size:9px;color:var(--ink3)}
+</style></head>
+<body><div class="sheet">
+  <div class="top"><div><h1>品牌标识 · 时序 Dailywork</h1><div class="sub">复刻自牛奶盒 + 咖啡豆/叶造型；透明底，深松绿 + 沙金 + 米白。</div></div><div class="tag">BRAND v2.0</div></div>
+  <div class="grid">
+    <div class="hero"><span class="corner">主标识 / 270px</span><img src="logo-carton.png" alt="时序标识"></div>
+    <div>
+      <div class="lockup"><img src="logo-carton.png" alt=""><div class="word">时序<small>DAILYWORK</small></div></div>
+      <div class="sizes">
+        <div class="size"><img src="logo-carton.png" width="96" height="96" alt="">96</div>
+        <div class="size"><img src="logo-carton.png" width="64" height="64" alt="">64</div>
+        <div class="size"><img src="logo-carton.png" width="48" height="48" alt="">48</div>
+        <div class="size"><img src="logo-carton.png" width="34" height="34" alt="">34</div>
+        <div class="size"><img src="logo-carton.png" width="24" height="24" alt="">24</div>
+        <div class="size"><img src="logo-carton.png" width="16" height="16" alt="">16</div>
+        <div class="size" style="margin-left:auto;color:var(--ink2);text-align:left;align-items:flex-start;max-width:300px"><b style="font-size:11px;color:var(--ink)">最小尺寸</b><span>24px 以上可看清完整细节；16px 建议只保留盒身轮廓，或改用字标。</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="notes">
+    <div class="note"><b>符号含义</b>牛奶盒代表日常与补给；盒身上的咖啡豆/叶代表灵感与专注；圆形只作为豆子的容器，不是主形状。整体保留手绘感，但边缘是干净的位图。</div>
+    <div class="note"><b>使用规则</b>透明 PNG；四周留白 ≥ 标识高度的 1/4；不拉伸、不改描边粗细、不随意替换颜色。深色背景请加米白底板，待浅色描边版本补齐后再直接使用。</div>
+    <div class="note"><b>色彩</b><div class="swatch"><span class="sw"><i style="background:#2F5D57"></i>#2F5D57</span><span class="sw"><i style="background:#D9BC8C"></i>#D9BC8C</span><span class="sw"><i style="background:#F6F1E6;border:1px solid #E8E6DC"></i>#F6F1E6</span><span class="sw"><i style="background:#1C1B19"></i>#1C1B19</span></div>深松绿用于屋顶与豆子，沙金用于前板，米白用于侧板与高光，墨色描边。</div>
+    <div class="note"><b>格式</b>主标识为 1024×1024 透明 PNG（logo-carton.png），不再使用手绘 SVG；字标「时序」700 字重、Dailywork 500 字重。</div>
+  </div>
+  <div class="footer">时序 · Dailywork ｜ Brand Sheet v2.0 ｜ 2026-10-27</div>
+</div></body></html>

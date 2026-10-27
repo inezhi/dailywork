@@ -1,0 +1,26 @@
+sequenceDiagram
+    autonumber
+    actor U as 用户
+    participant AI as 全局对话 / 任务助理
+    participant M as 模型供应商
+    participant OPS as ops 目录
+    participant P as 空间策略
+    participant DB as op_log
+
+    U->>AI: “把发布清单拆成三个任务”
+    AI->>M: 请求（上下文 + ops 工具 schema）
+    M-->>AI: tool_call: task.create ×3
+    AI->>OPS: 校验工具调用
+    OPS->>P: 检查空间 AI 开关
+    alt 空间禁用 AI
+        P-->>OPS: 拒绝
+        OPS-->>AI: FORBIDDEN
+    else 允许
+        OPS-->>AI: CONFIRMATION_REQUIRED（摘要 + 参数）
+        AI-->>U: 展示确认卡片
+        U->>AI: 确认
+        AI->>OPS: 执行（一次性确认令牌）
+        OPS->>DB: 写 op_log，来源标记 ai
+        OPS-->>AI: 结果
+        AI-->>U: 完成 + 可撤销
+    end

@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="700" viewBox="0 0 1240 700">
+<rect width="1240" height="700" fill="#FAF9F5"/>
+<defs>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+  <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#191919" flood-opacity="0.06"/>
+</filter>
+</defs>
+<text x="48" y="58" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="27" font-weight="700" fill="#141413" text-anchor="start" opacity="1">任务域数据模型</text>
+<text x="48" y="84" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">空间 · 项目 · 任务 · 时间块 · 专注 · 速记</text>
+<rect x="1141.2" y="42" width="48.8" height="24" rx="12.0" fill="#D97757" stroke="none" stroke-width="0" opacity="1"/>
+<text x="1165.6000000000001" y="58.32" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#FFFFFF" text-anchor="middle" opacity="1">DATA</text>
+<rect x="60" y="200" width="240" height="150" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="76" y="226" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">SPACE</text>
+<line x1="76" y1="238" x2="284" y2="238" stroke="#E8E6DC" stroke-width="1"/>
+<text x="76" y="258" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">id</text>
+<text x="253.8" y="258" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="261.8" y="246" width="22.2" height="16" rx="8.0" fill="#F4E5DD" stroke="none" stroke-width="0" opacity="1"/>
+<text x="272.90000000000003" y="257.06" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="8.5" font-weight="400" fill="#C6613F" text-anchor="middle" opacity="1">PK</text>
+<text x="76" y="277" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">name</text>
+<text x="276" y="277" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<text x="76" y="296" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">color</text>
+<text x="276" y="296" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<text x="76" y="315" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">icon</text>
+<text x="276" y="315" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<text x="76" y="334" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">sort_order</text>
+<text x="276" y="334" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">int</text>
+<rect x="370" y="200" width="260" height="170" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="386" y="226" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">PROJECT</text>
+<line x1="386" y1="238" x2="614" y2="238" stroke="#E8E6DC" stroke-width="1"/>
+<text x="386" y="258" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">id</text>
+<text x="583.8" y="258" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="591.8" y="246" width="22.2" height="16" rx="8.0" fill="#F4E5DD" stroke="none" stroke-width="0" opacity="1"/>
+<text x="602.9" y="257.06" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="8.5" font-weight="400" fill="#C6613F" text-anchor="middle" opacity="1">PK</text>
+<text x="386" y="277" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">space_id</text>
+<text x="583.8" y="277" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="591.8" y="265" width="22.2" height="16" rx="8.0" fill="#EAF1F7" stroke="none" stroke-width="0" opacity="1"/>
+<text x="602.9" y="276.06" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="8.5" font-weight="400" fill="#6A9BCC" text-anchor="middle" opacity="1">FK</text>
+<text x="386" y="296" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">name</text>
+<text x="606" y="296" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<text x="386" y="315" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">status</text>
+<text x="606" y="315" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<text x="386" y="334" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">due_at</text>
+<text x="606" y="334" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">datetime</text>
+<text x="386" y="353" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">acceptance</text>
+<text x="606" y="353" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="710" y="170" width="300" height="280" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="726" y="196" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">TASK</text>
+<line x1="726" y1="208" x2="994" y2="208" stroke="#E8E6DC" stroke-width="1"/>
+<text x="726" y="228" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">id</text>
+<text x="963.8" y="228" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="971.8" y="216" width="22.2" height="16" rx="8.0" fill="#F4E5DD" stroke="none" stroke-width="0" opacity="1"/>
+<text x="982.9" y="227.06" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="8.5" font-weight="400" fill="#C6613F" text-anchor="middle" opacity="1">PK</text>
+<text x="726" y="247" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">space_id</text>
+<text x="963.8" y="247" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="971.8" y="235" width="22.2" height="16" rx="8.0" fill="#EAF1F7" stroke="none" stroke-width="0" opacity="1"/>
+<text x="982.9" y="246.06" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="8.5" font-weight="400" fill="#6A9BCC" text-anchor="middle" opacity="1">FK</text>
+<text x="726" y="266" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">project_id</text>
+<text x="963.8" y="266" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="971.8" y="254" width="22.2" height="16" rx="8.0" fill="#EAF1F7" stroke="none" stroke-width="0" opacity="1"/>
+<text x="982.9" y="265.06" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="8.5" font-weight="400" fill="#6A9BCC" text-anchor="middle" opacity="1">FK</text>
+<text x="726" y="285" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">parent_id</text>
+<text x="963.8" y="285" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="971.8" y="273" width="22.2" height="16" rx="8.0" fill="#EAF1F7" stroke="none" stroke-width="0" opacity="1"/>
+<text x="982.9" y="284.06" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="8.5" font-weight="400" fill="#6A9BCC" text-anchor="middle" opacity="1">FK</text>
+<text x="726" y="304" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">title</text>
+<text x="986" y="304" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<text x="726" y="323" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">status</text>
+<text x="986" y="323" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<text x="726" y="342" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">priority</text>
+<text x="986" y="342" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<text x="726" y="361" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">due_at</text>
+<text x="986" y="361" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">datetime</text>
+<text x="726" y="380" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">estimate_min</text>
+<text x="986" y="380" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">int</text>
+<text x="726" y="399" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">actual_min</text>
+<text x="986" y="399" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">int</text>
+<text x="726" y="418" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">version</text>
+<text x="986" y="418" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">int</text>
+<rect x="60" y="430" width="240" height="150" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="76" y="456" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">MEMO</text>
+<line x1="76" y1="468" x2="284" y2="468" stroke="#E8E6DC" stroke-width="1"/>
+<text x="76" y="488" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">id</text>
+<text x="253.8" y="488" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="261.8" y="476" width="22.2" height="16" rx="8.0" fill="#F4E5DD" stroke="none" stroke-width="0" opacity="1"/>
+<text x="272.90000000000003" y="487.06" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="8.5" font-weight="400" fill="#C6613F" text-anchor="middle" opacity="1">PK</text>
+<text x="76" y="507" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">content</text>
+<text x="276" y="507" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">text</text>
+<text x="76" y="526" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">tags_json</text>
+<text x="276" y="526" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">json</text>
+<text x="76" y="545" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">converted_task_id</text>
+<text x="253.8" y="545" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="261.8" y="533" width="22.2" height="16" rx="8.0" fill="#EAF1F7" stroke="none" stroke-width="0" opacity="1"/>
+<text x="272.90000000000003" y="544.06" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="8.5" font-weight="400" fill="#6A9BCC" text-anchor="middle" opacity="1">FK</text>
+<text x="76" y="564" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">created_at</text>
+<text x="276" y="564" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">datetime</text>
+<rect x="370" y="450" width="260" height="140" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="386" y="476" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">SCHEDULE_ENTRY</text>
+<line x1="386" y1="488" x2="614" y2="488" stroke="#E8E6DC" stroke-width="1"/>
+<text x="386" y="508" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">id</text>
+<text x="583.8" y="508" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="591.8" y="496" width="22.2" height="16" rx="8.0" fill="#F4E5DD" stroke="none" stroke-width="0" opacity="1"/>
+<text x="602.9" y="507.06" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="8.5" font-weight="400" fill="#C6613F" text-anchor="middle" opacity="1">PK</text>
+<text x="386" y="527" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">task_id</text>
+<text x="583.8" y="527" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="591.8" y="515" width="22.2" height="16" rx="8.0" fill="#EAF1F7" stroke="none" stroke-width="0" opacity="1"/>
+<text x="602.9" y="526.06" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="8.5" font-weight="400" fill="#6A9BCC" text-anchor="middle" opacity="1">FK</text>
+<text x="386" y="546" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">start_at</text>
+<text x="606" y="546" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">datetime</text>
+<text x="386" y="565" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">end_at</text>
+<text x="606" y="565" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">datetime</text>
+<rect x="710" y="490" width="270" height="150" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="726" y="516" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">FOCUS_SESSION</text>
+<line x1="726" y1="528" x2="964" y2="528" stroke="#E8E6DC" stroke-width="1"/>
+<text x="726" y="548" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">id</text>
+<text x="933.8" y="548" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="941.8" y="536" width="22.2" height="16" rx="8.0" fill="#F4E5DD" stroke="none" stroke-width="0" opacity="1"/>
+<text x="952.9" y="547.06" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="8.5" font-weight="400" fill="#C6613F" text-anchor="middle" opacity="1">PK</text>
+<text x="726" y="567" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">task_id</text>
+<text x="933.8" y="567" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">string</text>
+<rect x="941.8" y="555" width="22.2" height="16" rx="8.0" fill="#EAF1F7" stroke="none" stroke-width="0" opacity="1"/>
+<text x="952.9" y="566.06" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="8.5" font-weight="400" fill="#6A9BCC" text-anchor="middle" opacity="1">FK</text>
+<text x="726" y="586" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">started_at</text>
+<text x="956" y="586" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">datetime</text>
+<text x="726" y="605" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">planned_min</text>
+<text x="956" y="605" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">int</text>
+<text x="726" y="624" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="10" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">actual_min</text>
+<text x="956" y="624" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9.5" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">int</text>
+<polyline points="300,255 370,255" fill="none" stroke="#B3ADA0" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="370,255 361.0,250.8 361.0,259.2" fill="#B3ADA0"/>
+<rect x="319.9" y="233" width="30.2" height="18" rx="5" fill="#FAF9F5" opacity="0.96"/>
+<text x="335" y="245" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">1:N</text>
+<polyline points="630,255 710,255" fill="none" stroke="#B3ADA0" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="710,255 701.0,250.8 701.0,259.2" fill="#B3ADA0"/>
+<rect x="654.9" y="233" width="30.2" height="18" rx="5" fill="#FAF9F5" opacity="0.96"/>
+<text x="670" y="245" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">1:N</text>
+<polyline points="180,350 180,430" fill="none" stroke="#B3ADA0" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="180,430 184.2,421.0 175.8,421.0" fill="#B3ADA0"/>
+<rect x="194.9" y="380" width="30.2" height="18" rx="5" fill="#FAF9F5" opacity="0.96"/>
+<text x="210" y="392" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">1:N</text>
+<polyline points="760,450 760,465 640,465 640,560 630,560" fill="none" stroke="#B3ADA0" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="630,560 639.0,564.2 639.0,555.8" fill="#B3ADA0"/>
+<rect x="684.9" y="540" width="30.2" height="18" rx="5" fill="#FAF9F5" opacity="0.96"/>
+<text x="700" y="552" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">1:N</text>
+<polyline points="900,450 900,490" fill="none" stroke="#B3ADA0" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="900,490 904.2,481.0 895.8,481.0" fill="#B3ADA0"/>
+<rect x="914.9" y="460" width="30.2" height="18" rx="5" fill="#FAF9F5" opacity="0.96"/>
+<text x="930" y="472" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">1:N</text>
+<polyline points="1010,220 1040,220 1040,380 1010,380" fill="none" stroke="#B3ADA0" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="1010,380 1019.0,384.2 1019.0,375.8" fill="#B3ADA0"/>
+<rect x="1041.5" y="288" width="41.0" height="18" rx="5" fill="#FAF9F5" opacity="0.96"/>
+<text x="1062" y="300" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="9" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">子任务</text>
+<text x="72" y="620" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">任务删除为软删除；状态机与子任务进度汇总由 tasking 维护；时间块只引用 taskId，不复制任务字段。</text>
+<line x1="48" y1="658" x2="1192" y2="658" stroke="#E8E6DC" stroke-width="1"/>
+<text x="48" y="680" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">时序 · Dailywork ｜ v1.0 ｜ 2026-10-27</text>
+<text x="1192" y="680" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">飞书画板 · 可编辑</text>
+</svg>

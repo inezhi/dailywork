@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="980" viewBox="0 0 1240 980">
+<rect width="1240" height="980" fill="#FAF9F5"/>
+<defs>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+  <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#191919" flood-opacity="0.06"/>
+</filter>
+</defs>
+<text x="48" y="58" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="27" font-weight="700" fill="#141413" text-anchor="start" opacity="1">容器与代码结构</text>
+<text x="48" y="84" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">Electron 壳 · React Web · Hono 服务 · CLI/MCP · DDD 纵向切片</text>
+<rect x="1098.0" y="42" width="92.0" height="24" rx="12.0" fill="#D97757" stroke="none" stroke-width="0" opacity="1"/>
+<text x="1144.0" y="58.32" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#FFFFFF" text-anchor="middle" opacity="1">CONTAINERS</text>
+<text x="72" y="134" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#C6613F" text-anchor="start" opacity="1">APPS · 入口</text>
+<line x1="72" y1="144" x2="322" y2="144" stroke="#E8E6DC" stroke-width="1"/>
+<text x="476" y="134" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#788C5D" text-anchor="start" opacity="1">PACKAGES · 领域与契约</text>
+<line x1="476" y1="144" x2="726" y2="144" stroke="#E8E6DC" stroke-width="1"/>
+<text x="880" y="134" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#6A9BCC" text-anchor="start" opacity="1">DATA &amp; PLATFORM</text>
+<line x1="880" y1="144" x2="1130" y2="144" stroke="#E8E6DC" stroke-width="1"/>
+<rect x="72" y="164" width="250" height="86" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="90" y="188" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#141413" text-anchor="start" opacity="1">desktop/</text>
+<text x="90" y="210" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">Electron 主进程 · preload</text>
+<text x="90" y="230" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">窗口 / 托盘 / 通知 / 快捷键</text>
+<rect x="72" y="266" width="250" height="86" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="90" y="290" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#141413" text-anchor="start" opacity="1">server/</text>
+<text x="90" y="312" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">Hono 组合根</text>
+<text x="90" y="332" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">ops 路由 · WS · 静态资源</text>
+<rect x="72" y="368" width="250" height="86" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="90" y="392" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#141413" text-anchor="start" opacity="1">web/</text>
+<text x="90" y="414" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">React 应用</text>
+<text x="90" y="434" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">视图 · 查询缓存 · 乐观更新</text>
+<rect x="72" y="470" width="250" height="86" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="90" y="494" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#141413" text-anchor="start" opacity="1">cli/</text>
+<text x="90" y="516" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">daily + MCP</text>
+<text x="90" y="536" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">attach 服务 · JSON 输出</text>
+<rect x="476" y="164" width="330" height="72" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="494" y="188" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#788C5D" text-anchor="start" opacity="1">contracts/</text>
+<text x="494" y="212" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">DTO · zod · op envelope</text>
+<rect x="476" y="248" width="330" height="72" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="494" y="272" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#C6613F" text-anchor="start" opacity="1">ops/</text>
+<text x="494" y="296" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">操作目录 · 四入口生成器</text>
+<rect x="476" y="332" width="330" height="100" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="494" y="356" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#141413" text-anchor="start" opacity="1">contexts/</text>
+<text x="494" y="380" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">workspace · tasking · projects · capture</text>
+<text x="494" y="398" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">planning · focus · documents · assistant</text>
+<rect x="476" y="444" width="330" height="92" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="494" y="468" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#6A9BCC" text-anchor="start" opacity="1">platform/</text>
+<text x="494" y="492" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">SQLite · migrations · Keychain</text>
+<text x="494" y="510" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">BackupService · logging</text>
+<rect x="476" y="548" width="330" height="72" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="494" y="572" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#6A9BCC" text-anchor="start" opacity="1">analytics/</text>
+<text x="494" y="596" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">仪表盘只读投影</text>
+<rect x="476" y="632" width="330" height="72" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1" filter="url(#soft)"/>
+<text x="494" y="656" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="14" font-weight="700" fill="#141413" text-anchor="start" opacity="1">design-system/</text>
+<text x="494" y="680" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">tokens · 组件 · Storybook</text>
+<rect x="880" y="164" width="300" height="74" rx="12" fill="#EEF1E7" stroke="none" stroke-width="1" opacity="1"/>
+<text x="898" y="192" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">SQLite（WAL）</text>
+<text x="898" y="214" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#788C5D" text-anchor="start" opacity="1">data.sqlite · 权威库</text>
+<rect x="880" y="252" width="300" height="74" rx="12" fill="#F4E5DD" stroke="none" stroke-width="1" opacity="1"/>
+<text x="898" y="280" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">op_log / outbox</text>
+<text x="898" y="302" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#C6613F" text-anchor="start" opacity="1">同事务写入 · 可重放</text>
+<rect x="880" y="340" width="300" height="74" rx="12" fill="#EAF1F7" stroke="none" stroke-width="1" opacity="1"/>
+<text x="898" y="368" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">图片 BLOB</text>
+<text x="898" y="390" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#6A9BCC" text-anchor="start" opacity="1">blobs / attachments · sha256 去重</text>
+<rect x="880" y="428" width="300" height="74" rx="12" fill="#EAF1F7" stroke="none" stroke-width="1" opacity="1"/>
+<text x="898" y="456" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">本地快照 / 导出包</text>
+<text x="898" y="478" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#6A9BCC" text-anchor="start" opacity="1">VACUUM INTO · .dailywork</text>
+<rect x="880" y="516" width="300" height="74" rx="12" fill="#F7EFDF" stroke="none" stroke-width="1" opacity="1"/>
+<text x="898" y="544" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">Keychain</text>
+<text x="898" y="566" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#A8761C" text-anchor="start" opacity="1">AI Key · safeStorage</text>
+<rect x="880" y="604" width="300" height="74" rx="12" fill="#F6F3EC" stroke="none" stroke-width="1" opacity="1"/>
+<text x="898" y="632" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="13.5" font-weight="700" fill="#141413" text-anchor="start" opacity="1">daily token</text>
+<text x="898" y="654" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">0600 文件 · 本机鉴权</text>
+<polyline points="322,206 476,206" fill="none" stroke="#D97757" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="476,206 467.0,201.8 467.0,210.2" fill="#D97757"/>
+<rect x="368.0" y="181" width="62.0" height="21" rx="5" fill="#FAF9F5" opacity="0.96"/>
+<text x="399" y="196" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="400" fill="#5B5750" text-anchor="middle" opacity="1">构建依赖</text>
+<rect x="72" y="790" width="1108" height="62" rx="12" fill="#FFFFFF" stroke="#E8E6DC" stroke-width="1" opacity="1"/>
+<text x="92" y="814" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="12" font-weight="700" fill="#C6613F" text-anchor="start" opacity="1">依赖规则</text>
+<text x="160" y="814" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#5B5750" text-anchor="start" opacity="1">interface → application → domain；contexts 只依赖公开 application 接口与 contracts；由 dependency-cruiser 在 CI 强制执行。</text>
+<text x="92" y="835" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11.5" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">禁止跨上下文写；最终一致副作用走 outbox 事件；analytics 与 sync 只读订阅，不反向依赖业务上下文。</text>
+<line x1="48" y1="938" x2="1192" y2="938" stroke="#E8E6DC" stroke-width="1"/>
+<text x="48" y="960" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="start" opacity="1">时序 · Dailywork ｜ v1.0 ｜ 2026-10-27</text>
+<text x="1192" y="960" font-family="'Noto Sans SC','PingFang SC','Inter',sans-serif" font-size="11" font-weight="400" fill="#8A857D" text-anchor="end" opacity="1">飞书画板 · 可编辑</text>
+</svg>

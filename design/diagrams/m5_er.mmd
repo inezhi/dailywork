@@ -1,0 +1,86 @@
+erDiagram
+    SPACE ||--o{ PROJECT : "包含"
+    SPACE ||--o{ TASK : "归属"
+    PROJECT ||--o{ TASK : "包含"
+    TASK ||--o{ TASK : "子任务"
+    TASK ||--o{ SCHEDULE_ENTRY : "排期"
+    TASK ||--o{ FOCUS_SESSION : "专注"
+    SPACE ||--o{ MEMO : "速记"
+    DOCUMENT ||--o{ DOCUMENT : "子文档"
+    SPACE ||--o{ DOCUMENT : "挂载"
+    PROJECT ||--o{ DOCUMENT : "挂载"
+    TASK ||--o{ DOCUMENT : "引用"
+
+    SPACE {
+        string id PK
+        string name
+        string color
+        string icon
+        int sort_order
+    }
+    PROJECT {
+        string id PK
+        string space_id FK
+        string name
+        string status
+        datetime due_at
+        string acceptance
+    }
+    TASK {
+        string id PK
+        string space_id FK
+        string project_id FK
+        string parent_id FK
+        string title
+        string status
+        string priority
+        datetime due_at
+        int estimate_min
+        int actual_min
+        datetime completed_at
+        int version
+    }
+    MEMO {
+        string id PK
+        string content
+        string tags_json
+        string converted_task_id
+        datetime created_at
+    }
+    SCHEDULE_ENTRY {
+        string id PK
+        string task_id FK
+        datetime start_at
+        datetime end_at
+    }
+    FOCUS_SESSION {
+        string id PK
+        string task_id FK
+        datetime started_at
+        int planned_min
+        int actual_min
+        boolean completed
+    }
+    DOCUMENT {
+        string id PK
+        string space_id FK
+        string project_id FK
+        string task_id FK
+        string parent_id FK
+        string title
+        string yjs_doc_id
+    }
+    OP_LOG {
+        string op_id PK
+        string device_id
+        string hlc
+        int seq
+        int schema_version
+        string aggregate_id
+        string command
+        json payload
+    }
+    APPLIED_OPS {
+        string op_id PK
+        datetime applied_at
+    }

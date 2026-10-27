@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>时序 · 品牌标识</title>
+<style>
+:root{--bg:#FAF9F5;--card:#fff;--line:#E8E6DC;--ink:#141413;--ink2:#5B5750;--ink3:#8A857D;--pine:#2F5D57;--sand:#C9A96E}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Inter","PingFang SC","Noto Sans SC",sans-serif}
+.sheet{width:1200px;height:760px;padding:44px 56px;position:relative;overflow:hidden}
+.top{display:flex;justify-content:space-between;align-items:flex-start}
+h1{font-size:28px;margin:0;letter-spacing:-.4px}
+.sub{font-size:13px;color:var(--ink3);margin-top:7px}
+.tag{font-size:10px;color:#fff;background:var(--pine);padding:5px 10px;border-radius:12px;letter-spacing:.4px}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:36px;margin-top:36px}
+.hero{background:var(--card);border:1px solid var(--line);border-radius:16px;height:300px;display:flex;align-items:center;justify-content:center;position:relative}
+.hero .mark{width:180px;height:180px}
+.hero .corner{position:absolute;left:18px;top:16px;font-size:10px;color:var(--ink3)}
+.lockup{background:var(--card);border:1px solid var(--line);border-radius:16px;height:140px;display:flex;align-items:center;gap:16px;padding:0 28px}
+.lockup .mark{width:56px;height:56px}
+.word{font-size:30px;font-weight:750;letter-spacing:2px;line-height:1.1}
+.word small{display:block;font-size:10px;font-weight:500;letter-spacing:1.6px;color:var(--ink3);margin-top:5px}
+.rule{display:flex;gap:14px;margin-top:16px}
+.variant{flex:1;border-radius:14px;border:1px solid var(--line);height:112px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:11px;color:var(--ink3)}
+.variant .mark{width:44px;height:44px}
+.variant.dark{background:#1C1B19;border-color:#39362F;color:#B5B0A6}
+.variant.mono{background:#F0EEE6}
+.sizes{display:flex;align-items:flex-end;gap:26px;margin-top:26px;padding:18px 22px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.size{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:9px;color:var(--ink3)}
+.notes{position:absolute;left:56px;right:56px;bottom:34px;display:flex;gap:28px;border-top:1px solid var(--line);padding-top:18px}
+.note{flex:1;font-size:10.5px;color:var(--ink2);line-height:1.65}
+.note b{display:block;font-size:11px;color:var(--ink);margin-bottom:3px}
+.swatch{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.sw{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--ink3)}
+.sw i{width:12px;height:12px;border-radius:4px;display:inline-block}
+.footer{position:absolute;right:56px;bottom:12px;font-size:9px;color:var(--ink3)}
+</style></head>
+<body><div class="sheet">
+  <svg width="0" height="0" style="position:absolute">
+    <symbol id="mark" viewBox="0 0 64 64">
+      <rect x="7" y="12" width="34" height="9" rx="4.5" fill="#2F5D57"/>
+      <rect x="41" y="12" width="9" height="24" rx="4.5" fill="#2F5D57"/>
+      <rect x="19" y="27" width="34" height="9" rx="4.5" fill="#C9A96E"/>
+      <rect x="12" y="36" width="9" height="24" rx="4.5" fill="#2F5D57"/>
+      <rect x="7" y="51" width="34" height="9" rx="4.5" fill="#2F5D57"/>
+      <rect x="48" y="5" width="8" height="8" rx="1.5" fill="#C9A96E" transform="rotate(45 52 9)"/>
+    </symbol>
+    <symbol id="mark-dark" viewBox="0 0 64 64">
+      <rect x="7" y="12" width="34" height="9" rx="4.5" fill="#7FB0A7"/>
+      <rect x="41" y="12" width="9" height="24" rx="4.5" fill="#7FB0A7"/>
+      <rect x="19" y="27" width="34" height="9" rx="4.5" fill="#E0C99B"/>
+      <rect x="12" y="36" width="9" height="24" rx="4.5" fill="#7FB0A7"/>
+      <rect x="7" y="51" width="34" height="9" rx="4.5" fill="#7FB0A7"/>
+      <rect x="48" y="5" width="8" height="8" rx="1.5" fill="#E0C99B" transform="rotate(45 52 9)"/>
+    </symbol>
+    <symbol id="mark-mono" viewBox="0 0 64 64">
+      <rect x="7" y="12" width="34" height="9" rx="4.5" fill="#141413"/>
+      <rect x="41" y="12" width="9" height="24" rx="4.5" fill="#141413"/>
+      <rect x="19" y="27" width="34" height="9" rx="4.5" fill="#5B5750"/>
+      <rect x="12" y="36" width="9" height="24" rx="4.5" fill="#141413"/>
+      <rect x="7" y="51" width="34" height="9" rx="4.5" fill="#141413"/>
+      <rect x="48" y="5" width="8" height="8" rx="1.5" fill="#5B5750" transform="rotate(45 52 9)"/>
+    </symbol>
+  </svg>
+  <div class="top"><div><h1>品牌标识 · 时序 Dailywork</h1><div class="sub">时间有序，专注有度。三段式序列构成品牌符号。</div></div><div class="tag">BRAND v1.2</div></div>
+  <div class="grid">
+    <div class="hero"><span class="corner">主标识 / 180px</span><svg class="mark" viewBox="0 0 64 64"><use href="#mark"/></svg></div>
+    <div>
+      <div class="lockup"><svg class="mark" viewBox="0 0 64 64"><use href="#mark"/></svg><div class="word">时序<small>DAILYWORK</small></div></div>
+      <div class="rule">
+        <div class="variant"><svg class="mark" viewBox="0 0 64 64"><use href="#mark"/></svg>浅色 / 默认</div>
+        <div class="variant dark"><svg class="mark" viewBox="0 0 64 64"><use href="#mark-dark"/></svg>深色 / 提亮</div>
+        <div class="variant mono"><svg class="mark" viewBox="0 0 64 64"><use href="#mark-mono"/></svg>单色 / 印刷</div>
+      </div>
+      <div class="sizes">
+        <div class="size"><svg width="48" height="48" viewBox="0 0 64 64"><use href="#mark"/></svg>48</div>
+        <div class="size"><svg width="32" height="32" viewBox="0 0 64 64"><use href="#mark"/></svg>32</div>
+        <div class="size"><svg width="20" height="20" viewBox="0 0 64 64"><use href="#mark"/></svg>20</div>
+        <div class="size"><svg width="16" height="16" viewBox="0 0 64 64"><use href="#mark"/></svg>16</div>
+        <div class="size" style="margin-left:auto;color:var(--ink2);text-align:left;align-items:flex-start;max-width:270px"><b style="font-size:11px;color:var(--ink)">最小尺寸</b><span>16px；小于 24px 时使用简化版（保留三段阶梯与节点）或单色版，避免节点细节丢失。</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="notes">
+    <div class="note"><b>符号含义</b>三段阶梯代表过去、现在与下一步；深松绿是主路径，沙金是当前焦点；右上方的菱形节点是下一个时刻。序列向前，形成可持续的节奏。</div>
+    <div class="note"><b>使用规则</b>四周留白 ≥ 标识高度的 1/4；不旋转、不加描边、不改变阶梯方向与节点位置；不使用渐变、底色块或额外阴影。</div>
+    <div class="note"><b>色彩</b><div class="swatch"><span class="sw"><i style="background:#2F5D57"></i>#2F5D57</span><span class="sw"><i style="background:#C9A96E"></i>#C9A96E</span><span class="sw"><i style="background:#1C1B19"></i>#1C1B19</span></div>深色背景使用提亮青绿 #7FB0A7 与浅沙金 #E0C99B；单色使用墨色。标识不依赖底色。</div>
+    <div class="note"><b>字标</b>「时序」使用 700 字重，字距 2px；英文 Dailywork 使用 500 字重、字距 1.6px。字标不得单独拉伸或替换字体。</div>
+  </div>
+  <div class="footer">时序 · Dailywork ｜ Brand Sheet v1.2 ｜ 2026-10-27</div>
+</div></body></html>

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(lark-cli --version)",
+      "Bash(lark-cli auth *)",
+      "Bash(lark-cli wiki *)"
+    ]
+  }
+}
