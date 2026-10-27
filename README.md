@@ -21,7 +21,10 @@ v1 是一个 TypeScript 单体（Hono + SQLite + React/Electron），功能已�
 - 按限界上下文拆分服务，而不是按技术层拆；
 - 每个服务独立数据库，跨服务只走 API 或事件；
 - 同步查询与异步事件的边界、outbox、幂等与最终一致；
-- Redis 会话/缓存、NATS JetStream 事件流；
+- 用 Kitex + Thrift 练内部 RPC，用 Hertz 做 HTTP 网关；
+- 用 etcd 练服务注册与发现（M3），用 APISIX 练平台网关（M6）；
+- Redis 会话/缓存、Kafka 事件流（分区、消费组、offset、重平衡）；
+- 用 MongoDB 练文档型数据，用 Eino 练 Agent 编排与工具调用；
 - OpenTelemetry 日志、指标、链路，以及 Docker Compose / K8s 部署；
 - Go 的工程习惯：`context.Context`、显式错误、接口小、依赖注入、优雅退出、表驱动测试。
 
@@ -31,35 +34,71 @@ v1 是一个 TypeScript 单体（Hono + SQLite + React/Electron），功能已�
 浏览器 / 未来移动端
         │ HTTPS
         ▼
-   gateway (Go)
-   ├── identity    账户、会话、验证码、头像
-   ├── task        空间、项目、任务、标签、速记
-   ├── planning    日历、容量、专注会话
-   ├── docs        文档、正文、附件
-   └── assistant   AI 供应商、对话、流式输出
+   APISIX（M6 可选：TLS、限流、灰度、API Key）
         │
-        ├── PostgreSQL（每个服务独立库）
+        ▼
+   gateway (Hertz / BFF)
+   ├── identity    账户、会话、验证码（Kitex）
+   ├── task        空间、项目、任务、标签（Kitex）
+   ├── planning    日历、容量、专注会话（Kitex，后续）
+   ├── docs        文档、正文、反向链接（Kitex，MongoDB，后续）
+   └── assistant   AI 对话、工具调用、流式输出（Kitex + Eino，MongoDB，后续）
+        │
+        ├── PostgreSQL（identity / task）
+        ├── MongoDB（docs / assistant）
         ├── Redis（会话、缓存、限流）
-        ├── NATS JetStream（领域事件）
-        └── MinIO（附件对象存储，后期）
+        ├── Kafka（KRaft，领域事件）
+        ├── etcd（服务注册/发现，M3）
+        ├── MinIO（附件对象存储，后期）
+        └── OpenTelemetry / Prometheus / Grafana / Jaeger（可观测性）
 ```
 
-MVP 只实现 **gateway + identity + task**，跑通注册、登录、创建任务、今天列表；其余服务按路线图逐步拆出。
+MVP 只实现 **gateway + identity + task**，跑通注册、登录、创建任务、今天列表；其余服务按路线图逐步拆出。M6 可选在 Hertz 前加 APISIX 做平台网关，Hertz 保留 BFF；BFF 聚合按需使用，不强制所有页面都走聚合接口。
 
 ## 规划技术栈
 
 | 层 | 选型 |
 |---|---|
 | 语言 | Go 1.27 |
-| HTTP | 标准库 `net/http` + `chi` |
-| 数据库 | PostgreSQL + `pgx` + `sqlc` + `golang-migrate` |
+| HTTP 网关 | **Hertz**（兼 BFF） |
+| 平台网关（M6 可选） | **APISIX**（TLS、限流、灰度、API Key） |
+| 内部 RPC | **Kitex + Thrift** |
+| IDL / 代码生成 | Thrift + `kitex` / `thriftgo` |
+| 数据库 | PostgreSQL（identity / task）+ MongoDB（docs / assistant） |
+| 数据访问 | PostgreSQL：`pgx` + `sqlc` + `golang-migrate`；MongoDB：`mongo-go-driver` |
 | 缓存/会话 | Redis + `go-redis` |
-| 事件 | NATS JetStream |
-| 内部通信 | ConnectRPC / gRPC |
+| 事件 | **Kafka**（本地 KRaft 单节点；生产多 broker） |
+| 服务发现 | M1 直连，M3 接 etcd（`kitex-contrib/registry-etcd`） |
 | 外部契约 | REST + OpenAPI 3.1 |
+| Agent 编排 | **Eino**（assistant 服务，工具调用 + 流式输出） |
+| 对象存储 | MinIO（docs 附件，后续） |
 | 可观测性 | `slog` + OpenTelemetry + Prometheus + Grafana + Jaeger |
 | 本地编排 | Docker Compose |
 | 前端 | React + Vite（后续接入，复用 v1 视觉参考） |
+
+事件总线选 Kafka：本地 KRaft 单节点即可跑；分区、消费组、offset、重平衡是重点练习内容。
+
+服务发现选 etcd：M1 先用 Compose 直连，M3 接 etcd（`kitex-contrib/registry-etcd`）；Kitex 通过 `Registry` / `Resolver` 抽象，后续可换 Consul、Nacos。
+
+## MongoDB 与 Agent 框架
+
+两者在 MVP 之后（M7 docs、M8 assistant）落地；MVP 仍然是 gateway + identity + task。原则是：**有明确场景才引入，不为了用而用。**
+
+### MongoDB：只放文档型数据
+
+- `docs` 服务：文档树、块正文 JSON、反向链接、文档搜索投影。文档天然是嵌套结构，MongoDB 的文档模型比关系表更自然。
+- `assistant` 服务：对话、消息、工具调用轨迹、Agent 运行记录。消息是追加型文档，读写模式简单。
+- **不用于** `identity`/`task`：账户、任务、项目、标签仍是 PostgreSQL；不做跨库 JOIN，不把任务数据复制到 Mongo。
+
+### Eino：只用于多步 Agent 场景
+
+- 「今天做什么」：读取今天任务 → 汇总压力 → 给出建议 → 用户确认后创建/调整任务。
+- 「任务拆解」：读取任务 → 生成子任务 → 用户确认 → 调用 task 服务创建。
+- 「周复盘」：读取已完成/逾期任务 → 生成复盘 → 提取下一步。
+- Eino 负责图编排、工具调用、记忆和流式输出；简单单轮问答或纯文本润色直接调模型 SDK，不套 Agent 框架。
+- 工具只读任务数据；写操作必须经用户确认并走 task 服务，Agent 不允许直写数据库。
+
+
 
 ## 当前仓库结构
 
@@ -74,9 +113,9 @@ dailywork/
 代码阶段的规划目录：
 
 ```text
-services/   gateway, identity, task, planning, docs, assistant
-api/        OpenAPI / Protobuf 契约
-deploy/     Docker Compose, K8s manifests
+services/   gateway(Hertz/BFF), identity/task/...（Kitex）
+api/        OpenAPI / Thrift IDL / 生成代码
+deploy/     Docker Compose, APISIX, Kafka, K8s manifests
 web/        React SPA
 docs/       本地只放索引；正式文档在飞书
 ```
@@ -101,6 +140,13 @@ docs/       本地只放索引；正式文档在飞书
 | 12 | [设计系统与页面规格｜时序 v2](https://my.feishu.cn/wiki/M2NZwqil8iJ5WKkvp74cnMqpnZx) |
 | 13 | [ADR 决策记录｜时序 v2](https://my.feishu.cn/wiki/NJr6wRyuTiMzeEkHu79c8hoCnNg) |
 | 14 | [研发流程与发布｜时序 v2](https://my.feishu.cn/wiki/CtWjwAwCwiYLIJkdPPPciEuDnbr) |
+
+## 参考项目
+
+- [biz-demo](https://github.com/cloudwego/biz-demo) — 业务示例仓库：Hertz + Kitex、`hz`/`kitex` 代码生成、etcd 注册、GORM/MySQL、Hertz 中间件、OpenTelemetry。重点看工程接线和多服务拆分。
+- [Wild Workouts](https://github.com/ThreeDotsLabs/wild-workouts-go-ddd-example) — Go DDD / Clean Architecture / CQRS 教学项目：领域分层、Repository、CQRS、微服务测试架构。重点看架构演进和测试方式。
+
+两个仓库只作参考，不改变本项目的技术选型；我们仍使用 Kitex + Thrift、Hertz、Kafka、etcd、PostgreSQL + pgx/sqlc。
 
 ## v1 归档
 
