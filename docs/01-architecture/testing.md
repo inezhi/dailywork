@@ -24,7 +24,7 @@ pnpm build
 
 ## 3. 当前覆盖（v0.1.0）
 
-`apps/server/src/app.test.ts`：
+`apps/server/src/app.test.ts` + `features.test.ts`（12 个集成测试）：
 
 - 创建 / 列表任务。
 - 同一 `opId` 重复创建只产生一条。
@@ -32,8 +32,15 @@ pnpm build
 - 删除需要 `confirm`。
 - 完成任务写入 `op_log`（`task.complete`）。
 - 今天读模型与仪表盘趋势长度。
+- 附件 sha256 去重与零引用回收。
+- `expectedVersion` 冲突。
+- 单实例专注与任务实际分钟回填。
+- `.dailywork` 导出 → 新目录导入 → 数据一致。
+- AI 工具：未开启变更时拒绝，开启后执行并写入 actor=ai 审计。
 
-待补：附件 sha256 去重、备份导出/导入往返、AI 工具护栏、LAN 配对、迁移 v1→v2。
+Playwright（6 个核心旅程）：创建/编辑/完成/刷新仍在、速记转任务、文档保存与重载、⌘K 搜索、深浅主题、移动端无横向滚动。
+
+待补：LAN 配对自动化、迁移 v1→v2、离线与并发压力。
 
 ## 4. 数据与隔离
 

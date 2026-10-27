@@ -92,7 +92,7 @@ AI 面板 → `ai.chat` → assistant 上下文拼系统提示与工具 schema �
 | better-sqlite3 + Drizzle | Node 内置 `node:sqlite` + 手写 SQL | 免原生编译与 Electron ABI 重建，打包稳定 |
 | TipTap + Yjs CRDT | TipTap JSON 持久化 | 首期单用户；避免双写与 CRDT 复杂度 |
 | FullCalendar / ECharts | 自绘月/周/日、时间轴、SVG 图表 | 主题与排版完全可控、体积更小；图表需求简单 |
-| 每日自动快照 | `backups/` 目录 + 手动导出（自动定时器待补） | 发布前补齐 |
+| 每日自动快照 | 启动时生成当日 `.dailywork` 快照并保留 14 份 | 已实现 |
 | 流式 AI | 非流式请求（90s 超时） | 先保证工具调用与护栏；流式列入 v1.1 |
 
 ## 8. 已知限制
@@ -100,4 +100,4 @@ AI 面板 → `ai.chat` → assistant 上下文拼系统提示与工具 schema �
 - 局域网 HTTP 下 Service Worker 不注册（平台安全上下文要求）；iOS 可添加到主屏幕但离线缓存需 HTTPS。
 - Electron 为 ad-hoc 签名；首次打开需右键打开或系统设置放行，更新为手动 dmg。
 - 日历 / 时间轴暂不支持拖拽改期；可在抽屉中改日期。
-- 模板库、四象限、每日收尾 UI、文档 AI 选区操作条尚未实现（见 backlog）。
+- 每日收尾提醒、文档 AI 选区操作条、AI 流式输出尚未实现（见 backlog）。

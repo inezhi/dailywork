@@ -82,6 +82,7 @@ zip 文件，包含：
 - `manifest.json`：`{format:"dailywork", formatVersion:1, schemaVersion, appVersion, createdAt, counts:{tasks,projects,documents,memos,attachments,blobs}}`
 - `data.sqlite`：`VACUUM INTO` 生成的单文件快照（含图片 BLOB）。
 - `README.txt`：人类可读说明。
+- `secrets.key`（如存在）：AI key 的本地加密根，保证备份在新机器可恢复（备份文件含全部数据，请等同敏感文件保管）。
 
 导出路径默认 `<dataDir>/backups/dailywork-YYYYMMDD-HHmmss.dailywork`。
 
@@ -90,7 +91,7 @@ zip 文件，包含：
 1. 读取 zip，校验 manifest 与 `data.sqlite` 存在。
 2. 写入临时文件，用 `node:sqlite` 打开，`PRAGMA integrity_check`，检查 schema 版本不高于当前。
 3. 写入 `data.sqlite.import-pending` 与 `import-pending.json`。
-4. 应用下次启动：`applyPendingImport` 备份当前 `data.sqlite` 到 `backups/before-import-*.sqlite`，清理 WAL/SHM，原子 rename。
+4. 应用下次启动：`applyPendingImport` 备份当前 `data.sqlite` 到 `backups/before-import-*.sqlite`，清理 WAL/SHM，原子 rename；`secrets.key.import-pending` 同步恢复。
 
 ## 5. 数据目录
 
