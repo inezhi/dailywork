@@ -89,7 +89,13 @@ design/      品牌标识、架构图、设计稿与参考图
 4. 打开「文档」，阅读《欢迎使用时序》；打开「仪表盘」查看趋势；按 `⌘K` 搜索刚创建的任务。
 5. 设置 → 数据与备份 → 导出备份；设置 → 通用 → 局域网访问，用手机浏览器打开地址并输入配对码；需要离线 PWA 时在同页生成 HTTPS 证书。
 
-设计证据：`design/qa/first-run.png`、`design/qa/matrix.png`、`design/qa/dark-today.png`、`design/qa/mobile-today.png`。
+设计证据：`design/qa/first-run.png`、`design/qa/matrix.png`、`design/qa/dark-today.png`、`design/qa/mobile-today.png`、`design/qa/ai-streaming.png`、`design/qa/doc-ai-menu.png`。
+
+### 质量
+
+- Vitest：47/47（纯单元 + 集成/路由），覆盖日期、参数解析、Ops 不变量、流式解析、备份、撤销与 AI 护栏。
+- Playwright：9/9（桌面 Chrome + WebKit iPhone 13），含创建、编辑、完成、速记转任务、文档重载、搜索、主题与移动布局。
+- 打包冒烟：dmg 挂载启动、首启引导、任务持久化、局域网配对、配对 cookie 跨重启、HTTPS 证书、任务撤销。
 
 ## 许可
 

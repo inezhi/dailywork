@@ -7,7 +7,7 @@ All notable changes to this project are documented here.
 ### Added
 
 - **本地优先架构**：Electron 45 + Hono（utilityProcess）+ SQLite（`node:sqlite`，WAL）；单实例 runtime 文件；打包版同源托管 Web。
-- **任务与视图**：任务 / 子任务 / 状态机 / 优先级 / 标签 / 计划与截止 / 预估；今天、全部任务（列表 / 四象限）、看板（拖拽）、日历（月/周/日）、时间轴（28 天）。
+- **任务与视图**：任务 / 子任务 / 状态机 / 优先级 / 标签 / 计划与截止 / 预估 / 最近一步任务撤销（创建/更新/完成/删除）；今天、全部任务（列表 / 四象限）、看板（拖拽）、日历（月/周/日）、时间轴（28 天）。
 - **项目与空间**：空间创建、项目工作台、验收标准、交付成果、任务模板保存/应用、最近操作记录。
 - **速记与收件箱**：flomo 式卡片、`#标签`、置顶、搜索、转任务、图片/PDF 附件；收件箱聚合。
 - **计划与专注**：每日收尾（日注、未完成移到明天）；每日容量；每日例程；专注计时（15/25/45/60/自定义）、会话恢复、统计、任务实际分钟回填、专注环。
@@ -19,7 +19,7 @@ All notable changes to this project are documented here.
 - **备份**：`.dailywork` 导出（manifest + SQLite + 密钥 + README）、导入校验、暂存与重启原子替换、导入前自动备份、每日自动快照保留 14 份。
 - **局域网**：LAN 开关、6 位配对码、HttpOnly cookie、持久化服务 token（配对跨重启）、可选自签名 HTTPS（固定 47822）、PWA manifest / 图标 / Service Worker 离线壳。
 - **设计系统**：暖米白 + 陶土橙 tokens、深浅主题、自定义强调色/语义色/中性色温/密度、`/design` 活文档；牛奶盒品牌标识；首启三步引导。
-- **工程**：pnpm 10 + Turborepo、TypeScript strict、ESLint 9、Vitest 46 个单元/集成测试、Playwright 9 个（Chrome + WebKit iPhone）、Electron/DMG 冒烟。
+- **工程**：pnpm 10 + Turborepo、TypeScript strict、ESLint 9、Vitest 47 个单元/集成测试、Playwright 9 个（Chrome + WebKit iPhone）、Electron/DMG 冒烟。
 
 ### Changed
 

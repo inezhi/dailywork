@@ -1,6 +1,6 @@
 # 数据模型与存储
 
-更新：2026-10-27 · 对应 schema v2 · 飞书归档：[07 数据存储、备份与导出](https://my.feishu.cn/wiki/LcvjwjRJ9iVboYkNvucclMnWnEd)
+更新：2026-10-27 · 对应 schema v3 · 飞书归档：[07 数据存储、备份与导出](https://my.feishu.cn/wiki/LcvjwjRJ9iVboYkNvucclMnWnEd)
 
 ## 1. 原则
 
@@ -55,8 +55,8 @@
 ### 设置、审计、AI
 
 - `settings(key PRIMARY KEY, value_json, updated_at)`：`theme`、`general`。
-- `op_log(id AUTOINCREMENT, op_id UNIQUE, ts, actor, source, command, aggregate_type, aggregate_id, summary, payload_json, after_json, schema_version)`
-  - 索引：ts、aggregate、command。`after_json` 保存操作后快照，用于幂等重放与删除留痕。
+- `op_log(id AUTOINCREMENT, op_id UNIQUE, ts, actor, source, command, aggregate_type, aggregate_id, summary, payload_json, before_json, after_json, schema_version)`
+  - 索引：ts、aggregate、command。`after_json` 保存操作后快照，`before_json` 用于任务级撤销；删除操作保留完整快照。
 - `ai_providers(id, name, base_url, model, api_key_encrypted, is_default, created_at, updated_at)`
 - `ai_conversations(id, title, context_kind, context_id, created_at, updated_at)`
 - `ai_messages(id, conversation_id→ai_conversations, role, content, tool_name, created_at)`

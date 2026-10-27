@@ -42,6 +42,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 路径别名定义了三处并需同步：`tsconfig.base.json`、`vitest.config.ts`、`apps/web/vite.config.ts`。
 - `focus_sessions` 有一个部分唯一索引保证同时只有一个 running 会话；开始新专注前先检查 `focus.active`。
 - 文档正文存 TipTap JSON（`document_bodies.content_json`），标题/图标/摘要是 SQLite 元数据；`document_links` 从正文里的 `task://`、`project://`、`document://` 引用中提取，用于反向链接。
-- `op_log` 同时是审计、撤销底稿与导出重放依据；删除采用硬删除但 `after_json` 保留完整快照。
+- `op_log` 同时是审计、撤销底稿与导出重放依据；`before_json`/`after_json` 保留快照，`history.undo` 仅撤销最近一次任务操作（项目/文档/对话不自动回滚）。
 - 设计资产在 `design/`（品牌、架构图、9 张参考设计稿、`design/qa` 验收截图）；`design/mockups` 是 HTML 高保真稿，实现时以其视觉为准但以设计 tokens 为准绳。
 - AI 上下文动作：任务抽屉 / 文档工具栏 / 周复盘通过 `useUi.openAi({context,draft})` 打开面板；`ai.chat` 的系统提示按 context 注入任务、文档或周复盘数据。Web 使用 `/api/ai/chat/stream`（SSE：start / tool_start / tool_result / delta / done），CLI/MCP 仍走非流式 `ai.chat`。

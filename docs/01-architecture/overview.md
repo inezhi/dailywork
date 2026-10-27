@@ -64,7 +64,7 @@ AI 面板 → `/api/ai/chat/stream`（SSE）→ assistant 上下文拼系统提�
 
 - 数据全部在 SQLite（WAL）。**不使用 iCloud / 云同步**（2026-10-27 决策，见 ADR-0003）。
 - 图片：`blobs` 存 BLOB、sha256 唯一、引用计数；`attachments` 多态关联 task/document/memo；删除附件递减引用，零引用即回收。文档正文以 `attachment://<id>` 或附件 URL 引用。
-- 审计：`op_log` 是操作日志、活动记录与导出重放底稿；**不实现 HLC / deviceId / 墓碑 / 多设备合并**（单 Mac，已取消同步）。
+- 审计：`op_log` 是操作日志、活动记录与导出重放底稿，记录 `before_json`/`after_json`；任务级「撤销上一步」用 before 快照恢复。**不实现 HLC / deviceId / 墓碑 / 多设备合并**（单 Mac，已取消同步）。
 - 备份：`VACUUM INTO` 快照 + `.dailywork` zip（manifest + data.sqlite + README）；导入先 `PRAGMA integrity_check` 与 schema 版本检查，暂存 `data.sqlite.import-pending`，下次启动原子替换并备份当前库。
 - 迁移：`schema_migrations` + 顺序 SQL；已应用 v1（完整 schema）、v2（回填 `completed_at`）。迁移在单事务内执行。
 

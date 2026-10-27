@@ -78,6 +78,7 @@ defineOp({
 | 组 | 操作 |
 |---|---|
 | task | create / update / move / complete / reopen / delete / get / list / activity |
+| history | undo（最近一次任务创建/更新/完成/删除） |
 | tag | list / create / update / delete |
 | space | list / create / update |
 | settings | get / update |
