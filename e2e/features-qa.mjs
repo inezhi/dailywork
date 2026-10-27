@@ -18,7 +18,7 @@ await page.goto('http://127.0.0.1:5173/memos', { waitUntil: 'networkidle' })
 const memo = page.locator('.memo-card').first()
 await memo.getByTitle('附件').click()
 await page.waitForTimeout(400)
-await memo.locator('input[type=file]').setInputFiles('/Users/lingzhi/Documents/project/dailywork/apps/web/public/icon-192.png')
+await memo.locator('input[type=file]').setInputFiles(process.cwd() + '/apps/web/public/icon-192.png')
 await memo.locator('.memo-attachments .attach-thumb').first().waitFor({ timeout: 10000 })
 await page.screenshot({ path: 'design/qa/memo-attachments.png' })
 

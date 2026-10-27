@@ -2,7 +2,7 @@ import { _electron as electron } from 'playwright'
 
 const app = await electron.launch({
   args: ['.'],
-  cwd: '/Users/lingzhi/Documents/project/dailywork/apps/desktop',
+  cwd: process.cwd() + '/apps/desktop',
   env: { ...process.env, VITE_DEV_SERVER_URL: 'http://127.0.0.1:5173' },
   timeout: 60000,
 })

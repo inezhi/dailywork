@@ -4,7 +4,7 @@ import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs'
 const dataDir = '/tmp/dailywork-packaged-fresh'
 rmSync(dataDir, { recursive: true, force: true })
 const executablePath =
-  '/Users/lingzhi/Documents/project/dailywork/apps/desktop/release/mac-arm64/Dailywork.app/Contents/MacOS/Dailywork'
+  process.cwd() + '/apps/desktop/release/mac-arm64/Dailywork.app/Contents/MacOS/Dailywork'
 const app = await electron.launch({
   executablePath,
   env: { ...process.env, DAILYWORK_DATA_DIR: dataDir },

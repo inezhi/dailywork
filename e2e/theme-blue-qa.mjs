@@ -1,0 +1,12 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch({ channel: 'chrome', headless: true })
+const page = await browser.newPage({ viewport: { width: 1440, height: 960 } })
+await page.goto('http://127.0.0.1:5173/today', { waitUntil: 'networkidle' })
+await page.waitForTimeout(500)
+await page.screenshot({ path: 'design/qa/blue-today.png' })
+await page.goto('http://127.0.0.1:5173/settings', { waitUntil: 'networkidle' })
+await page.waitForTimeout(400)
+await page.screenshot({ path: 'design/qa/blue-settings.png' })
+const accent = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim())
+console.log('accent', accent)
+await browser.close()
