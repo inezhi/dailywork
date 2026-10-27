@@ -55,6 +55,10 @@ export interface AppOptions {
   port?: number
   host?: string
   pairingCode?: string
+  serverMode?: boolean
+  openRegistration?: boolean
+  trustProxy?: boolean
+  secureCookies?: boolean
 }
 
 export interface AppBundle {
@@ -142,6 +146,19 @@ export function createApp(options: AppOptions): AppBundle {
   }
   const token = options.token ?? ''
   const version = options.version ?? '0.2.0'
+  const serverMode = options.serverMode ?? process.env.DAILYWORK_SERVER_MODE === '1'
+  const openRegistration =
+    options.openRegistration ?? process.env.DAILYWORK_OPEN_REGISTRATION === '1'
+  const trustProxy = options.trustProxy ?? process.env.DAILYWORK_TRUST_PROXY === '1'
+  const secureCookies =
+    options.secureCookies ?? process.env.DAILYWORK_SECURE_COOKIES === '1'
+  const requestIsSecure = (c: any): boolean => {
+    if (secureCookies) return true
+    if (c.req.url.startsWith('https://')) return true
+    if (!trustProxy) return false
+    const proto = (c.req.header('x-forwarded-proto') ?? '').split(',')[0]?.trim()
+    return proto === 'https'
+  }
   const sseClients = new Set<ReadableStreamDefaultController<Uint8Array>>()
   const encoder = new TextEncoder()
 
@@ -176,11 +193,30 @@ export function createApp(options: AppOptions): AppBundle {
       path === '/api/auth/register' ||
       path === '/api/auth/me'
 
-    if ((path === '/api/auth/register' || path === '/api/auth/login') && !loopback) {
+    if (!serverMode && (path === '/api/auth/register' || path === '/api/auth/login') && !loopback) {
       return c.json(
         {
           ok: false,
           error: { code: 'UNAUTHORIZED', message: '请先在 Mac 上登录，再从局域网配对' },
+          meta: { opId: '', version: 1 },
+        },
+        403,
+      )
+    }
+
+    if (
+      serverMode &&
+      path === '/api/auth/register' &&
+      countUsers(accountsDb) > 0 &&
+      !openRegistration
+    ) {
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'UNAUTHORIZED',
+            message: '服务器已关闭公开注册；请联系管理员创建账户',
+          },
           meta: { opId: '', version: 1 },
         },
         403,
@@ -205,7 +241,7 @@ export function createApp(options: AppOptions): AppBundle {
     if (user) {
       const db = getUserDb(user.id)
       c.set('db', db)
-      if (!loopback) {
+      if (!loopback && !serverMode) {
         if (!getSettings(db).general.lanEnabled) {
           return c.json(
             {
@@ -282,7 +318,7 @@ export function createApp(options: AppOptions): AppBundle {
       return c.json({ ok: false, error: { message: '请先在 Mac 设置中开启局域网访问' } }, 403)
     }
     const session = createSession(accountsDb, owner.id)
-    const secure = c.req.url.startsWith('https://')
+    const secure = requestIsSecure(c)
     c.header('set-cookie', sessionCookie(session, secure))
     return c.json({ ok: true })
   })
@@ -333,7 +369,7 @@ export function createApp(options: AppOptions): AppBundle {
     }
     getUserDb(user.id)
     const session = createSession(accountsDb, user.id)
-    const secure = c.req.url.startsWith('https://')
+    const secure = requestIsSecure(c)
     c.header('set-cookie', sessionCookie(session, secure))
     return c.json({ ok: true, data: { user: toPublicUser(user) } })
   })
@@ -354,7 +390,7 @@ export function createApp(options: AppOptions): AppBundle {
       return c.json({ ok: false, error: { code: 'UNAUTHORIZED', message: '用户名或密码不正确' } }, 401)
     }
     const session = createSession(accountsDb, user.id)
-    const secure = c.req.url.startsWith('https://')
+    const secure = requestIsSecure(c)
     c.header('set-cookie', sessionCookie(session, secure))
     return c.json({ ok: true, data: { user: toPublicUser(user) } })
   })
@@ -362,7 +398,7 @@ export function createApp(options: AppOptions): AppBundle {
   app.post('/api/auth/logout', (c) => {
     const session = c.get('sessionToken')
     if (session) deleteSession(accountsDb, session)
-    const secure = c.req.url.startsWith('https://')
+    const secure = requestIsSecure(c)
     c.header('set-cookie', `daily_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure ? '; Secure' : ''}`)
     return c.json({ ok: true, data: { loggedOut: true } })
   })
@@ -466,6 +502,7 @@ export function createApp(options: AppOptions): AppBundle {
       schemaVersion: 5,
       dataDir: paths.dataDir,
       platform: process.platform,
+      serverMode,
       builtAt: process.env.DAILYWORK_BUILT_AT ?? null,
     }),
   )
@@ -719,7 +756,7 @@ export function createApp(options: AppOptions): AppBundle {
       }
       if (pathname.startsWith('/api/')) return c.text('Not Found', 404)
       const remote = remoteAddress(c)
-      if (!isLoopback(remote)) {
+      if (!serverMode && !isLoopback(remote)) {
         const sessionToken = cookieValue(c.req.header('cookie'), 'daily_session')
         const sessionUser = sessionToken ? getSessionUser(accountsDb, sessionToken) : null
         if (!sessionUser) return c.html(pairPage())

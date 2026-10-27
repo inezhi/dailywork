@@ -4,15 +4,18 @@
 
 ## 分支与提交
 
-- 主分支 `main` 始终可构建。
-- 功能分支：`feat/<scope>`、`fix/<scope>`、`docs/<scope>`、`chore/<scope>`。
+- `main` 只保留发布基线，已启用分支保护；不直接提交，只通过 GitHub Pull Request 合入。
+- `dev` 是日常集成分支；功能从 `dev` 切出 `feat/<scope>`、`fix/<scope>`、`docs/<scope>`、`chore/<scope>`。
+- 功能完成后先合入 `dev`；发布时从 `dev` 向 `main` 提 PR，合并后在 `main` 打 `vX.Y.Z` tag。
 - 提交信息遵循 [Conventional Commits](https://www.conventionalcommits.org/)：
   - `feat(tasking): add optimistic concurrency to task.update`
   - `fix(web): keep focus ring in sync after refresh`
-  - `docs(adr): record local-storage decision`
+  - `docs(adr): record the storage decision`
   - `chore(repo): pin pnpm 10`
 - 单个提交应自洽：代码 + 测试 + 相关文档；不提交密钥、数据库、日志、截图原图之外的个人数据。
-- 合并策略：单人项目允许在里程碑分支完成后 `--no-ff` 合并到 `main`，打里程碑 tag（如 `m0a`、`m1`）。
+- 合并策略：功能分支用 `--no-ff` 合入 `dev`；`main` 只接受 PR 合并，禁止直接 push。
+
+> GitHub Actions 工作流暂存于 `docs/04-process/github-actions-ci.yml`。当前 OAuth 凭据没有 `workflow` scope，无法推送 `.github/workflows/*`；执行 `gh auth refresh -s workflow` 后把文件移回即可启用。
 
 ## 评审清单（自检）
 
