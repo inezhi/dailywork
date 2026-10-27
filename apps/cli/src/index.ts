@@ -245,6 +245,18 @@ function printHuman(data: unknown): void {
       printHuman(obj.items)
       return
     }
+    if (typeof obj.date === 'string' && Array.isArray(obj.scheduled)) {
+      console.log(obj.date)
+      console.log(`  已安排 ${obj.scheduled.length} 项 · 逾期 ${Array.isArray(obj.overdue) ? obj.overdue.length : 0} 项 · 今日完成 ${Array.isArray(obj.completed) ? obj.completed.length : 0} 项 · 专注 ${obj.focusMinutes ?? 0} 分钟`)
+      for (const task of obj.scheduled as Array<Record<string, unknown>>) {
+        console.log(`  [${task.status === 'done' ? 'x' : ' '}] ${task.title}${task.estimateMinutes ? ` · ${task.estimateMinutes} 分钟` : ''}`)
+      }
+      return
+    }
+    if (typeof obj.message === 'object' && obj.message && typeof (obj.message as Record<string, unknown>).content === 'string') {
+      console.log((obj.message as Record<string, unknown>).content)
+      return
+    }
     if (typeof obj.title === 'string') {
       console.log(`${obj.title}${obj.status ? ` · ${obj.status}` : ''}`)
       return
