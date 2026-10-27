@@ -1,0 +1,36 @@
+{
+  "name": "@daily/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/app.ts"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/server.mjs",
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "@daily/analytics": "workspace:*",
+    "@daily/attachments": "workspace:*",
+    "@daily/contracts": "workspace:*",
+    "@daily/context-assistant": "workspace:*",
+    "@daily/context-capture": "workspace:*",
+    "@daily/context-documents": "workspace:*",
+    "@daily/context-focus": "workspace:*",
+    "@daily/context-planning": "workspace:*",
+    "@daily/context-projects": "workspace:*",
+    "@daily/context-tasking": "workspace:*",
+    "@daily/context-workspace": "workspace:*",
+    "@daily/ops": "workspace:*",
+    "@daily/platform": "workspace:*",
+    "@hono/node-server": "2.1.5",
+    "hono": "4.13.14",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "tsx": "4.23.15"
+  }
+}
