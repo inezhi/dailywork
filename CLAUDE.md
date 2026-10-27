@@ -27,6 +27,17 @@ README.md     # 项目说明与文档入口
 5. **不要造分布式单体。** 强耦合的聚合放在同一个服务；只有确实需要独立生命周期、独立扩容或独立数据所有权时才拆服务。
 6. **有场景才用技术。** MongoDB 只用于文档型数据，Eino 只用于多步 Agent；简单 CRUD、单轮问答不要套框架。
 
+## DDD 分层与依赖规则
+
+- `domain`：实体、值对象、聚合、领域服务、领域事件、repository 接口；不 import GORM、Hertz、Kitex、MongoDB、Kafka。
+- `application`：用例编排、事务边界、端口接口、DTO 转换；只依赖 domain。
+- `adapters`：Hertz/Kitex handler、GORM/MongoDB repository、Kafka producer/consumer；依赖 application/domain。
+- `infrastructure`：配置、日志、OpenTelemetry、连接池、迁移。
+- 依赖方向是 `adapters → application → domain`；领域层不出现 SQL、GORM tag、BSON tag、HTTP/Kitex 类型。
+- 聚合是事务边界；一个事务只改一个聚合；跨聚合/上下文用 ID 与事件，不做跨聚合强一致。
+- repository 接口放在 domain/application，实现在 adapters；不要从 handler 直接调 GORM/MongoDB。
+- 简单 CRUD 用 application + repository 即可；只有状态机、多个不变量、复杂规则才建聚合/领域服务，避免过度设计。
+
 ## 技术基线
 
 | 层 | 选型 |
@@ -123,6 +134,20 @@ docs/           # 本地只放索引；正式文档在飞书
 - 业务表与 outbox 的写入必须在同一事务。
 - 附件与大对象不进 MySQL；docs 附件进 MinIO。
 
+## 工程规范
+
+- **开源**：依赖许可证可审查；不复制来源不明代码；仓库不放密钥/用户数据；新增依赖说明用途、维护状态、许可证。
+- **日志**：统一 `slog` JSON；字段含 `request_id`/`trace_id`；不记录密码、Token、完整 prompt、任务正文。
+- **目录**：服务在 `services/<name>/cmd/<name>`，业务在 `internal/{domain,application,adapters,infrastructure}`；契约在 `api/`；部署在 `deploy/`。
+- **错误**：领域/应用/适配器错误分层；对外稳定错误码；不返回堆栈、SQL、内部地址；可重试错误显式标记。
+- **代码**：`gofmt`/`golangci-lint`；`context.Context` 首参；错误包装；小接口；依赖注入；禁止全局 DB 句柄。
+- **接口**：对外 REST + OpenAPI 3.1；内部 Kitex + Thrift；统一错误信封；分页、幂等、版本、向后兼容；生成代码提交并检查漂移。
+- **版本**：SemVer；annotated tag；CHANGELOG 只追加；迁移向前兼容；废弃字段至少保留一个版本。
+- **文档**：文档先行；14 篇飞书文档为准；架构决策写 ADR；行为变化同步文档与契约。
+- **Commit**：Conventional Commits；一个提交只做一件事；主题行祈使句、≤72 字符；正文写“为什么”；不提交密钥/调试代码。
+
+规范通过 PR 模板、CI、里程碑验收和发布检查单执行，不靠口头约定。
+
 ## MongoDB
 
 - 只用于 `docs` 与 `assistant`；`identity`/`task` 继续用 MySQL。
@@ -202,6 +227,14 @@ docs/           # 本地只放索引；正式文档在飞书
 - 一个 PR 只做一件事；行为变化先改文档/契约，再改代码。
 - 发布前跑 lint、unit、integration、contract、e2e；生成代码无漂移；迁移在空库和旧库都能执行。
 - v2 从 `2.0.0` 开始；MVP 完成后打第一个 tag。版本记录在飞书 14 文档的 CHANGELOG 小节维护。
+
+## 开发节奏
+
+- **每天**：小步提交；先改文档/契约再改代码；当天跑 lint 和单元测试。
+- **每周**：完成一个垂直切片；演示并复盘；同步飞书文档；依赖/安全检查。
+- **每个里程碑**：按 03 路线图验收；更新文档与 ADR；打 tag；不满足验收不进入下一阶段。
+- **发布**：迁移演练 → 备份 → 发布 → 观察 10 分钟 → 记录镜像 digest；失败按回滚清单处理。
+- **复盘**：记录发生了什么、根因、下一步、谁负责、如何验证；至少一个防复发测试或监控。
 
 ## 常用命令
 

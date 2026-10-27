@@ -29,6 +29,31 @@ v1 是一个 TypeScript 单体（Hono + SQLite + React/Electron），功能已�
 - OpenTelemetry 日志、指标、链路，以及 Docker Compose / K8s 部署；
 - Go 的工程习惯：`context.Context`、显式错误、接口小、依赖注入、优雅退出、表驱动测试。
 
+## 开发方式与工程规范
+
+严格按 DDD 分层，但只在该复杂的地方使用战术模式：
+
+- **domain**：实体、值对象、聚合、领域服务、领域事件、repository 接口；不依赖 GORM、Hertz、Kitex、MongoDB、Kafka。
+- **application**：用例编排、事务边界、端口接口、DTO 转换；只依赖 domain。
+- **adapters**：Hertz/Kitex handler、GORM/MongoDB repository、Kafka producer/consumer；依赖 application/domain。
+- **infrastructure**：配置、日志、OpenTelemetry、连接池、迁移。
+
+依赖方向是 `adapters → application → domain`。聚合是事务边界；一个事务只改一个聚合；跨聚合/上下文用 ID 与事件。简单 CRUD 不强行造领域服务，复杂规则才建聚合。
+
+| 规范 | 要求 |
+|---|---|
+| 开源规范 | 依赖许可证可审查；不复制来源不明代码；仓库不放密钥、用户数据；新增依赖说明用途与许可证。 |
+| 日志规范 | 统一 `slog` JSON；固定字段含 `request_id`/`trace_id`；不记录密码、Token、完整 prompt、任务正文。 |
+| 目录规范 | 服务在 `services/<name>/cmd`，业务在 `internal/{domain,application,adapters,infrastructure}`；契约在 `api/`。 |
+| 错误规范 | 分层错误；对外稳定错误码；不返回堆栈/SQL/内部地址；可重试错误显式标记。 |
+| 代码规范 | `gofmt`/`golangci-lint`；`context.Context` 首参；错误包装；小接口；依赖注入；禁止全局 DB 句柄。 |
+| 接口规范 | 对外 REST + OpenAPI 3.1；内部 Kitex + Thrift；统一错误信封；分页、幂等、版本、向后兼容。 |
+| 版本规范 | SemVer；annotated tag；CHANGELOG 只追加；迁移向前兼容；废弃字段至少保留一个版本。 |
+| 文档规范 | 文档先行；14 篇飞书文档为准；架构决策写 ADR；行为变化同步文档与契约。 |
+| Commit 规范 | Conventional Commits；一个提交只做一件事；主题行祈使句 ≤72 字符；正文写“为什么”。 |
+
+开发节奏：每天小步提交并跑 lint/unit；每周完成一个垂直切片、演示并复盘；每个里程碑按验收标准检查、更新文档与 ADR；发布前做迁移演练、备份、观察和回滚准备。
+
 ## 规划架构
 
 ```text
