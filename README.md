@@ -47,15 +47,35 @@ pnpm dev:web
 | `pnpm lint` | ESLint |
 | `pnpm daily -- task list` | 通过 CLI 操作服务 |
 
+## Docker 部署
+
+仓库提供 `Dockerfile` 与 `docker-compose.yml`，镜像内含应用服务、Web 静态资源与 SQLite；数据库文件持久化在 `/data` volume 中，不需要单独的数据库容器。
+
+```bash
+cp .env.example .env
+docker compose up -d --build
+```
+
+打开 http://127.0.0.1:47821。首次访问注册第一个账户；默认之后关闭公开注册。反向代理终止 TLS 时设置 `DAILYWORK_SECURE_COOKIES=1` 与 `DAILYWORK_TRUST_PROXY=1`。完整说明见 [Docker 部署](docs/04-process/docker-deployment.md)。
+
+## 分支与协作
+
+- `main` 只保留已发布基线，不直接开发；只通过 GitHub Pull Request 合入。
+- `dev` 是日常集成分支；功能从 `dev` 切出 `feat/<scope>`，完成后先合入 `dev`。
+- 发布时从 `dev` 向 `main` 提 PR，合并后在 `main` 打 `vX.Y.Z` tag。
+- 远程仓库：`origin https://github.com/inezhi/dailywork.git`。
+
 ## 数据在哪
 
 默认目录：`~/Library/Application Support/Dailywork/`
 
-- `data.sqlite`：唯一权威数据（任务、项目、文档正文、图片 BLOB、审计日志）。
+- `accounts.sqlite`：账户、密码哈希、头像与会话。
+- `users/<id>/data.sqlite`：每个账户的权威业务数据（任务、项目、文档正文、图片 BLOB、审计日志）。
+- `data.sqlite`：首个账户创建前的兼容数据库。
 - `backups/`：每日快照与手动备份。
 - `logs/`：结构化运行日志（不含任务正文与密钥）。
 
-账户数据位于 `users/<id>/data.sqlite`（每个账户独立），账户、密码哈希、头像与会话位于 `accounts.sqlite`。数据目录可用环境变量 `DAILYWORK_DATA_DIR` 覆盖；测试使用临时目录。
+数据目录可用环境变量 `DAILYWORK_DATA_DIR` 覆盖；测试使用临时目录。Docker 部署时默认使用 `/data`。
 
 ## 技术架构
 
@@ -95,7 +115,7 @@ design/      品牌标识、架构图、设计稿与参考图
 
 ### 质量
 
-- Vitest：54/54（纯单元 + 集成/路由），覆盖日期、参数解析、Ops 不变量、流式解析、备份、撤销、账户/会话/头像与 AI 护栏。
+- Vitest：58/58（纯单元 + 集成/路由），覆盖日期、参数解析、Ops 不变量、流式解析、备份、撤销、账户/会话/头像、服务器部署模式与 AI 护栏。
 - Playwright：11/11（setup 账户 + 桌面 Chrome + WebKit iPhone 13 + 账户 UI），含注册/默认头像/上传/登录、创建、编辑、完成、速记转任务、文档重载、搜索、主题与移动布局。
 - 打包冒烟：dmg 挂载启动、首启引导、任务持久化、局域网配对、配对 cookie 跨重启、HTTPS 证书、任务撤销。
 

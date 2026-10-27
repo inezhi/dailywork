@@ -29,6 +29,7 @@
 - [ ] 设置：主题强调色/中性/密度、AI 供应商测试、数据目录、CLI 示例
 - [ ] 导出 `.dailywork` → 空目录导入 → 重启后数据完整
 - [ ] 局域网：开启后手机配对、创建任务、添加到主屏幕
+- [ ] Docker：`docker compose up -d --build`，首次注册、创建任务、重启容器后数据仍在
 - [ ] CLI：`daily task create` / `list` / `complete` / `mcp serve` tools/list
 - [ ] AI：配置 DeepSeek 测试连通；只读工具自动执行；变更需开关；破坏性需人工
 
