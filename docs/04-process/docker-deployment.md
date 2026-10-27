@@ -38,7 +38,29 @@ docker compose logs -f dailywork
 docker compose down
 ```
 
-数据在 `dailywork-data` volume 中，`down` 不会删除。只有 `docker compose down -v` 才会删除数据。
+数据在 `dailywork_dailywork-data` volume 中，`down` 不会删除。只有 `docker compose down -v` 才会删除数据。
+
+
+## 2.1 桌面客户端与移动端
+
+服务端启动后，桌面安装版和浏览器都是客户端：
+
+- 桌面版启动时默认连接 `http://127.0.0.1:47821`；如果服务端在另一台机器或域名下，通过菜单「服务器 → 服务器连接…」填写地址，例如 `https://dailywork.example.com`。
+- 桌面端只保存窗口状态与 `connection.json`（服务端地址），不保存业务数据库；浏览器、桌面端和后续 Android 客户端共享同一个账户与同一份数据。
+- 手机当前可直接用浏览器访问服务端地址；Android 原生客户端后续复用同一 HTTP API 与账户体系。
+- 服务端不可达时桌面端显示连接页，不会退回另一份数据库。
+
+### 从旧桌面数据迁移
+
+旧版桌面应用自带一个独立数据库。迁移到服务端：
+
+1. 在旧桌面应用「设置 → 数据与备份」导出 `.dailywork`。
+2. 把备份放进服务端容器：`docker cp dailywork-xxx.dailywork dailywork:/data/backups/`。
+3. 浏览器打开服务端，注册第一个账户；进入「设置 → 数据与备份 → 导入备份」，填写服务端路径 `/data/backups/dailywork-xxx.dailywork`。
+4. 执行 `docker compose restart dailywork`，重新登录确认数据。
+5. 安装新的桌面客户端并连接同一个服务端地址。
+
+账户备份不包含 AI 密钥解密根，迁移后需要在服务端重新填写 API Key。
 
 ## 3. 环境变量
 
@@ -125,7 +147,7 @@ docker tag dailywork:0.2.0 registry.example.com/dailywork:0.2.0
 docker push registry.example.com/dailywork:0.2.0
 ```
 
-当前 `docker-compose.yml` 使用本地构建；接入镜像仓库后把 `build` 改为 `image` 即可。
+当前 `docker-compose.yml` 从源码构建；接入镜像仓库后把 `build` 改为 `image` 即可。
 
 
 ## 7.1 在中国大陆构建（代理）
@@ -159,6 +181,8 @@ docker save dailywork:0.2.0 | gzip > dailywork-0.2.0-image.tar.gz
 ## 8. 已知边界
 
 - 单实例 SQLite；不支持多副本共享同一数据目录。
+- 桌面客户端不再离线保存业务数据；服务端不可达时只能查看连接页。
+- Android 首期通过浏览器访问；原生客户端复用同一 API，尚未打包。
 - 账户删除、密码找回尚未提供。
 - AI 仍由用户配置 OpenAI 兼容供应商；镜像不包含模型，也不运行模型。
 - 通知、移动端离线增强等能力仍按 0.2.0 的范围执行。
