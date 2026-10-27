@@ -1,0 +1,21 @@
+{
+  "name": "@daily/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "daily": "./bin/daily"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "@daily/contracts": "workspace:*",
+    "@daily/ops": "workspace:*",
+    "@daily/platform": "workspace:*"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "tsx": "4.23.15"
+  }
+}
