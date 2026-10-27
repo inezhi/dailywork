@@ -437,6 +437,12 @@ function DocEditor({ detail }: { detail: DocumentDetail }) {
                   : '把这篇文档压缩成三个要点，每个一句话。',
               },
               {
+                label: '翻译成英文',
+                prompt: aiSelection
+                  ? `把下面这段文字翻译成自然、准确的英文，保留原有语气：\n\n${aiSelection}`
+                  : '把这篇文档翻译成自然、准确的英文，保留原有语气。',
+              },
+              {
                 label: '提取可执行任务',
                 prompt: aiSelection
                   ? `从下面内容里提取 3–5 个可执行的下一步，用列表给出，并说明建议的先后顺序：\n\n${aiSelection}`
