@@ -15,5 +15,5 @@ better-sqlite3 是原生模块，需要针对 Electron ABI 重建（electron-reb
 
 ## 结果
 
-- 零原生编译、打包稳定；性能满足单用户。
+- 零原生编译、打包稳定；性能满足个人使用。
 - 失去 Drizzle 的类型推导/迁移 DSL；通过 zod DTO 与集成测试兜底。

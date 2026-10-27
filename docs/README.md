@@ -27,7 +27,7 @@
 
 - [0001 技术栈](03-adr/0001-tech-stack.md)
 - [0002 DDD 与 monorepo](03-adr/0002-ddd-monorepo.md)
-- [0003 SQLite 存储、op_log 与取消 iCloud](03-adr/0003-local-storage-and-audit.md)
+- [0003 SQLite 存储、op_log 与取消云同步](03-adr/0003-local-storage-and-audit.md)
 - [0004 设计系统与主题](03-adr/0004-design-system.md)
 - [0005 Ops 目录与四表面](03-adr/0005-ops-catalog.md)
 - [0006 AI 供应商与护栏](03-adr/0006-ai-provider.md)

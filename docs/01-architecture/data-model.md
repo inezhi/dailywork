@@ -1,10 +1,10 @@
 # 数据模型与存储
 
-更新：2026-10-27 · 对应 schema v3 · 飞书归档：[07 数据存储、备份与导出](https://my.feishu.cn/wiki/LcvjwjRJ9iVboYkNvucclMnWnEd)
+更新：2026-10-27 · 对应 schema v5 · 飞书归档：[07 数据存储、备份与导出](https://my.feishu.cn/wiki/LcvjwjRJ9iVboYkNvucclMnWnEd)
 
 ## 1. 原则
 
-1. **一个数据库**：`~/Library/Application Support/Dailywork/data.sqlite`，WAL 模式。
+1. **账户库 + 工作区库**：`accounts.sqlite` 保存账户与会话；每个账户的 `users/<id>/data.sqlite` 保存业务数据，WAL 模式。
 2. **业务日期是用户时区的日期字符串** `YYYY-MM-DD`；时间戳是 UTC ISO-8601。禁止用 UTC 日期推导「今天」。
 3. **写路径只经 ops**；同一事务内写业务表与 `op_log`。
 4. **图片入库**：不依赖文件路径；blob 不可变、按内容寻址、引用计数。
@@ -95,7 +95,7 @@ zip 文件，包含：
 - `manifest.json`：`{format:"dailywork", formatVersion:1, schemaVersion, appVersion, createdAt, counts:{tasks,projects,documents,memos,attachments,blobs}}`
 - `data.sqlite`：`VACUUM INTO` 生成的单文件快照（含图片 BLOB）。
 - `README.txt`：人类可读说明。
-- `secrets.key`（如存在）：AI key 的加密根，保证备份在新机器可恢复（备份文件含全部数据，请等同敏感文件保管）。
+- `secrets.key`（如存在）：根账户备份包含 AI Key 的加密根；账户级备份不包含，恢复后需重新填写 AI Key。备份文件请按敏感文件保管。
 
 导出路径默认 `<dataDir>/backups/dailywork-YYYYMMDD-HHmmss.dailywork`。
 

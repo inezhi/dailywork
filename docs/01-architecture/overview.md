@@ -63,9 +63,9 @@ AI 面板 → `/api/ai/chat/stream`（SSE）→ assistant 上下文拼系统提�
 
 ## 4. 存储与同步
 
-- 数据全部在 SQLite（WAL）。**不使用 iCloud / 云同步**（2026-10-27 决策，见 ADR-0003）。
+- 数据全部在 SQLite（WAL）。**不使用任何云同步**（2026-10-27 决策，见 ADR-0003）。
 - 图片：`blobs` 存 BLOB、sha256 唯一、引用计数；`attachments` 多态关联 task/document/memo；删除附件递减引用，零引用即回收。文档正文以 `attachment://<id>` 或附件 URL 引用。
-- 审计：`op_log` 是操作日志、活动记录与导出重放底稿，记录 `before_json`/`after_json`；任务级「撤销上一步」用 before 快照恢复。**不实现 HLC / deviceId / 墓碑 / 多设备合并**（单 Mac，已取消同步）。
+- 审计：`op_log` 是操作日志、活动记录与导出重放底稿，记录 `before_json`/`after_json`；任务级「撤销上一步」用 before 快照恢复。**不实现 HLC / deviceId / 墓碑 / 多设备合并**（macOS 桌面端，已取消同步）。
 - 备份：`VACUUM INTO` 快照 + `.dailywork` zip（manifest + data.sqlite + README）；导入先 `PRAGMA integrity_check` 与 schema 版本检查，暂存 `data.sqlite.import-pending`，下次启动原子替换并备份当前库。
 - 迁移：`schema_migrations` + 顺序 SQL；已应用 v1（完整 schema）、v2（回填 `completed_at`）。迁移在单事务内执行。
 
@@ -85,20 +85,20 @@ AI 面板 → `/api/ai/chat/stream`（SSE）→ assistant 上下文拼系统提�
 - 主题：设置里的 accent / semantic / neutral / density 运行时写入 CSS 变量与 `data-*` 属性；明暗由 `data-theme` 切换。
 - 专注计时以服务端 `startedAt` 为准，刷新可恢复；6 小时未结束的 running 会话在启动时自动取消。
 
-## 7. 与 v1.0 原方案的差异
+## 7. 与早期方案的差异
 
 | 原方案 | 当前实现 | 原因 |
 |---|---|---|
-| iCloud 同步 / op_log 多设备合并 | SQLite + 备份导出导入 | 用户 2026-10-27 取消 iCloud；单 Mac |
+| 云同步 / op_log 多设备合并 | SQLite + 备份导出导入 | 用户 2026-10-27 取消云同步；macOS 桌面端 |
 | better-sqlite3 + Drizzle | Node 内置 `node:sqlite` + 手写 SQL | 免原生编译与 Electron ABI 重建，打包稳定 |
-| TipTap + Yjs CRDT | TipTap JSON 持久化 | 首期单用户；避免双写与 CRDT 复杂度 |
+| TipTap + Yjs CRDT | TipTap JSON 持久化 | 首期个人使用；避免双写与 CRDT 复杂度 |
 | FullCalendar / ECharts | 自绘月/周/日、时间轴、SVG 图表 | 主题与排版完全可控、体积更小；图表需求简单 |
 | 每日自动快照 | 启动时生成当日 `.dailywork` 快照并保留 14 份 | 已实现 |
-| 流式 AI | 非流式请求（90s 超时） | 先保证工具调用与护栏；流式列入 v1.1 |
+| 流式 AI | SSE 流式请求（start / delta / done） | 已实现；CLI/MCP 使用非流式 `ai.chat` |
 
 ## 8. 未来联网
 
-当前交付以单机服务 + 账号隔离运行；`accounts.sqlite` 与每账户独立数据文件使后续接入联网服务时，只需替换会话传输、服务发现与托管方式，不改变领域模型。
+当前交付以桌面服务 + 账户隔离运行；`accounts.sqlite` 与每账户独立数据文件使后续接入联网服务时，只需替换会话传输、服务发现与托管方式，不改变领域模型。
 
 ## 9. 已知限制
 

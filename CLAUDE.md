@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概况
 
-时序 / Dailywork 是一款 macOS 个人任务与知识工作台。Electron 45 + React 19 + TypeScript 单栈，Hono 服务运行在 Electron utilityProcess，SQLite（`node:sqlite`，WAL）是唯一权威数据源，**不使用 iCloud 或任何云同步**。全部界面操作收敛到 `packages/ops` 的操作目录，同时生成 HTTP、CLI、MCP、AI 工具四个表面。
+时序 / Dailywork 是一款 macOS 个人任务与知识工作台。Electron 45 + React 19 + TypeScript 单栈，Hono 服务运行在 Electron utilityProcess，SQLite（`node:sqlite`，WAL）是唯一权威数据源，**不使用任何云同步**。全部界面操作收敛到 `packages/ops` 的操作目录，同时生成 HTTP、CLI、MCP、AI 工具四个表面。
 
 ## 常用命令
 
