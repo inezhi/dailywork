@@ -1,0 +1,20 @@
+import { chromium } from 'playwright'
+const base = 'http://127.0.0.1:5173'
+const browser = await chromium.launch({ channel: 'chrome', headless: true })
+const page = await browser.newPage({ viewport: { width: 1440, height: 960 } })
+const errors = []
+page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()) })
+page.on('pageerror', (e) => errors.push(String(e)))
+await page.goto(base + '/focus', { waitUntil: 'networkidle' })
+await page.waitForTimeout(600)
+await page.screenshot({ path: 'design/qa/focus-week.png' })
+await page.goto(base + '/tasks', { waitUntil: 'networkidle' })
+await page.getByRole('button', { name: /四象限/ }).click()
+await page.waitForTimeout(400)
+await page.screenshot({ path: 'design/qa/matrix.png' })
+await page.goto(base + '/settings', { waitUntil: 'networkidle' })
+await page.getByRole('button', { name: '数据与备份' }).click()
+await page.waitForTimeout(400)
+await page.screenshot({ path: 'design/qa/settings-data.png' })
+console.log('errors', JSON.stringify(errors))
+await browser.close()

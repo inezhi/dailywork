@@ -18,3 +18,4 @@ coverage/
 apps/desktop/release/
 design/**/*.jpg
 apps/desktop/build/icon.iconset/
+.data-e2e/

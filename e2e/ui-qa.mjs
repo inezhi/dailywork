@@ -1,0 +1,50 @@
+import { chromium } from 'playwright'
+
+const base = 'http://127.0.0.1:5173'
+const browser = await chromium.launch({ channel: 'chrome', headless: true })
+const errors = []
+const context = await browser.newContext({ viewport: { width: 1440, height: 960 }, deviceScaleFactor: 1 })
+const page = await context.newPage()
+page.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg.text()) })
+page.on('pageerror', (err) => errors.push(String(err)))
+
+await page.goto(base + '/today', { waitUntil: 'networkidle' })
+await page.locator('.task-row').first().click()
+await page.locator('.drawer').waitFor()
+await page.locator('.drawer input[type=file]').setInputFiles('/Users/lingzhi/Documents/project/dailywork/apps/web/public/icon-192.png')
+await page.locator('.attach-thumb').first().waitFor({ timeout: 10000 })
+await page.waitForTimeout(500)
+await page.screenshot({ path: 'design/qa/task-drawer.png' })
+await page.keyboard.press('Escape')
+
+await page.goto(base + '/settings', { waitUntil: 'networkidle' })
+await page.getByRole('button', { name: '通用' }).click()
+await page.waitForTimeout(400)
+await page.screenshot({ path: 'design/qa/settings-general.png' })
+await page.getByRole('button', { name: 'AI 供应商' }).click()
+await page.waitForTimeout(400)
+await page.screenshot({ path: 'design/qa/settings-ai.png' })
+
+await page.goto(base + '/projects/prj_9n8bxt9fddc1r98y', { waitUntil: 'networkidle' })
+await page.waitForTimeout(500)
+await page.screenshot({ path: 'design/qa/project.png' })
+
+await page.goto(base + '/today', { waitUntil: 'networkidle' })
+await page.locator('button[aria-label="AI 助理"]').click()
+await page.locator('.ai-panel').waitFor()
+await page.locator('.ai-suggestion').first().click()
+await page.locator('.ai-msg.assistant').first().waitFor({ timeout: 30000 })
+await page.waitForTimeout(600)
+await page.screenshot({ path: 'design/qa/ai-panel.png' })
+
+const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true })
+const m = await mobile.newPage()
+m.on('pageerror', (err) => errors.push('mobile: ' + String(err)))
+await m.goto(base + '/today', { waitUntil: 'networkidle' })
+await m.waitForTimeout(600)
+await m.screenshot({ path: 'design/qa/mobile-today.png' })
+await m.goto(base + '/dashboard', { waitUntil: 'networkidle' })
+await m.waitForTimeout(600)
+await m.screenshot({ path: 'design/qa/mobile-dashboard.png', fullPage: true })
+console.log('errors', JSON.stringify(errors, null, 2))
+await browser.close()
