@@ -1,0 +1,17 @@
+import { chromium } from 'playwright'
+const port = process.env.PORT
+const browser = await chromium.launch({ channel: 'chrome', headless: true })
+const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
+const page = await context.newPage()
+await page.goto(`http://127.0.0.1:${port}/today`, { waitUntil: 'networkidle' })
+await page.waitForTimeout(2500)
+const regs = await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length)
+console.log('sw registrations', regs)
+const cache = await page.evaluate(async () => (await caches.keys()))
+console.log('caches', cache)
+await context.setOffline(true)
+await page.reload().catch(() => {})
+await page.waitForTimeout(1200)
+const text = await page.evaluate(() => document.body.innerText.slice(0, 120)).catch(() => 'error')
+console.log('offline shell', JSON.stringify(text))
+await browser.close()

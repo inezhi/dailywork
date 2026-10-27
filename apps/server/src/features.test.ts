@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createServer, type Server } from 'node:http'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { openDatabase } from '@daily/platform'
@@ -207,6 +207,76 @@ describe('AI guardrails', () => {
       .prepare("SELECT actor, command FROM op_log WHERE command = 'memo.create' ORDER BY id DESC")
       .all() as Array<{ actor: string; command: string }>
     expect(logs[0]?.actor).toBe('ai')
+    const conversations = await call('ai.conversations.list', { limit: 5 })
+    expect(conversations.json.data[0].updatedAt).toMatch(/T/)
     await call('ai.provider.delete', { id: saved.json.data.id, confirm: true })
+  }, 30_000)
+})
+
+describe('routines and daily note', () => {
+  it('creates, toggles and deletes a routine and persists a day note', async () => {
+    const created = await call('routine.create', {
+      name: '晨间回顾',
+      time: '09:00',
+      weekdays: [1, 2, 3, 4, 5],
+    })
+    expect(created.json.ok).toBe(true)
+    const listed = await call('routine.list')
+    expect(listed.json.data.some((routine: any) => routine.name === '晨间回顾')).toBe(true)
+    const toggled = await call('routine.toggle', { id: created.json.data.id, enabled: false })
+    expect(toggled.json.data.enabled).toBe(false)
+    const note = await call('capacity.set', {
+      date: '2026-10-27',
+      capacityMinutes: 240,
+      note: '今天先做最重要的一件。',
+    })
+    expect(note.json.ok).toBe(true)
+    const today = await call('today.get', { date: '2026-10-27' })
+    expect(today.json.data.note).toBe('今天先做最重要的一件。')
+    const deleted = await call('routine.delete', { id: created.json.data.id, confirm: true })
+    expect(deleted.json.ok).toBe(true)
+  })
+})
+
+describe('project templates and activity', () => {
+  it('saves a template, applies it and records project activity', async () => {
+    const project = await call('project.create', { name: '模板验证' })
+    const projectId = project.json.data.id
+    const task = await call('task.create', {
+      title: '模板任务 A',
+      projectId,
+      estimateMinutes: 25,
+      priority: 'medium',
+    })
+    expect(task.json.ok).toBe(true)
+    const template = await call('template.create', {
+      name: '验证模板',
+      projectId,
+      items: [{ title: '模板任务 A', estimateMinutes: 25, priority: 'medium' }],
+    })
+    expect(template.json.ok).toBe(true)
+    const applied = await call('template.apply', {
+      id: template.json.data.id,
+      projectId,
+    })
+    expect(applied.json.data.created).toBe(1)
+    const list = await call('task.list', { projectId, limit: 50 })
+    expect(list.json.data.total).toBe(2)
+    const activity = await call('project.activity', { id: projectId, limit: 50 })
+    expect(activity.json.ok).toBe(true)
+    expect(activity.json.data.length).toBeGreaterThan(0)
+    await call('template.delete', { id: template.json.data.id, confirm: true })
+  })
+})
+
+
+describe('LAN HTTPS certificate', () => {
+  it('generates a local certificate and key inside the data directory', async () => {
+    const result = await call('lan.setupHttps', {})
+    expect(result.json.ok).toBe(true)
+    expect(result.json.data.restartRequired).toBe(true)
+    expect(existsSync(join(dataDir, 'certs', 'server.crt'))).toBe(true)
+    expect(existsSync(join(dataDir, 'certs', 'server.key'))).toBe(true)
+    expect(existsSync(join(dataDir, 'certs', 'dailywork-ca.crt'))).toBe(true)
   }, 30_000)
 })

@@ -1,0 +1,43 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch({ channel: 'chrome', headless: true })
+const page = await browser.newPage({ viewport: { width: 1440, height: 960 } })
+const errors = []
+page.on('pageerror', (e) => errors.push(String(e)))
+page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()) })
+
+await page.goto('http://127.0.0.1:5173/settings', { waitUntil: 'networkidle' })
+await page.getByRole('button', { name: '通用' }).click()
+await page.waitForTimeout(500)
+await page.screenshot({ path: 'design/qa/settings-routines.png', fullPage: true })
+
+await page.goto('http://127.0.0.1:5173/projects/prj_9n8bxt9fddc1r98y', { waitUntil: 'networkidle' })
+await page.waitForTimeout(600)
+await page.screenshot({ path: 'design/qa/project-history.png', fullPage: true })
+
+await page.goto('http://127.0.0.1:5173/memos', { waitUntil: 'networkidle' })
+const memo = page.locator('.memo-card').first()
+await memo.getByTitle('附件').click()
+await page.waitForTimeout(400)
+await memo.locator('input[type=file]').setInputFiles('/Users/lingzhi/Documents/project/dailywork/apps/web/public/icon-192.png')
+await memo.locator('.memo-attachments .attach-thumb').first().waitFor({ timeout: 10000 })
+await page.screenshot({ path: 'design/qa/memo-attachments.png' })
+
+await page.goto('http://127.0.0.1:5173/docs', { waitUntil: 'networkidle' })
+await page.locator('.prose-editor').click()
+await page.keyboard.press('Meta+a')
+await page.locator('.doc-toolbar button[title="AI 润色 / 摘要"]').click()
+await page.locator('.ai-doc-menu').waitFor()
+await page.screenshot({ path: 'design/qa/doc-ai-menu.png' })
+await page.getByRole('button', { name: '润色选段' }).click()
+await page.locator('.ai-panel').waitFor()
+const draft = await page.locator('.ai-composer textarea').inputValue()
+console.log('doc ai draft', draft.slice(0, 60))
+await page.keyboard.press('Escape')
+
+await page.goto('http://127.0.0.1:5173/today', { waitUntil: 'networkidle' })
+await page.locator('button[aria-label="AI 助理"]').click()
+await page.getByTitle('对话记录').click()
+await page.waitForTimeout(600)
+await page.screenshot({ path: 'design/qa/ai-history.png' })
+console.log('errors', errors.slice(0, 10))
+await browser.close()
