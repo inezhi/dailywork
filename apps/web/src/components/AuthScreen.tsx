@@ -225,7 +225,7 @@ export function AuthScreen() {
             {mode === 'register' && (
               <label>
                 <span>邮箱</span>
-                <div className="auth-input">
+                <div className={`auth-input${error.includes('邮箱') ? ' is-invalid' : ''}`}>
                   <Mail size={15} />
                   <input
                     type="email"
