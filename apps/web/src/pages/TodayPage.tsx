@@ -1,14 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { AlertCircle, ChevronDown, ChevronRight, Plus, Timer } from 'lucide-react'
+import { AlertCircle, ChevronDown, ChevronRight, Timer } from 'lucide-react'
 import type { Settings, Task, TodayResult } from '@daily/contracts'
 import { useOp, useOpMutation } from '@/lib/query'
 import { useTimer } from '@/stores/timer'
-import { useUi } from '@/stores/ui'
 import { FocusRing } from '@/components/FocusRing'
 import { TaskRow } from '@/components/TaskRow'
 import { QuickAdd } from '@/components/QuickAdd'
-import { EmptyState } from '@/components/EmptyState'
 import { Modal, ModalHeader } from '@/components/Modal'
 import {
   fullDateLabel,
@@ -24,7 +22,6 @@ export function TodayPage() {
   const { data: settings } = useOp<Settings>('settings.get')
   const timer = useTimer()
   const navigate = useNavigate()
-  const setNewTask = useUi((s) => s.setNewTask)
   const [capacityOpen, setCapacityOpen] = useState(false)
   const [showDone, setShowDone] = useState(false)
   const [capacity, setCapacity] = useState('')
@@ -176,21 +173,6 @@ export function TodayPage() {
         </div>
       )}
 
-      {!isLoading && openTasks.length === 0 && dueOnly.length === 0 && (
-        <div className="card" style={{ marginTop: 18 }}>
-          <EmptyState
-            icon={<SunForEmpty />}
-            title="今天还没有安排"
-            description="从上方快速添加一件小事；需要更多结构时，再把它放进项目、日期与专注节奏里。"
-            action={
-              <button className="btn primary" onClick={() => setNewTask(true)}>
-                <Plus size={14} /> 新建任务
-              </button>
-            }
-          />
-        </div>
-      )}
-
       {STATUS_ORDER.filter((s) => s !== 'done' && s !== 'inbox').map((status) => {
         const tasks = grouped.get(status) ?? []
         if (tasks.length === 0) return null
@@ -286,14 +268,5 @@ export function TodayPage() {
         </div>
       </Modal>
     </div>
-  )
-}
-
-function SunForEmpty() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-    </svg>
   )
 }

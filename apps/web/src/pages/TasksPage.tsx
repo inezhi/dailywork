@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useSearch } from '@tanstack/react-router'
-import { Search, SlidersHorizontal } from 'lucide-react'
+import { Grid2X2, List, Search, SlidersHorizontal } from 'lucide-react'
 import type { ListResult, Project, Task, TaskStatus } from '@daily/contracts'
 import { useOp } from '@/lib/query'
+import { useUi } from '@/stores/ui'
 import { TaskRow } from '@/components/TaskRow'
 import { QuickAdd } from '@/components/QuickAdd'
 import { EmptyState } from '@/components/EmptyState'
 import { ListTodo } from 'lucide-react'
-import { STATUS_LABEL, STATUS_ORDER } from '@/lib/format'
+import { addDays, dateBadge, STATUS_LABEL, STATUS_ORDER, todayIso } from '@/lib/format'
 
 const TABS: Array<{ key: string; label: string; statuses?: TaskStatus[] }> = [
   { key: 'all', label: '全部' },
@@ -24,6 +25,7 @@ export function TasksPage() {
   const [query, setQuery] = useState('')
   const [projectId, setProjectId] = useState(search.project ?? '')
   const [sort, setSort] = useState<'manual' | 'scheduled' | 'due' | 'priority' | 'created'>('manual')
+  const [viewMode, setViewMode] = useState<'list' | 'matrix'>('list')
   const { data: projects } = useOp<Project[]>('project.list', {})
 
   const active = TABS.find((t) => t.key === tab)
@@ -61,6 +63,23 @@ export function TasksPage() {
             {openCount} 项未完成
             {data ? ` · 共 ${data.total} 项` : ''}
           </p>
+        </div>
+        <div className="head-right">
+          <div className="seg">
+            <button className={viewMode === 'list' ? 'on' : ''} onClick={() => setViewMode('list')} title="列表">
+              <List size={12} style={{ verticalAlign: -1, marginRight: 4 }} /> 列表
+            </button>
+            <button
+              className={viewMode === 'matrix' ? 'on' : ''}
+              onClick={() => {
+                setViewMode('matrix')
+                setTab('all')
+              }}
+              title="四象限"
+            >
+              <Grid2X2 size={12} style={{ verticalAlign: -1, marginRight: 4 }} /> 四象限
+            </button>
+          </div>
         </div>
       </div>
 
@@ -137,7 +156,11 @@ export function TasksPage() {
         </div>
       )}
 
-      {groups.map(({ status, tasks }) =>
+      {viewMode === 'matrix' && (
+        <MatrixView tasks={(data?.items ?? []).filter((task) => task.status !== 'done')} />
+      )}
+
+      {viewMode === 'list' && groups.map(({ status, tasks }) =>
         tasks.length === 0 ? null : (
           <section key={status}>
             <div className="section-title">
@@ -154,6 +177,98 @@ export function TasksPage() {
           </section>
         ),
       )}
+    </div>
+  )
+}
+
+function MatrixView({ tasks }: { tasks: Task[] }) {
+  const openTask = useUi((s) => s.openTask)
+  const today = todayIso()
+  const soon = addDays(today, 2)
+  const buckets = [
+    {
+      key: 'do',
+      title: '重要且紧急',
+      hint: '先做',
+      agent: '今天',
+      items: tasks.filter(
+        (t) =>
+          (t.priority === 'high' || t.priority === 'urgent') &&
+          ((t.dueDate != null && t.dueDate <= soon) || t.priority === 'urgent'),
+      ),
+    },
+    {
+      key: 'plan',
+      title: '重要不紧急',
+      hint: '安排时间',
+      agent: '计划',
+      items: tasks.filter(
+        (t) =>
+          (t.priority === 'high' || t.priority === 'urgent') &&
+          !((t.dueDate != null && t.dueDate <= soon) || t.priority === 'urgent'),
+      ),
+    },
+    {
+      key: 'delegate',
+      title: '紧急不重要',
+      hint: '尽快处理或收缩',
+      agent: '本周',
+      items: tasks.filter(
+        (t) =>
+          t.priority !== 'high' &&
+          t.priority !== 'urgent' &&
+          t.dueDate != null &&
+          t.dueDate <= soon,
+      ),
+    },
+    {
+      key: 'later',
+      title: '其他',
+      hint: '有空再做',
+      agent: '以后',
+      items: tasks.filter(
+        (t) =>
+          t.priority !== 'high' &&
+          t.priority !== 'urgent' &&
+          !(t.dueDate != null && t.dueDate <= soon),
+      ),
+    },
+  ]
+  return (
+    <div className="matrix-grid">
+      {buckets.map((bucket) => (
+        <section className="matrix-card" key={bucket.key}>
+          <div className="matrix-head">
+            <b>{bucket.title}</b>
+            <span>{bucket.hint} · {bucket.items.length}</span>
+            <span className="matrix-agent">{bucket.agent}</span>
+          </div>
+          {bucket.items.length === 0 && <div className="matrix-empty">这里是空的，很好。</div>}
+          {bucket.items.map((task) => (
+            <div
+              key={task.id}
+              className="matrix-item"
+              role="button"
+              tabIndex={0}
+              onClick={() => openTask(task.id)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  openTask(task.id)
+                }
+              }}
+            >
+              <span className={`status-btn ${task.status}`} style={{ width: 13, height: 13 }} />
+              <span className="t">{task.title}</span>
+              {task.dueDate && (
+                <span className={dateBadge(task.dueDate).tone === 'danger' ? 'overdue-text' : ''} style={{ fontSize: 9, color: 'var(--ink-3)' }}>
+                  {dateBadge(task.dueDate).text}
+                </span>
+              )}
+            </div>
+          ))}
+        </section>
+      ))}
     </div>
   )
 }

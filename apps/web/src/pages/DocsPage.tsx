@@ -60,6 +60,7 @@ export function DocsPage() {
     { enabled: Boolean(docId) },
   )
   const [filter, setFilter] = useState('')
+  const [creating, setCreating] = useState(false)
 
   const tree = useMemo(() => buildTree(docs ?? []), [docs])
   const filtered = useMemo(() => {
@@ -77,9 +78,15 @@ export function DocsPage() {
   }, [docId, docs, navigate])
 
   const createDoc = async () => {
-    const doc = await callOp<Document>('document.create', { title: '未命名文档' })
-    toast.success('文档已创建')
-    void navigate({ to: '/docs/$docId', params: { docId: doc.id } })
+    if (creating) return
+    setCreating(true)
+    try {
+      const doc = await callOp<Document>('document.create', { title: '未命名文档' })
+      toast.success('文档已创建')
+      await navigate({ to: '/docs/$docId', params: { docId: doc.id } })
+    } finally {
+      setCreating(false)
+    }
   }
 
   return (
@@ -125,7 +132,12 @@ export function DocsPage() {
           )}
         </aside>
 
-        <main className="docs-main">
+        <main className="docs-main" style={{ position: 'relative' }}>
+          {creating && (
+            <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'grid', placeItems: 'center', background: 'color-mix(in oklab, var(--bg) 72%, transparent)', backdropFilter: 'blur(2px)', fontSize: 12, color: 'var(--ink-3)' }}>
+              正在创建文档…
+            </div>
+          )}
           {docId && detail ? (
             <DocEditor key={detail.document.id} detail={detail} />
           ) : (
@@ -218,6 +230,7 @@ function DocEditor({ detail }: { detail: DocumentDetail }) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const imageRef = useRef<HTMLInputElement>(null)
+  const titleRef = useRef(title)
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -253,8 +266,9 @@ function DocEditor({ detail }: { detail: DocumentDetail }) {
     setStatus('saving')
     try {
       await callOp('document.saveBody', { id: doc.id, content, text })
-      if ((title === '未命名文档' || !title.trim()) && text.trim()) {
+      if ((titleRef.current === '未命名文档' || !titleRef.current.trim()) && text.trim()) {
         const nextTitle = text.trim().split('\n')[0]!.slice(0, 80)
+        titleRef.current = nextTitle
         setTitle(nextTitle)
         await callOp('document.update', { id: doc.id, title: nextTitle })
       }
@@ -264,6 +278,10 @@ function DocEditor({ detail }: { detail: DocumentDetail }) {
       toast.error(error instanceof Error ? error.message : '保存失败')
     }
   }
+
+  useEffect(() => {
+    titleRef.current = title
+  }, [title])
 
   useEffect(() => {
     if (!editor || loadedRef.current === doc.id) return

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { ArrowUpRight, Sparkles, TriangleAlert } from 'lucide-react'
-import type { DashboardResult } from '@daily/contracts'
+import type { DashboardResult, WeekReviewResult } from '@daily/contracts'
 import { useOp } from '@/lib/query'
+import { Modal, ModalHeader } from '@/components/Modal'
 import { useUi } from '@/stores/ui'
 import { shortDate } from '@/lib/format'
 
@@ -32,6 +33,8 @@ const STATUS_NAMES: Record<string, string> = {
 
 export function DashboardPage() {
   const [range, setRange] = useState<'7d' | '30d' | '90d' | '12w'>('30d')
+  const [reviewOpen, setReviewOpen] = useState(false)
+  const { data: review } = useOp<WeekReviewResult>('review.week', {}, { enabled: reviewOpen })
   const { data, isLoading } = useOp<DashboardResult>('analytics.dashboard', { range }, { staleTime: 20_000 })
   const openTask = useUi((s) => s.openTask)
 
@@ -76,6 +79,9 @@ export function DashboardPage() {
           </p>
         </div>
         <div className="head-right">
+          <button className="btn" onClick={() => setReviewOpen(true)}>
+            本周复盘
+          </button>
           <div className="seg">
             {(['7d', '30d', '90d', '12w'] as const).map((value) => (
               <button key={value} className={range === value ? 'on' : ''} onClick={() => setRange(value)}>
@@ -254,6 +260,84 @@ export function DashboardPage() {
           )}
         </section>
       </div>
+
+      <Modal open={reviewOpen} onClose={() => setReviewOpen(false)} width={620} label="本周复盘">
+        <ModalHeader
+          title="本周复盘"
+          description={review ? `${shortDate(review.weekStart)} — ${shortDate(review.weekEnd)} · 完成 ${review.completed.length} 项` : '正在汇总本周数据…'}
+          onClose={() => setReviewOpen(false)}
+        />
+        <div className="modal-body">
+          {review ? (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 18 }}>
+                {[
+                  ['完成任务', review.completed.length, '项'],
+                  ['完成率', Math.round(review.completionRate * 100), '%'],
+                  ['专注时长', review.focusMinutes, '分钟'],
+                  ['专注会话', review.focusSessions, '次'],
+                ].map(([label, value, suffix]) => (
+                  <div key={String(label)} style={{ background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 8, padding: '10px 12px' }}>
+                    <div style={{ fontSize: 10, color: 'var(--ink-3)' }}>{label}</div>
+                    <div className="tnum" style={{ fontSize: 22, fontWeight: 650, letterSpacing: '-0.5px', marginTop: 3 }}>
+                      {value}<span style={{ fontSize: 10, color: 'var(--ink-3)', marginLeft: 2 }}>{suffix}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ fontSize: 10.5, color: 'var(--ink-3)', marginBottom: 8 }}>每日完成</div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 92, borderBottom: '1px solid var(--line-soft)', paddingBottom: 6, marginBottom: 18 }}>
+                {review.byDay.map((day) => {
+                  const max = Math.max(1, ...review.byDay.map((d) => d.completed))
+                  return (
+                    <div key={day.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                      <span style={{ fontSize: 9, color: 'var(--ink-3)' }}>{day.completed || ''}</span>
+                      <div
+                        title={`${day.date}：完成 ${day.completed} 项`}
+                        style={{
+                          width: '100%',
+                          maxWidth: 42,
+                          height: Math.max(3, (day.completed / max) * 56),
+                          background: day.completed ? 'var(--accent)' : 'var(--sunken)',
+                          borderRadius: '3px 3px 0 0',
+                          opacity: day.completed ? 0.9 : 0.6,
+                        }}
+                      />
+                      <span style={{ fontSize: 8.5, color: 'var(--ink-3)' }}>{day.date.slice(8)}</span>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div style={{ fontSize: 10.5, color: 'var(--ink-3)', marginBottom: 6 }}>项目贡献</div>
+              {review.byProject.length === 0 && <div style={{ fontSize: 11, color: 'var(--ink-3)', marginBottom: 14 }}>本周还没有完成项。</div>}
+              {review.byProject.map((project) => (
+                <div key={project.projectId ?? project.name} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, padding: '4px 0' }}>
+                  <span style={{ flex: 1 }}>{project.name}</span>
+                  <span className="tnum" style={{ color: 'var(--ink-3)' }}>{project.count} 项</span>
+                </div>
+              ))}
+
+              <div style={{ marginTop: 18, borderTop: '1px solid var(--line-soft)', paddingTop: 12 }}>
+                {review.highlights.map((line) => (
+                  <div key={line} style={{ display: 'flex', gap: 7, fontSize: 11.5, color: 'var(--ink-2)', lineHeight: 1.65, marginBottom: 4 }}>
+                    <span style={{ color: 'var(--accent-strong)' }}>·</span>
+                    {line}
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="skeleton" style={{ height: 180 }} />
+          )}
+        </div>
+        <div className="modal-foot">
+          <button className="btn primary" onClick={() => setReviewOpen(false)}>
+            收下这份复盘
+          </button>
+        </div>
+      </Modal>
     </div>
   )
 }

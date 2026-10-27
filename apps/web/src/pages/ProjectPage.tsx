@@ -3,10 +3,12 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { Archive, CalendarDays, Check, Pencil, Plus, Target, Trash2 } from 'lucide-react'
 import type {
   CreateDeliverableInput,
+  CreateTemplateInput,
   Deliverable,
   ListResult,
   Project,
   Task,
+  TaskTemplate,
   UpdateProjectInput,
 } from '@daily/contracts'
 import { useOp, useOpMutation } from '@/lib/query'
@@ -31,6 +33,19 @@ export function ProjectPage() {
   const [archiveOpen, setArchiveOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deliverableInput, setDeliverableInput] = useState('')
+  const [templateOpen, setTemplateOpen] = useState(false)
+  const [templateName, setTemplateName] = useState('')
+  const { data: templates } = useOp<TaskTemplate[]>('template.list', {})
+  const createTemplate = useOpMutation<CreateTemplateInput, TaskTemplate>('template.create', {
+    onSuccess: () => {
+      toast.success('模板已保存')
+      setTemplateOpen(false)
+      setTemplateName('')
+    },
+  })
+  const applyTemplate = useOpMutation<{ id: string; projectId: string }, { created: number }>('template.apply', {
+    onSuccess: (result) => toast.success(`已从模板创建 ${result.created} 个任务`),
+  })
 
   const createDeliverable = useOpMutation<CreateDeliverableInput, Deliverable>('deliverable.create', {
     onSuccess: () => setDeliverableInput(''),
@@ -192,6 +207,36 @@ export function ProjectPage() {
           <section className="panel">
             <div className="panel-head">
               <div>
+                <h3>任务模板</h3>
+                <p>把重复的工作流保存下来，一键展开。</p>
+              </div>
+            </div>
+            {(templates ?? []).length === 0 ? (
+              <div style={{ fontSize: 11, color: 'var(--ink-3)', marginBottom: 10 }}>
+                还没有模板。把当前项目的任务保存成模板，下次直接复用。
+              </div>
+            ) : (
+              (templates ?? []).map((template) => (
+                <div key={template.id} className="subtask-row">
+                  <span style={{ flex: 1, fontSize: 11.5 }}>{template.name}</span>
+                  <span style={{ fontSize: 9.5, color: 'var(--ink-3)' }}>{template.items.length} 项</span>
+                  <button
+                    className="btn sm"
+                    onClick={() => applyTemplate.mutate({ id: template.id, projectId })}
+                  >
+                    应用
+                  </button>
+                </div>
+              ))
+            )}
+            <button className="btn sm" style={{ marginTop: 8 }} onClick={() => setTemplateOpen(true)} disabled={items.length === 0}>
+              <Plus size={12} /> 保存当前任务为模板
+            </button>
+          </section>
+
+          <section className="panel">
+            <div className="panel-head">
+              <div>
                 <h3>交付成果</h3>
                 <p>可勾选的里程碑与产物。</p>
               </div>
@@ -243,6 +288,46 @@ export function ProjectPage() {
       </div>
 
       <EditProjectModal open={editOpen} onClose={() => setEditOpen(false)} project={project} />
+
+      <Modal open={templateOpen} onClose={() => setTemplateOpen(false)} label="保存为任务模板">
+        <ModalHeader
+          title="保存为任务模板"
+          description={`将当前项目的 ${items.length} 个任务保存为可复用模板（标题、预估与优先级）。`}
+          onClose={() => setTemplateOpen(false)}
+        />
+        <div className="modal-body">
+          <div className="form-row">
+            <label>模板名称</label>
+            <input
+              className="field"
+              autoFocus
+              value={templateName}
+              onChange={(event) => setTemplateName(event.target.value)}
+              placeholder="例如：新版本发布清单"
+            />
+          </div>
+        </div>
+        <div className="modal-foot">
+          <button className="btn" onClick={() => setTemplateOpen(false)}>取消</button>
+          <button
+            className="btn primary"
+            disabled={!templateName.trim() || createTemplate.isPending}
+            onClick={() =>
+              createTemplate.mutate({
+                name: templateName.trim(),
+                projectId,
+                items: items.map((task) => ({
+                  title: task.title,
+                  estimateMinutes: task.estimateMinutes,
+                  priority: task.priority,
+                })),
+              })
+            }
+          >
+            {createTemplate.isPending ? '保存中…' : '保存模板'}
+          </button>
+        </div>
+      </Modal>
 
       <ConfirmDialog
         open={archiveOpen}

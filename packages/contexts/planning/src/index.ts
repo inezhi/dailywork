@@ -154,14 +154,14 @@ export function weekReview(db: Db, weekStartInput?: string): WeekReviewResult {
        FROM focus_sessions WHERE status = 'completed' AND started_at >= ? AND started_at < ?`,
     )
     .get(bounds.start, endBounds.start) as { seconds: number; sessions: number }
-  const carriedOverRows = db
+  const plannedRow = db
     .prepare(
-      `SELECT COUNT(*) AS c FROM tasks WHERE archived_at IS NULL AND status != 'done'
-       AND scheduled_date IS NOT NULL AND scheduled_date < ? AND scheduled_date >= ?`,
+      `SELECT COUNT(*) AS c FROM tasks WHERE archived_at IS NULL AND parent_id IS NULL
+       AND scheduled_date IS NOT NULL AND scheduled_date >= ? AND scheduled_date <= ?`,
     )
-    .get(weekStart, addDays(weekStart, -7)) as { c: number }
-  const totalWeek = completed.length + carriedOverRows.c
-  const completionRate = totalWeek === 0 ? 0 : completed.length / totalWeek
+    .get(weekStart, weekEnd) as { c: number }
+  const denominator = Math.max(completed.length, plannedRow.c)
+  const completionRate = denominator === 0 ? 0 : Math.min(1, completed.length / denominator)
   const highlights: string[] = []
   const bestDay = [...byDay].sort((a, b) => b.completed - a.completed)[0]
   if (bestDay && bestDay.completed > 0) {

@@ -231,7 +231,6 @@ export function updateDocument(db: Db, input: UpdateDocumentInput): Document {
 }
 
 export function saveBody(db: Db, input: SaveDocumentBodyInput): DocumentBody {
-  const document = getDocument(db, input.id)
   const text = input.text ?? extractText(input.content)
   const excerpt = text.slice(0, 160)
   const at = nowIso()
@@ -241,13 +240,8 @@ export function saveBody(db: Db, input: SaveDocumentBodyInput): DocumentBody {
        ON CONFLICT(document_id) DO UPDATE SET content_json = excluded.content_json,
          text = excluded.text, updated_at = excluded.updated_at`,
     ).run(input.id, JSON.stringify(input.content), text, at)
-    let title = document.title
-    if ((title === '未命名文档' || title.trim() === '') && text.trim()) {
-      title = text.trim().split('\n')[0]!.slice(0, 80)
-    }
-    db.prepare('UPDATE documents SET excerpt = ?, title = ?, updated_at = ? WHERE id = ?').run(
+    db.prepare('UPDATE documents SET excerpt = ?, updated_at = ? WHERE id = ?').run(
       excerpt,
-      title,
       at,
       input.id,
     )

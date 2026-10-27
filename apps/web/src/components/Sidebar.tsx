@@ -17,7 +17,7 @@ import {
   Sun,
   Timer,
 } from 'lucide-react'
-import type { Project, Space, TodayResult, CreateProjectInput } from '@daily/contracts'
+import type { Project, Space, TodayResult, CreateProjectInput, CreateSpaceInput } from '@daily/contracts'
 import { useOp, useOpMutation } from '@/lib/query'
 import { useUi } from '@/stores/ui'
 import { FocusRing } from './FocusRing'
@@ -47,6 +47,7 @@ export function Sidebar() {
   const { data: projects } = useOp<Project[]>('project.list', {})
   const { data: today } = useOp<TodayResult>('today.get', {}, { staleTime: 30_000 })
   const [newProjectOpen, setNewProjectOpen] = useState(false)
+  const [newSpaceOpen, setNewSpaceOpen] = useState(false)
 
   const totalToday = today ? today.scheduled.length : 0
   const doneToday = today ? today.scheduled.filter((t) => t.status === 'done').length : 0
@@ -92,6 +93,9 @@ export function Sidebar() {
 
         <div className="nav-label">
           <span>空间</span>
+          <button onClick={() => setNewSpaceOpen(true)} title="新建空间" aria-label="新建空间">
+            <Plus size={13} />
+          </button>
         </div>
         {spaces?.map((space) => (
           <Link
@@ -162,6 +166,7 @@ export function Sidebar() {
       </div>
 
       <NewProjectModal open={newProjectOpen} onClose={() => setNewProjectOpen(false)} spaces={spaces ?? []} />
+      <NewSpaceModal open={newSpaceOpen} onClose={() => setNewSpaceOpen(false)} />
     </aside>
   )
 }
@@ -243,6 +248,60 @@ function NewProjectModal({
           onClick={() => create.mutate({ name: name.trim(), spaceId: spaceId || undefined, color })}
         >
           {create.isPending ? '创建中…' : '创建项目'}
+        </button>
+      </div>
+    </Modal>
+  )
+}
+
+
+function NewSpaceModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [name, setName] = useState('')
+  const [color, setColor] = useState(PROJECT_COLORS[0]!)
+  const create = useOpMutation<CreateSpaceInput, Space>('space.create', {
+    onSuccess: () => {
+      toast.success('空间已创建')
+      setName('')
+      onClose()
+    },
+  })
+  return (
+    <Modal open={open} onClose={onClose} label="新建空间">
+      <ModalHeader title="新建空间" description="空间是项目与任务的第一层归组，例如工作、学习、生活。" onClose={onClose} />
+      <div className="modal-body">
+        <div className="form-row">
+          <label>空间名称</label>
+          <input
+            className="field"
+            autoFocus
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="例如：学习"
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && name.trim()) create.mutate({ name: name.trim(), color, icon: 'layers' })
+            }}
+          />
+        </div>
+        <div className="form-row">
+          <label>颜色</label>
+          <div className="swatches">
+            {PROJECT_COLORS.map((value) => (
+              <button
+                key={value}
+                type="button"
+                className={`swatch ${color === value ? 'on' : ''}`}
+                style={{ background: value }}
+                onClick={() => setColor(value)}
+                aria-label={`选择颜色 ${value}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="modal-foot">
+        <button className="btn" onClick={onClose}>取消</button>
+        <button className="btn primary" disabled={!name.trim() || create.isPending} onClick={() => create.mutate({ name: name.trim(), color, icon: 'layers' })}>
+          {create.isPending ? '创建中…' : '创建空间'}
         </button>
       </div>
     </Modal>

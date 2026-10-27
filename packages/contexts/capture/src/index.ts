@@ -16,7 +16,6 @@ import {
   nowIso,
   todayLocal,
   toDateOnly,
-  transaction,
   type Db,
 } from '@daily/platform'
 import { createTask, ensureTag } from '@daily/context-tasking'
@@ -192,32 +191,31 @@ export function memoToTask(
   db: Db,
   input: MemoToTaskInput,
 ): { memo: Memo; task: ReturnType<typeof createTask> } {
-  return transaction(db, () => {
-    const memo = getMemo(db, input.id)
-    if (memo.convertedTaskId) {
-      throw new OpError('CONFLICT', '速记已转为任务', { taskId: memo.convertedTaskId })
-    }
-    const firstLine = memo.content.split('\n')[0] ?? '速记'
-    const fallbackTitle = firstLine.replace(HASHTAG, '').trim().slice(0, 120) || '速记'
-    const title = input.title ?? fallbackTitle
-    const tagIds = memo.tags.map((t) => ensureTag(db, t).id)
-    const task = createTask(
-      { db, actor: 'user', source: 'gui' },
-      {
-        title,
-        notes: memo.content,
-        projectId: input.projectId ?? undefined,
-        scheduledDate: input.scheduledDate ?? undefined,
-        tagIds,
-      },
-    )
-    db.prepare('UPDATE memos SET converted_task_id = ?, updated_at = ? WHERE id = ?').run(
-      task.id,
-      nowIso(),
-      memo.id,
-    )
-    return { memo: getMemo(db, memo.id), task }
-  })
+  const memo = getMemo(db, input.id)
+  if (memo.convertedTaskId) {
+    throw new OpError('CONFLICT', '速记已转为任务', { taskId: memo.convertedTaskId })
+  }
+  const firstLine = memo.content.split('\n')[0] ?? '速记'
+  const fallbackTitle = firstLine.replace(HASHTAG, '').trim().slice(0, 120) || '速记'
+  const title = input.title ?? fallbackTitle
+  const tagIds = memo.tags.map((t) => ensureTag(db, t).id)
+  // createTask owns its transaction; nesting BEGIN IMMEDIATE inside another one is invalid in SQLite.
+  const task = createTask(
+    { db, actor: 'user', source: 'gui' },
+    {
+      title,
+      notes: memo.content,
+      projectId: input.projectId ?? undefined,
+      scheduledDate: input.scheduledDate ?? undefined,
+      tagIds,
+    },
+  )
+  db.prepare('UPDATE memos SET converted_task_id = ?, updated_at = ? WHERE id = ?').run(
+    task.id,
+    nowIso(),
+    memo.id,
+  )
+  return { memo: getMemo(db, memo.id), task }
 }
 
 export function captureInbox(db: Db, input: InboxCaptureInput): { kind: 'memo' | 'task'; id: string } {

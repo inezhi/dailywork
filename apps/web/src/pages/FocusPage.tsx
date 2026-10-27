@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Pause, Play, RotateCcw, TimerReset, X } from 'lucide-react'
+import { Pause, Play, RotateCcw, Timer, TimerReset, X } from 'lucide-react'
 import type { FocusSession, FocusStats, ListResult, Settings, Task } from '@daily/contracts'
 import { useOp } from '@/lib/query'
 import { useTimer } from '@/stores/timer'
 import { FocusRing } from '@/components/FocusRing'
-import { formatClock, formatDuration, relativeTime, todayIso } from '@/lib/format'
+import { formatClock, formatDuration, relativeTime, toDateOnly, todayIso } from '@/lib/format'
 import { EmptyState } from '@/components/EmptyState'
 
 export function FocusPage() {
@@ -16,6 +16,7 @@ export function FocusPage() {
   })
   const { data: stats } = useOp<FocusStats>('focus.stats', {}, { refetchInterval: 30_000 })
   const { data: settings } = useOp<Settings>('settings.get')
+  const { data: weekDays } = useOp<Array<{ date: string; minutes: number }>>('focus.days', { days: 7 })
   const { data: sessions } = useOp<ListResult<FocusSession>>('focus.list', { limit: 12 })
   const [minutes, setMinutes] = useState(25)
   const [taskId, setTaskId] = useState('')
@@ -28,7 +29,7 @@ export function FocusPage() {
   const active = timer.session
   const today = todayIso()
   const todaySessions = (sessions?.items ?? []).filter(
-    (s) => s.startedAt.slice(0, 10) === today || new Date(s.startedAt).toDateString() === new Date().toDateString(),
+    (session) => toDateOnly(new Date(session.startedAt)) === today,
   )
 
   const progress = active && timer.totalSeconds > 0 ? 1 - timer.remainingSeconds / timer.totalSeconds : 0
@@ -186,6 +187,48 @@ export function FocusPage() {
             </section>
           </div>
         </div>
+
+        <section className="panel" style={{ marginTop: 18 }}>
+          <div className="panel-head">
+            <div>
+              <h3>最近 7 天</h3>
+              <p>每天完成的专注分钟，不含取消的会话。</p>
+            </div>
+            <span className="chip soft">本周 {stats?.weekMinutes ?? 0} 分钟</span>
+          </div>
+          {(weekDays ?? []).every((day) => day.minutes === 0) ? (
+            <div className="empty" style={{ padding: '18px 10px 8px' }}>
+              <div className="empty-icon"><Timer size={17} /></div>
+              <h3>还没有专注记录</h3>
+              <p>开始第一段专注后，这里会慢慢长成你的节奏。</p>
+            </div>
+          ) : (
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, height: 120, paddingTop: 6 }}>
+            {(weekDays ?? []).map((day) => {
+              const max = Math.max(1, ...(weekDays ?? []).map((d) => d.minutes))
+              const isToday = day.date === today
+              return (
+                <div key={day.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                  <span className="tnum" style={{ fontSize: 9, color: 'var(--ink-3)' }}>{day.minutes || ''}</span>
+                  <div
+                    title={`${day.date}：${day.minutes} 分钟`}
+                    style={{
+                      width: '100%',
+                      maxWidth: 52,
+                      height: Math.max(4, (day.minutes / max) * 70),
+                      borderRadius: '4px 4px 0 0',
+                      background: isToday ? 'var(--accent)' : 'color-mix(in oklab, var(--accent) 35%, var(--sunken))',
+                    }}
+                  />
+                  <span style={{ fontSize: 9, color: isToday ? 'var(--accent-strong)' : 'var(--ink-3)', fontWeight: isToday ? 650 : 400 }}>
+                    {day.date.slice(5).replace('-', '/')}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+          )}
+        </section>
       </div>
     )
   }
