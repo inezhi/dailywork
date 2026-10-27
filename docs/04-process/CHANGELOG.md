@@ -13,7 +13,9 @@ All notable changes to this project are documented here. The same entries are sh
 - **拖拽**：四象限调整优先级与截止；日历与时间轴改期。
 - **局域网**：可选自签名 HTTPS（固定 47822）、PWA 离线壳；配对绑定首个账户。
 - **文档**：AI 选区菜单、图片插入、自动保存。
-- **测试**：Vitest 54 项；Playwright 11 项（账户 setup、Chrome 桌面、WebKit iPhone、账户 UI）。
+- **部署**：Docker 镜像与 compose，镜像内含 SQLite，数据通过 `/data` volume 持久化。
+- **客户端模式**：桌面端改为连接统一服务端；桌面、浏览器与后续 Android 客户端共享账户与同一份数据；桌面端不再内置服务或业务数据库。
+- **测试**：Vitest 58 项；Playwright 11 项（账户 setup、Chrome 桌面、WebKit iPhone、账户 UI）。
 
 ### Changed
 

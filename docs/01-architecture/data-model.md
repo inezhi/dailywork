@@ -1,10 +1,10 @@
 # 数据模型与存储
 
-更新：2026-10-27 · 对应 schema v5 · 飞书归档：[07 数据存储、备份与导出](https://my.feishu.cn/wiki/LcvjwjRJ9iVboYkNvucclMnWnEd)
+更新：2026-10-28 · 对应 schema v5 · 飞书归档：[07 数据存储、备份与导出](https://my.feishu.cn/wiki/LcvjwjRJ9iVboYkNvucclMnWnEd)
 
 ## 1. 原则
 
-1. **账户库 + 工作区库**：`accounts.sqlite` 保存账户与会话；每个账户的 `users/<id>/data.sqlite` 保存业务数据，WAL 模式。
+1. **服务端账户库 + 工作区库**：`accounts.sqlite` 保存账户与会话；每个账户的 `users/<id>/data.sqlite` 保存业务数据，WAL 模式。桌面、浏览器与 Android 客户端不保存业务数据库，只通过服务端读写同一份数据。
 2. **业务日期是用户时区的日期字符串** `YYYY-MM-DD`；时间戳是 UTC ISO-8601。禁止用 UTC 日期推导「今天」。
 3. **写路径只经 ops**；同一事务内写业务表与 `op_log`。
 4. **图片入库**：不依赖文件路径；blob 不可变、按内容寻址、引用计数。
@@ -104,12 +104,12 @@ zip 文件，包含：
 1. 读取 zip，校验 manifest 与 `data.sqlite` 存在。
 2. 写入临时文件，用 `node:sqlite` 打开，`PRAGMA integrity_check`，检查 schema 版本不高于当前。
 3. 写入 `data.sqlite.import-pending` 与 `import-pending.json`。
-4. 应用下次启动：`applyPendingImport` 备份当前 `data.sqlite` 到 `backups/before-import-*.sqlite`，清理 WAL/SHM，原子 rename；`secrets.key.import-pending` 同步恢复。
+4. 服务端下次启动：`applyPendingImport` 备份当前 `data.sqlite` 到 `backups/before-import-*.sqlite`，清理 WAL/SHM，原子 rename；`secrets.key.import-pending` 同步恢复。
 
 ## 5. 数据目录
 
 ```
-~/Library/Application Support/Dailywork/
+/data/（Docker 服务端）
   accounts.sqlite        # 账户、密码哈希、头像、会话
   data.sqlite            # 首个账户之前的兼容数据库（首个账户创建后复制到 users/<id>/）
   users/<id>/data.sqlite # 每个账户的权威业务数据（WAL）
@@ -122,7 +122,6 @@ zip 文件，包含：
   secrets.key            # AI 密钥加密根（0600）
   backups/               # 导出与导入前备份
   logs/dailywork.log     # 结构化日志，无正文/密钥
-  window-state.json      # 桌面窗口位置
 ```
 
-可用 `DAILYWORK_DATA_DIR` 覆盖（测试与开发使用临时目录或仓库 `.data`）。
+可用 `DAILYWORK_DATA_DIR` 覆盖（测试与开发使用临时目录或仓库 `.data`）。桌面客户端的 `~/Library/Application Support/Dailywork/` 只保存窗口状态与 `connection.json`，不存放业务数据库。

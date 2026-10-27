@@ -7,9 +7,7 @@ import {
   ipcMain,
   nativeImage,
   shell,
-  utilityProcess,
   dialog,
-  type UtilityProcess,
 } from 'electron'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -23,8 +21,9 @@ mkdirSync(dataDir, { recursive: true, mode: 0o700 })
 
 let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
-let serverProcess: UtilityProcess | null = null
 let quitting = false
+let serverUrl: string | null = null
+let allowedOrigin: string | null = null
 
 interface WindowState {
   x?: number
@@ -54,6 +53,60 @@ function saveWindowState(win: BrowserWindow): void {
   }
 }
 
+function connectionFile(): string {
+  return join(dataDir, 'connection.json')
+}
+
+function normalizeServerUrl(raw: string): string {
+  const value = raw.trim()
+  if (!value) throw new Error('请输入服务器地址')
+  const withScheme = /^https?:\/\//i.test(value) ? value : `http://${value}`
+  let parsed: URL
+  try {
+    parsed = new URL(withScheme)
+  } catch {
+    throw new Error('服务器地址格式不正确')
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error('服务器地址必须以 http:// 或 https:// 开头')
+  }
+  if (!parsed.hostname) throw new Error('服务器地址缺少主机名')
+  return parsed.origin
+}
+
+function readServerUrl(): string {
+  const env = process.env.DAILYWORK_SERVER_URL
+  if (env) {
+    try {
+      return normalizeServerUrl(env)
+    } catch {
+      // fall through to the saved value
+    }
+  }
+  try {
+    const raw = JSON.parse(readFileSync(connectionFile(), 'utf8')) as { serverUrl?: string }
+    if (raw.serverUrl) return normalizeServerUrl(raw.serverUrl)
+  } catch {
+    // no saved connection yet
+  }
+  return 'http://127.0.0.1:47821'
+}
+
+function saveServerUrl(url: string): void {
+  writeFileSync(connectionFile(), JSON.stringify({ serverUrl: url }, null, 2), { mode: 0o600 })
+}
+
+async function probeServer(url: string): Promise<{ ok: boolean; version?: string; error?: string }> {
+  try {
+    const res = await fetch(`${url}/api/health`, { signal: AbortSignal.timeout(4000) })
+    if (!res.ok) return { ok: false, error: `HTTP ${res.status}` }
+    const body = (await res.json()) as { version?: string }
+    return { ok: true, version: body.version }
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : '无法连接服务器' }
+  }
+}
+
 async function waitForUrl(url: string, timeoutMs = 20_000): Promise<boolean> {
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
@@ -68,66 +121,27 @@ async function waitForUrl(url: string, timeoutMs = 20_000): Promise<boolean> {
   return false
 }
 
-function readRuntime(): { url: string; port: number } | null {
-  try {
-    const raw = JSON.parse(readFileSync(join(dataDir, 'runtime.json'), 'utf8')) as {
-      url: string
-      port: number
-      pid?: number
-    }
-    return raw.url ? raw : null
-  } catch {
-    return null
-  }
+async function navigateToServer(url: string): Promise<void> {
+  const normalized = normalizeServerUrl(url)
+  serverUrl = normalized
+  allowedOrigin = new URL(normalized).origin
+  saveServerUrl(normalized)
+  await mainWindow?.loadURL(normalized)
 }
 
-async function startLocalServer(): Promise<string> {
-  const serverModule = join(process.resourcesPath, 'server', 'server.mjs')
-  if (!existsSync(serverModule)) {
-    throw new Error(`找不到服务：${serverModule}`)
-  }
-  serverProcess = utilityProcess.fork(serverModule, [], {
-    env: {
-      ...process.env,
-      NODE_ENV: 'production',
-      DAILYWORK_DATA_DIR: dataDir,
-      DAILYWORK_PORT: '0',
-      DAILYWORK_HOST: '0.0.0.0',
-      DAILYWORK_WEB_DIST: join(process.resourcesPath, 'web'),
-      DAILYWORK_VERSION: app.getVersion(),
-    },
-    stdio: 'pipe',
-    serviceName: 'Dailywork Server',
-  })
-  serverProcess.stdout?.on('data', (chunk: Buffer) => {
-    if (isDev) process.stdout.write(`[server] ${chunk.toString()}`)
-  })
-  serverProcess.stderr?.on('data', (chunk: Buffer) => {
-    process.stderr.write(`[server] ${chunk.toString()}`)
-  })
-  serverProcess.on('exit', (code) => {
-    if (!quitting) {
-      dialog.showErrorBox('服务已停止', `服务进程退出（代码 ${code}）。请重启应用。`)
-    }
-  })
-  const deadline = Date.now() + 20_000
-  while (Date.now() < deadline) {
-    const runtime = readRuntime()
-    const url = runtime ? `http://127.0.0.1:${runtime.port}` : null
-    if (url && (await waitForUrl(url, 1000))) return url
-    await new Promise((resolve) => setTimeout(resolve, 250))
-  }
-  throw new Error('服务启动超时')
+async function showConnectionScreen(): Promise<void> {
+  await mainWindow?.loadFile(join(app.getAppPath(), 'connection.html'))
 }
 
-async function resolveAppUrl(): Promise<string> {
-  if (isDev) {
+async function resolveAppUrl(): Promise<string | null> {
+  if (isDev && !process.env.DAILYWORK_SERVER_URL) {
     const url = process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1:5173'
     const ok = await waitForUrl(url, 30_000)
     if (!ok) throw new Error(`Vite 开发服务器未就绪：${url}`)
     return url
   }
-  return startLocalServer()
+  const url = readServerUrl()
+  return (await waitForUrl(url, 5000)) ? url : null
 }
 
 async function createWindow(): Promise<void> {
@@ -140,7 +154,7 @@ async function createWindow(): Promise<void> {
     minWidth: 900,
     minHeight: 620,
     title: '时序 · Dailywork',
-    backgroundColor: '#FAF9F5',
+    backgroundColor: '#F5F7FA',
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: { x: 16, y: 18 },
     show: false,
@@ -150,6 +164,10 @@ async function createWindow(): Promise<void> {
       nodeIntegration: false,
       sandbox: true,
       webSecurity: true,
+      additionalArguments:
+        app.isPackaged || Boolean(process.env.DAILYWORK_SERVER_URL)
+          ? ['--dailywork-remote']
+          : [],
     },
   })
 
@@ -173,7 +191,16 @@ async function createWindow(): Promise<void> {
     return { action: 'deny' }
   })
   mainWindow.webContents.on('will-navigate', (event, url) => {
-    if (!url.startsWith('http://127.0.0.1') && !url.startsWith('http://localhost')) {
+    const isAllowed =
+      url.startsWith('file://') ||
+      (allowedOrigin !== null && (() => {
+        try {
+          return new URL(url).origin === allowedOrigin
+        } catch {
+          return false
+        }
+      })())
+    if (!isAllowed) {
       event.preventDefault()
       if (/^https?:\/\//i.test(url)) void shell.openExternal(url)
     }
@@ -181,15 +208,27 @@ async function createWindow(): Promise<void> {
 
   try {
     const url = await resolveAppUrl()
-    await mainWindow.loadURL(url)
+    if (!url) {
+      await showConnectionScreen()
+    } else {
+      const remote = !isDev || Boolean(process.env.DAILYWORK_SERVER_URL)
+      serverUrl = url
+      allowedOrigin = new URL(url).origin
+      if (remote) saveServerUrl(url)
+      await mainWindow.loadURL(url)
+    }
     if (isDev && process.env.DAILYWORK_OPEN_DEVTOOLS === '1') {
       mainWindow.webContents.openDevTools({ mode: 'detach' })
     }
   } catch (error) {
-    dialog.showErrorBox(
-      '无法启动时序',
-      `${error instanceof Error ? error.message : String(error)}\n\n数据目录：${dataDir}`,
-    )
+    if (app.isPackaged) {
+      await showConnectionScreen()
+    } else {
+      dialog.showErrorBox(
+        '无法启动时序',
+        `${error instanceof Error ? error.message : String(error)}\n\n客户端目录：${dataDir}`,
+      )
+    }
   }
 }
 
@@ -241,6 +280,25 @@ function buildMenu(): void {
       { role: 'appMenu' },
       { role: 'editMenu' },
       {
+        label: '服务器',
+        submenu: [
+          {
+            label: '服务器连接…',
+            click: () => {
+              void showConnectionScreen()
+            },
+          },
+          {
+            label: '重新连接',
+            click: () => {
+              void navigateToServer(readServerUrl()).catch(() => {
+                void showConnectionScreen()
+              })
+            },
+          },
+        ],
+      },
+      {
         label: '视图',
         submenu: [
           { role: 'reload' },
@@ -268,6 +326,29 @@ ipcMain.handle('dailywork:restart', () => {
 })
 ipcMain.handle('dailywork:version', () => app.getVersion())
 ipcMain.handle('dailywork:data-dir', () => dataDir)
+ipcMain.handle('dailywork:server-url', () => serverUrl ?? readServerUrl())
+ipcMain.handle('dailywork:connection-get', () => serverUrl ?? readServerUrl())
+ipcMain.handle('dailywork:connection-test', async (_event, raw: string) => {
+  try {
+    const url = normalizeServerUrl(raw)
+    const result = await probeServer(url)
+    return { ...result, url }
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : '地址无效' }
+  }
+})
+ipcMain.handle('dailywork:connection-save', async (_event, raw: string) => {
+  try {
+    const url = normalizeServerUrl(raw)
+    const result = await probeServer(url)
+    if (!result.ok) return { ...result, url }
+    await navigateToServer(url)
+    return { ...result, url }
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : '保存失败' }
+  }
+})
+ipcMain.handle('dailywork:connection-open', () => showConnectionScreen())
 ipcMain.handle('dailywork:pick-backup', async () => {
   const result = await dialog.showOpenDialog({
     title: '选择 .dailywork 备份',
@@ -313,11 +394,6 @@ if (!gotLock) {
   app.on('before-quit', () => {
     quitting = true
     globalShortcut.unregisterAll()
-    try {
-      serverProcess?.kill()
-    } catch {
-      // ignore
-    }
   })
 
   app.on('window-all-closed', () => {

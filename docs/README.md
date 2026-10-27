@@ -41,6 +41,7 @@
 - [工程流程](04-process/workflow.md)
 - [Definition of Done](04-process/definition-of-done.md)
 - [发布清单](04-process/release-checklist.md)
+- [Docker 部署](04-process/docker-deployment.md)
 - [CHANGELOG](04-process/CHANGELOG.md)
 
 ## 飞书文档映射

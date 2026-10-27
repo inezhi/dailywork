@@ -53,6 +53,7 @@ const SECTIONS: Array<{ key: Section; label: string; icon: React.ComponentType<{
 
 export function SettingsPage() {
   const [section, setSection] = useState<Section>('appearance')
+  const remote = Boolean(window.dailywork?.remote)
   const { data: settings } = useOp<Settings>('settings.get')
   const update = useOpMutation<UpdateSettingsInput, Settings>('settings.update', {
     silent: true,
@@ -280,14 +281,16 @@ export function SettingsPage() {
                   </div>
                   <Toggle on={settings.general.aiEnabled} onChange={(v) => setGeneral({ aiEnabled: v })} />
                 </div>
-                <div className="setting-row">
-                  <div>
-                    <div className="label">局域网访问</div>
-                    <div className="hint">允许同一 Wi-Fi 下的手机 / 平板通过配对码访问。数据只在 Mac 上。</div>
+                {!remote && (
+                  <div className="setting-row">
+                    <div>
+                      <div className="label">局域网访问</div>
+                      <div className="hint">允许手机 / 平板通过配对码访问。数据保存在工作台服务端。</div>
+                    </div>
+                    <Toggle on={settings.general.lanEnabled} onChange={(v) => setGeneral({ lanEnabled: v })} />
                   </div>
-                  <Toggle on={settings.general.lanEnabled} onChange={(v) => setGeneral({ lanEnabled: v })} />
-                </div>
-                {settings.general.lanEnabled && <LanInfo />}
+                )}
+                {!remote && settings.general.lanEnabled && <LanInfo />}
               </section>
             </>
           )}
@@ -430,7 +433,7 @@ function LanInfo() {
     return (
       <div className="setting-row" style={{ paddingTop: 0 }}>
         <div className="hint" style={{ color: 'var(--warning)' }}>
-          未检测到局域网地址。请确认电脑与手机连接同一 Wi-Fi。开发模式下服务仅在当前设备可访问。
+          未检测到可供移动端访问的地址。请确认服务端与手机网络可达。
         </div>
       </div>
     )
@@ -699,6 +702,7 @@ function ProviderModal({ open, onClose, provider }: { open: boolean; onClose: ()
 
 function DataSettings() {
   const { data: meta } = useOp<MetaInfo>('meta.get')
+  const remote = Boolean(window.dailywork?.remote)
   const [exporting, setExporting] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [importPath, setImportPath] = useState('')
@@ -707,7 +711,11 @@ function DataSettings() {
     setExporting(true)
     try {
       const result = await callOp<{ path: string; bytes: number }>('backup.export', {})
-      toast.success(`已导出到 ${result.path}`)
+      toast.success(
+        remote
+          ? `已在服务端导出：${result.path}。可用 docker cp 取出`
+          : `已导出到 ${result.path}`,
+      )
     } catch (error) {
       toast.error(error instanceof Error ? error.message : '导出失败')
     } finally {
@@ -717,16 +725,41 @@ function DataSettings() {
 
   return (
     <>
+      {remote && (
+        <section className="settings-section">
+          <h2>服务端</h2>
+          <p className="desc">
+            当前是远程客户端。账户、任务、文档与设置都保存在服务端，浏览器和桌面端连接同一地址时看到同一份数据。
+          </p>
+          <div className="setting-row">
+            <div>
+              <div className="label">当前服务端</div>
+              <div className="hint" style={{ wordBreak: 'break-all' }}>{window.location.origin}</div>
+            </div>
+            <button
+              className="btn sm"
+              onClick={() => void window.dailywork?.connection.open()}
+            >
+              切换服务器
+            </button>
+          </div>
+        </section>
+      )}
+
       <section className="settings-section">
         <h2>数据存储</h2>
-        <p className="desc">数据保存在工作台的数据库中，可随时导出完整备份。</p>
+        <p className="desc">
+          {remote
+            ? '数据保存在服务端的数据库中，所有客户端共享同一份数据。'
+            : '数据保存在工作台的数据库中，可随时导出完整备份。'}
+        </p>
         <div className="setting-row">
           <div>
-            <div className="label">数据目录</div>
+            <div className="label">{remote ? '服务端数据目录' : '数据目录'}</div>
             <div className="hint" style={{ wordBreak: 'break-all' }}>{meta?.dataDir ?? '…'}</div>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
-            {window.dailywork && (
+            {window.dailywork && !remote && (
               <button className="btn sm" onClick={() => void window.dailywork?.revealDataDir()}>
                 打开目录
               </button>
@@ -756,7 +789,9 @@ function DataSettings() {
       <section className="settings-section">
         <h2>备份与迁移</h2>
         <p className="desc">
-          导出一个 `.dailywork` 文件（数据库 + 图片 + 清单），可以在新机器上完整恢复。导入前会自动备份当前数据库。
+          {remote
+            ? '备份文件生成在服务端。可用 docker cp 从容器取出，或把备份放入服务端后填写路径导入。'
+            : '导出一个 `.dailywork` 文件（数据库 + 图片 + 清单），可以在新机器上完整恢复。导入前会自动备份当前数据库。'}
         </p>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button className="btn" onClick={() => void exportData()} disabled={exporting}>
@@ -765,7 +800,7 @@ function DataSettings() {
           <button
             className="btn"
             onClick={async () => {
-              if (window.dailywork?.pickBackup) {
+              if (!remote && window.dailywork?.pickBackup) {
                 const picked = await window.dailywork.pickBackup()
                 if (picked) {
                   setImportPath(picked)
@@ -780,7 +815,9 @@ function DataSettings() {
           </button>
         </div>
         <div className="hint" style={{ marginTop: 10 }}>
-          每日会自动生成快照，保存在数据目录的 backups 文件夹。
+          {remote
+            ? '导入后需要重启服务端容器：docker compose restart dailywork'
+            : '每日会自动生成快照，保存在数据目录的 backups 文件夹。'}
         </div>
       </section>
 
@@ -807,17 +844,21 @@ daily mcp serve`}</pre>
       <Modal open={importOpen} onClose={() => setImportOpen(false)} label="导入备份">
         <ModalHeader
           title="导入 .dailywork 备份"
-          description="会校验文件完整性，先备份当前数据库，再原子替换。导入后需要立即重启应用；当前会话里未导出的改动会丢失。"
+          description={
+            remote
+              ? '会校验文件完整性，先备份当前数据库，再原子替换。导入后需要在服务端重启容器；当前会话里未导出的改动会丢失。'
+              : '会校验文件完整性，先备份当前数据库，再原子替换。导入后需要立即重启应用；当前会话里未导出的改动会丢失。'
+          }
           onClose={() => setImportOpen(false)}
         />
         <div className="modal-body">
           <div className="form-row">
-            <label>备份文件绝对路径</label>
+            <label>{remote ? '服务端备份文件路径' : '备份文件绝对路径'}</label>
             <input
               className="field"
               value={importPath}
               onChange={(event) => setImportPath(event.target.value)}
-              placeholder="/Users/…/dailywork-2026-10-27.dailywork"
+              placeholder={remote ? '/data/backups/dailywork-2026-10-27.dailywork' : '/Users/…/dailywork-2026-10-27.dailywork'}
             />
           </div>
         </div>
@@ -832,7 +873,11 @@ daily mcp serve`}</pre>
                   sourcePath: importPath.trim(),
                   confirm: true,
                 })
-                toast.success(`备份已校验并暂存（${result.tasks} 个任务），重启应用后生效`)
+                toast.success(
+                  remote
+                    ? `备份已校验并暂存（${result.tasks} 个任务），重启服务端容器后生效`
+                    : `备份已校验并暂存（${result.tasks} 个任务），重启应用后生效`,
+                )
                 setImportOpen(false)
               } catch (error) {
                 toast.error(error instanceof Error ? error.message : '导入失败')
