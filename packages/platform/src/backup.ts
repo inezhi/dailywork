@@ -1,6 +1,8 @@
 import { DatabaseSync } from 'node:sqlite'
 import {
   copyFileSync,
+  readdirSync,
+  statSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -39,6 +41,7 @@ export interface BackupResult {
 export interface ImportInspection {
   manifest: BackupManifest
   data: Uint8Array
+  secrets?: Uint8Array
 }
 
 function counts(db: Db): BackupManifest['counts'] {
@@ -84,16 +87,16 @@ export function exportBackup(
       createdAt: nowIso(),
       counts: counts(db),
     }
-    const zipped = zipSync(
-      {
-        'data.sqlite': data,
-        'manifest.json': new TextEncoder().encode(JSON.stringify(manifest, null, 2)),
-        'README.txt': new TextEncoder().encode(
-          '时序 · Dailywork 备份文件。\n包含本地 SQLite 数据库（任务、项目、文档、附件图片与审计日志）。\n通过 设置 → 数据与备份 → 导入备份 恢复。\n',
-        ),
-      },
-      { level: 6 },
-    )
+    const entries: Record<string, Uint8Array> = {
+      'data.sqlite': data,
+      'manifest.json': new TextEncoder().encode(JSON.stringify(manifest, null, 2)),
+      'README.txt': new TextEncoder().encode(
+        '时序 · Dailywork 备份文件。\n包含本地 SQLite 数据库（任务、项目、文档、附件图片与审计日志）以及加密 AI 密钥的本地密钥文件。\n通过 设置 → 数据与备份 → 导入备份 恢复。请妥善保管此文件。\n',
+      ),
+    }
+    const secretsFile = join(paths.dataDir, 'secrets.key')
+    if (existsSync(secretsFile)) entries['secrets.key'] = new Uint8Array(readFileSync(secretsFile))
+    const zipped = zipSync(entries, { level: 6 })
     const out =
       targetPath ?? join(paths.backupsDir, `dailywork-${stamp()}.dailywork`)
     mkdirSync(out.slice(0, out.lastIndexOf('/')) || paths.backupsDir, { recursive: true })
@@ -148,7 +151,7 @@ export function inspectBackup(sourcePath: string): ImportInspection {
       // ignore
     }
   }
-  return { manifest, data }
+  return { manifest, data, secrets: files['secrets.key'] }
 }
 
 export function stageImport(dataDir: string, sourcePath: string): ImportInspection & { pendingPath: string } {
@@ -157,6 +160,11 @@ export function stageImport(dataDir: string, sourcePath: string): ImportInspecti
   ensureDataDirs(paths)
   const pendingPath = join(paths.dataDir, 'data.sqlite.import-pending')
   writeFileSync(pendingPath, inspection.data, { mode: 0o600 })
+  if (inspection.secrets) {
+    writeFileSync(join(paths.dataDir, 'secrets.key.import-pending'), inspection.secrets, {
+      mode: 0o600,
+    })
+  }
   writeFileSync(
     join(paths.dataDir, 'import-pending.json'),
     JSON.stringify({ stagedAt: nowIso(), sourcePath, manifest: inspection.manifest }, null, 2),
@@ -184,6 +192,48 @@ export function applyPendingImport(dataDir: string): { applied: boolean; backupP
     }
   }
   renameSync(pending, paths.dbFile)
+  const pendingSecrets = join(paths.dataDir, 'secrets.key.import-pending')
+  if (existsSync(pendingSecrets)) {
+    const secretsBackup = join(paths.backupsDir, `before-import-${stamp()}.secrets.key`)
+    if (existsSync(join(paths.dataDir, 'secrets.key'))) {
+      copyFileSync(join(paths.dataDir, 'secrets.key'), secretsBackup)
+    }
+    renameSync(pendingSecrets, join(paths.dataDir, 'secrets.key'))
+  }
   rmSync(marker, { force: true })
   return { applied: true, backupPath }
+}
+
+
+export function ensureDailyBackup(
+  db: Db,
+  dataDir: string,
+  appVersion: string,
+  keep = 14,
+): BackupResult | null {
+  const paths = dataPaths(dataDir)
+  ensureDataDirs(paths)
+  const prefix = `dailywork-${toDateOnly(new Date()).replaceAll('-', '')}`
+  const existing = readdirSync(paths.backupsDir).filter(
+    (name) => name.startsWith(prefix) && name.endsWith('.dailywork'),
+  )
+  let result: BackupResult | null = null
+  if (existing.length === 0) {
+    result = exportBackup(db, dataDir, appVersion)
+  }
+  try {
+    const files = readdirSync(paths.backupsDir)
+      .filter((name) => name.startsWith('dailywork-') && name.endsWith('.dailywork'))
+      .map((name) => ({
+        name,
+        at: statSync(join(paths.backupsDir, name)).mtimeMs,
+      }))
+      .sort((a, b) => b.at - a.at)
+    for (const stale of files.slice(keep)) {
+      unlinkSync(join(paths.backupsDir, stale.name))
+    }
+  } catch {
+    // retention is best-effort
+  }
+  return result
 }

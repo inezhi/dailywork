@@ -269,6 +269,7 @@ export function createApp(options: AppOptions): AppBundle {
       source,
       version,
       port: actualPort,
+      pairingCode: options.pairingCode,
     }
     const result = await runOp(op, ctx, body)
     if (result.envelope.ok && op.kind === 'command') {

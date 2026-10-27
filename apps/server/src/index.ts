@@ -1,7 +1,7 @@
 import { randomBytes, randomInt } from 'node:crypto'
 import { writeFileSync, unlinkSync } from 'node:fs'
 import type { AddressInfo } from 'node:net'
-import { applyPendingImport, createLogger, dataPaths, ensureDataDirs, resolveDataDir } from '@daily/platform'
+import { applyPendingImport, createLogger, dataPaths, ensureDailyBackup, ensureDataDirs, resolveDataDir } from '@daily/platform'
 import { cleanupStaleFocus } from '@daily/context-focus'
 import { createApp, launchHttp } from './app.js'
 
@@ -24,6 +24,7 @@ export async function startServer(opts: {
   ensureDataDirs(paths)
   const applied = applyPendingImport(dataDir)
 
+  const version = process.env.DAILYWORK_VERSION ?? '0.1.0'
   const logger = createLogger(paths)
   const token = randomBytes(24).toString('base64url')
   const pairingCode = String(randomInt(0, 1_000_000)).padStart(6, '0')
@@ -33,15 +34,22 @@ export async function startServer(opts: {
     webDist: opts.webDist ?? process.env.DAILYWORK_WEB_DIST,
     port: opts.port,
     pairingCode,
+    version,
   })
   cleanupStaleFocus(bundle.db)
+  try {
+    const daily = ensureDailyBackup(bundle.db, dataDir, version)
+    if (daily) logger.info({ path: daily.path }, 'daily backup created')
+  } catch (error) {
+    logger.warn({ error }, 'daily backup failed')
+  }
   const host = opts.host ?? process.env.DAILYWORK_HOST ?? '127.0.0.1'
   const port = opts.port ?? Number(process.env.DAILYWORK_PORT ?? 0)
   const server = await launchHttp(bundle.app, port, host)
   const address = server.address() as AddressInfo
   bundle.setPort(address.port)
-  const url = `http://${host}:${address.port}`
-  const version = process.env.DAILYWORK_VERSION ?? '0.1.0'
+  const displayHost = host === '0.0.0.0' ? '127.0.0.1' : host
+  const url = `http://${displayHost}:${address.port}`
 
   if (opts.writeRuntime !== false) {
     writeFileSync(

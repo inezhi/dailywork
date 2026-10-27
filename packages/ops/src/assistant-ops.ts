@@ -250,8 +250,16 @@ export function createAiOps(getOps: () => AnyOpDefinition[]): AnyOpDefinition[] 
                 }
               }
             }
-            summary.push({ name: op?.name ?? call.function.name, input: args, result: toolResult, status })
             const serialized = JSON.stringify(toolResult)
+            summary.push({
+              name: op?.name ?? call.function.name,
+              input: args,
+              result:
+                serialized.length > 2000
+                  ? { truncated: true, preview: serialized.slice(0, 2000) }
+                  : toolResult,
+              status,
+            })
             messages.push({
               role: 'tool',
               tool_call_id: call.id,
