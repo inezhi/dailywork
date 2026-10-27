@@ -127,6 +127,35 @@ docker push registry.example.com/dailywork:0.2.0
 
 当前 `docker-compose.yml` 使用本地构建；接入镜像仓库后把 `build` 改为 `image` 即可。
 
+
+## 7.1 在中国大陆构建（代理）
+
+镜像运行不需要代理；只有拉取基础镜像与 `pnpm install` 阶段需要。不要用 `ENV` 把代理写进 Dockerfile，否则会进入最终镜像。
+
+Docker Desktop：在 Settings → Resources → Proxies 配置 HTTP/HTTPS 代理，然后构建时把代理作为 build arg 传入：
+
+```bash
+docker build \
+  --build-arg HTTP_PROXY=http://host.docker.internal:7890 \
+  --build-arg HTTPS_PROXY=http://host.docker.internal:7890 \
+  --build-arg NO_PROXY=localhost,127.0.0.1 \
+  -t dailywork:0.2.0 .
+```
+
+Colima：VM 内访问宿主机代理使用 `192.168.5.2`（`host.lima.internal`）。先确认代理允许该网段，再把同一组参数传给 build；若使用 `docker compose build`，在 `.env` 中设置 `HTTP_PROXY`/`HTTPS_PROXY` 仅供构建 shell 使用，不要写进 `docker-compose.yml` 的运行时环境。
+
+构建完成后可以确认镜像没有被写入代理变量：
+
+```bash
+docker image inspect dailywork:0.2.0 --format '{{json .Config.Env}}'
+```
+
+分发镜像：
+
+```bash
+docker save dailywork:0.2.0 | gzip > dailywork-0.2.0-image.tar.gz
+```
+
 ## 8. 已知边界
 
 - 单实例 SQLite；不支持多副本共享同一数据目录。
