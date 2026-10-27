@@ -40,6 +40,10 @@ const SUGGESTIONS = [
 export function AIChatPanel() {
   const open = useUi((s) => s.aiOpen)
   const setOpen = useUi((s) => s.setAiOpen)
+  const aiContext = useUi((s) => s.aiContext)
+  const aiDraft = useUi((s) => s.aiDraft)
+  const consumeAiDraft = useUi((s) => s.consumeAiDraft)
+  const openAi = useUi((s) => s.openAi)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data: status } = useOp<AiStatus>('ai.status', {}, { enabled: open })
@@ -55,8 +59,12 @@ export function AIChatPanel() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 80)
-  }, [open])
+    if (!open) return
+    const draft = consumeAiDraft()
+    if (draft) setInput(draft)
+    setTimeout(() => inputRef.current?.focus(), 80)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, aiDraft])
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -83,7 +91,7 @@ export function AIChatPanel() {
         message: text,
         conversationId,
         confirmTools: allowActions,
-        context: { kind: 'global' },
+        context: aiContext,
       })
       setConversationId(result.conversationId)
       setMessages((prev) => [
@@ -111,6 +119,7 @@ export function AIChatPanel() {
     setMessages([])
     setConversationId(undefined)
     setInput('')
+    openAi()
     inputRef.current?.focus()
   }
 

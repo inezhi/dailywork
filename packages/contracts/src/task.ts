@@ -133,6 +133,7 @@ export type TodayInput = z.infer<typeof TodayInput>
 export const TodayResult = z.object({
   date: DateOnly,
   capacityMinutes: z.number().int(),
+  note: z.string(),
   scheduled: z.array(TaskSchema),
   due: z.array(TaskSchema),
   overdue: z.array(TaskSchema),

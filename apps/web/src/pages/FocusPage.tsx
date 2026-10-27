@@ -29,7 +29,7 @@ export function FocusPage() {
   const active = timer.session
   const today = todayIso()
   const todaySessions = (sessions?.items ?? []).filter(
-    (session) => toDateOnly(new Date(session.startedAt)) === today,
+    (session) => session.status === 'completed' && toDateOnly(new Date(session.startedAt)) === today,
   )
 
   const progress = active && timer.totalSeconds > 0 ? 1 - timer.remainingSeconds / timer.totalSeconds : 0
@@ -174,7 +174,7 @@ export function FocusPage() {
                   <p>完成与取消都会记入历史。</p>
                 </div>
               </div>
-              {(sessions?.items ?? []).slice(0, 5).map((session) => (
+              {(sessions?.items ?? []).filter((session) => session.status === 'completed').slice(0, 5).map((session) => (
                 <div key={session.id} className="attention-row">
                   <span className="t">{session.taskTitle ?? '未关联任务'}</span>
                   <span className="r stale">{Math.round(session.actualSeconds / 60)} 分钟</span>
@@ -257,7 +257,7 @@ export function FocusPage() {
             stroke={9}
             value={progress}
             showHalo
-            label={<span>{formatClock(timer.remainingSeconds)}</span>}
+            label={formatClock(timer.remainingSeconds)}
             sublabel={done ? '可以结束了' : `共 ${active.plannedMinutes} 分钟`}
           />
         </div>

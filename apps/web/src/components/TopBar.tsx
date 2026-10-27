@@ -27,7 +27,7 @@ export function TopBar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const setPalette = useUi((s) => s.setPalette)
   const setNewTask = useUi((s) => s.setNewTask)
-  const setAiOpen = useUi((s) => s.setAiOpen)
+  const openAi = useUi((s) => s.openAi)
   const { data: settings } = useOp<Settings>('settings.get')
   const update = useOpMutation<{ theme: Partial<Settings['theme']> }, Settings>('settings.update', {
     silent: true,
@@ -94,7 +94,7 @@ export function TopBar() {
             <Timer size={12} color="var(--ink-3)" />
           </button>
         )}
-        <button className="icon-btn" onClick={() => setAiOpen(true)} title="AI 助理（⌘J）" aria-label="AI 助理">
+        <button className="icon-btn" onClick={() => openAi()} title="AI 助理（⌘J）" aria-label="AI 助理">
           <Sparkles size={15} />
         </button>
         <button className="icon-btn hide-mobile" onClick={toggleTheme} title="切换深浅主题">

@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
   },
 })
 
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+if (import.meta.env.PROD && 'serviceWorker' in navigator && !window.dailywork) {
   window.addEventListener('load', () => {
     void navigator.serviceWorker.register('/sw.js')
   })

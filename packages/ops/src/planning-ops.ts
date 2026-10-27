@@ -60,6 +60,7 @@ export const planningOps = [
       return {
         date,
         capacityMinutes: plan.capacityMinutes,
+        note: plan.note,
         scheduled: plan.tasks,
         due: tasksDueOn(ctx.db, date, input.spaceId),
         overdue: tasksOverdue(ctx.db, date, input.spaceId),
@@ -84,6 +85,7 @@ export const planningOps = [
       return {
         date: plan.date,
         capacityMinutes: plan.capacityMinutes,
+        note: plan.note,
         plannedMinutes: plan.plannedMinutes,
         completedMinutes: plan.completedMinutes,
         tasks: plan.tasks,

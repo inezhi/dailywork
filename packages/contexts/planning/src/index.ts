@@ -31,6 +31,7 @@ import { getSettings } from '@daily/context-workspace'
 export interface DayPlan {
   date: string
   capacityMinutes: number
+  note: string
   plannedMinutes: number
   completedMinutes: number
   tasks: ReturnType<typeof tasksScheduledOn>
@@ -42,6 +43,13 @@ export function getCapacityMinutes(db: Db, date: string): number {
     | undefined
   if (row) return row.capacity_minutes
   return getSettings(db).general.defaultCapacityMinutes
+}
+
+export function getCapacityNote(db: Db, date: string): string {
+  const row = db.prepare('SELECT note FROM capacity_days WHERE date = ?').get(date) as
+    | { note: string }
+    | undefined
+  return row?.note ?? ''
 }
 
 export function setCapacity(db: Db, input: SetCapacityInput): { date: string; capacityMinutes: number } {
@@ -62,6 +70,7 @@ export function dayPlan(db: Db, date: string, spaceId?: string): DayPlan {
   return {
     date,
     capacityMinutes: getCapacityMinutes(db, date),
+    note: getCapacityNote(db, date),
     plannedMinutes,
     completedMinutes,
     tasks,

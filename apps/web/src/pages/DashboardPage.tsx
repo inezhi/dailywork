@@ -37,6 +37,7 @@ export function DashboardPage() {
   const { data: review } = useOp<WeekReviewResult>('review.week', {}, { enabled: reviewOpen })
   const { data, isLoading } = useOp<DashboardResult>('analytics.dashboard', { range }, { staleTime: 20_000 })
   const openTask = useUi((s) => s.openTask)
+  const openAi = useUi((s) => s.openAi)
 
   const trendMax = useMemo(() => {
     if (!data) return 1
@@ -333,6 +334,18 @@ export function DashboardPage() {
           )}
         </div>
         <div className="modal-foot">
+          <button
+            className="btn"
+            onClick={() => {
+              setReviewOpen(false)
+              openAi({
+                context: { kind: 'review' },
+                draft: '根据本周数据，给我三点复盘和下周的一个重点。语气克制，不要空泛鼓励。',
+              })
+            }}
+          >
+            让 AI 帮我复盘
+          </button>
           <button className="btn primary" onClick={() => setReviewOpen(false)}>
             收下这份复盘
           </button>

@@ -3452,3 +3452,101 @@ body.desktop .sidebar {
   padding: 18px 2px;
   text-align: center;
 }
+
+
+/* ---------------- first run ---------------- */
+.first-run {
+  margin-top: 22px;
+  padding: 20px 22px 18px;
+  background: linear-gradient(180deg, var(--card), var(--card-soft));
+}
+.first-run-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.first-run-head .glyph {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  flex: none;
+}
+.first-run-head h3 {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: -0.2px;
+}
+.first-run-head p {
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  line-height: 1.6;
+}
+.first-run-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-top: 18px;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 16px;
+}
+.first-run-step {
+  padding-right: 18px;
+  border-right: 1px solid var(--line-soft);
+  margin-right: 18px;
+}
+.first-run-step:last-child {
+  border-right: none;
+  margin-right: 0;
+  padding-right: 0;
+}
+.first-run-step b {
+  font-size: 10px;
+  color: var(--accent-strong);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+.first-run-step span {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.first-run-step small {
+  display: block;
+  font-size: 10.5px;
+  color: var(--ink-3);
+  line-height: 1.55;
+  margin-top: 3px;
+}
+.first-run-link {
+  margin-left: auto;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--accent-strong);
+  font-weight: 550;
+}
+@media (max-width: 767px) {
+  .first-run-steps {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .first-run-step {
+    border-right: none;
+    margin-right: 0;
+    padding-right: 0;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .first-run-step:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}

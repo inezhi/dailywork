@@ -10,6 +10,7 @@ import {
   Paperclip,
   Play,
   Plus,
+  Sparkles,
   Tags,
   Trash2,
   Upload,
@@ -61,6 +62,7 @@ function DrawerContent({ taskId }: { taskId: string }) {
   const closeDrawer = useUi((s) => s.closeDrawer)
   const tab = useUi((s) => s.drawerTab)
   const setTab = useUi((s) => s.setDrawerTab)
+  const openAi = useUi((s) => s.openAi)
   const openTask = useUi((s) => s.openTask)
   const navigate = useNavigate()
   const timer = useTimer()
@@ -536,6 +538,18 @@ function DrawerContent({ taskId }: { taskId: string }) {
               </div>
 
               <div className="drawer-section" style={{ display: 'flex', gap: 8 }}>
+                <button
+                  className="btn"
+                  onClick={() =>
+                    openAi({
+                      context: { kind: 'task', id: task.id },
+                      draft: `帮我拆解「${task.title}」：给我 3 个具体的下一步，并指出最该先做的一件。`,
+                    })
+                  }
+                  title="让 AI 拆解这个任务"
+                >
+                  <Sparkles size={13} /> AI
+                </button>
                 <button className="btn primary" style={{ flex: 1 }} onClick={() => void startFocus()}>
                   <Play size={13} /> 开始专注
                 </button>

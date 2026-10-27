@@ -1,5 +1,5 @@
 import { randomBytes, randomInt } from 'node:crypto'
-import { writeFileSync, unlinkSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs'
 import type { AddressInfo } from 'node:net'
 import { applyPendingImport, createLogger, dataPaths, ensureDailyBackup, ensureDataDirs, resolveDataDir } from '@daily/platform'
 import { cleanupStaleFocus } from '@daily/context-focus'
@@ -26,7 +26,11 @@ export async function startServer(opts: {
 
   const version = process.env.DAILYWORK_VERSION ?? '0.1.0'
   const logger = createLogger(paths)
-  const token = randomBytes(24).toString('base64url')
+  const tokenFile = `${paths.dataDir}/server-token`
+  const token = existsSync(tokenFile)
+    ? readFileSync(tokenFile, 'utf8').trim()
+    : randomBytes(24).toString('base64url')
+  if (!existsSync(tokenFile)) writeFileSync(tokenFile, token, { mode: 0o600 })
   const pairingCode = String(randomInt(0, 1_000_000)).padStart(6, '0')
   const bundle = createApp({
     dataDir,

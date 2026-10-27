@@ -30,6 +30,7 @@ import {
   Quote,
   Redo2,
   Search,
+  Sparkles,
   Strikethrough,
   Table2,
   Trash2,
@@ -38,6 +39,7 @@ import {
 } from 'lucide-react'
 import type { Document, DocumentDetail, Task } from '@daily/contracts'
 import { useOp, useOpMutation } from '@/lib/query'
+import { useUi } from '@/stores/ui'
 import { uploadOwnerFile } from '@/lib/upload'
 import { callOp } from '@/lib/api'
 import { toast } from '@/stores/toast'
@@ -227,6 +229,7 @@ function DocEditor({ detail }: { detail: DocumentDetail }) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [linkedTask, setLinkedTask] = useState<Task | null>(null)
   const loadedRef = useRef<string | null>(null)
+  const openAi = useUi((s) => s.openAi)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const imageRef = useRef<HTMLInputElement>(null)
@@ -393,7 +396,20 @@ function DocEditor({ detail }: { detail: DocumentDetail }) {
           }
         }}
       />
-      <DocToolbar editor={editor} onImage={() => imageRef.current?.click()} />
+      <DocToolbar
+        editor={editor}
+        onImage={() => imageRef.current?.click()}
+        onAi={() => {
+          const { from, to } = editor.state.selection
+          const selected = from !== to ? editor.state.doc.textBetween(from, to, ' ') : ''
+          openAi({
+            context: { kind: 'document', id: doc.id },
+            draft: selected
+              ? `请润色下面这段文字，保持原意，语气克制，直接给我改写后的版本：\n\n${selected}`
+              : '请根据这篇文档，给我三个要点和一条下一步建议。',
+          })
+        }}
+      />
 
       <EditorContent editor={editor} />
 
@@ -432,7 +448,7 @@ function DocEditor({ detail }: { detail: DocumentDetail }) {
   )
 }
 
-function DocToolbar({ editor, onImage }: { editor: Editor; onImage: () => void }) {
+function DocToolbar({ editor, onImage, onAi }: { editor: Editor; onImage: () => void; onAi: () => void }) {
   const btn = (active: boolean, onClick: () => void, title: string, icon: ReactNode) => (
     <button className={active ? 'on' : ''} onClick={onClick} title={title} type="button">
       {icon}
@@ -462,6 +478,7 @@ function DocToolbar({ editor, onImage }: { editor: Editor; onImage: () => void }
         <Table2 size={14} />,
       )}
       {btn(false, onImage, '插入图片', <ImageIcon size={14} />)}
+      {btn(false, onAi, 'AI 润色 / 摘要', <Sparkles size={14} />)}
       {btn(
         editor.isActive('link'),
         () => {

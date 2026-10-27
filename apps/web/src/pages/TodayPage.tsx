@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
-import { AlertCircle, ChevronDown, ChevronRight, Timer } from 'lucide-react'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { AlertCircle, ArrowUpRight, ChevronDown, ChevronRight, CheckCircle2, Sparkles, Sunset, Timer } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import type { Settings, Task, TodayResult } from '@daily/contracts'
 import { useOp, useOpMutation } from '@/lib/query'
 import { useTimer } from '@/stores/timer'
@@ -8,7 +9,10 @@ import { FocusRing } from '@/components/FocusRing'
 import { TaskRow } from '@/components/TaskRow'
 import { QuickAdd } from '@/components/QuickAdd'
 import { Modal, ModalHeader } from '@/components/Modal'
+import { callOp } from '@/lib/api'
+import { toast } from '@/stores/toast'
 import {
+  addDays,
   fullDateLabel,
   greeting,
   STATUS_LABEL,
@@ -25,6 +29,10 @@ export function TodayPage() {
   const [capacityOpen, setCapacityOpen] = useState(false)
   const [showDone, setShowDone] = useState(false)
   const [capacity, setCapacity] = useState('')
+  const [closeOpen, setCloseOpen] = useState(false)
+  const [note, setNote] = useState('')
+  const [closing, setClosing] = useState(false)
+  const queryClient = useQueryClient()
 
   const openTasks = useMemo(
     () => (data?.scheduled ?? []).filter((t) => t.status !== 'done'),
@@ -79,6 +87,15 @@ export function TodayPage() {
           </p>
         </div>
         <div className="head-right">
+          <button
+            className="btn"
+            onClick={() => {
+              setNote(data?.note ?? '')
+              setCloseOpen(true)
+            }}
+          >
+            <Sunset size={14} /> 收尾
+          </button>
           <button className="btn primary" onClick={() => void startFocus()}>
             <Timer size={14} /> {timer.session ? '回到专注' : '开始专注'}
           </button>
@@ -96,11 +113,13 @@ export function TodayPage() {
         />
         <div className="today-hero-copy">
           <h2>
-            {openTasks.length === 0
-              ? '今天的安排已经清空'
-              : progress >= 0.6
-                ? '节奏很好，继续保持'
-                : '把注意力放在下一件小事上'}
+            {totalItems === 0 && dueOnly.length === 0
+              ? '今天，从一件小事开始'
+              : openTasks.length === 0
+                ? '今天的安排已经清空'
+                : progress >= 0.6
+                  ? '节奏很好，继续保持'
+                  : '把注意力放在下一件小事上'}
           </h2>
           <p>
             {data?.overdue.length
@@ -173,6 +192,38 @@ export function TodayPage() {
         </div>
       )}
 
+      {!isLoading && openTasks.length === 0 && dueOnly.length === 0 && completedToday.length === 0 && (
+        <section className="card first-run">
+          <div className="first-run-head">
+            <span className="glyph"><Sparkles size={18} /></span>
+            <div style={{ flex: 1 }}>
+              <h3>上手只要三步</h3>
+              <p>先写下今天最想推进的一件事。时序会围绕它安排时间、专注与复盘。</p>
+            </div>
+            <Link to="/docs" className="first-run-link">
+              使用指南 <ArrowUpRight size={12} />
+            </Link>
+          </div>
+          <div className="first-run-steps">
+            <div className="first-run-step">
+              <b>01</b>
+              <span>写下来</span>
+              <small>在上方输入标题，按 Enter 保存。</small>
+            </div>
+            <div className="first-run-step">
+              <b>02</b>
+              <span>给它时间</span>
+              <small>点开任务，设置预估与计划日期。</small>
+            </div>
+            <div className="first-run-step">
+              <b>03</b>
+              <span>进入专注</span>
+              <small>25 分钟后，实际投入会自动记录。</small>
+            </div>
+          </div>
+        </section>
+      )}
+
       {STATUS_ORDER.filter((s) => s !== 'done' && s !== 'inbox').map((status) => {
         const tasks = grouped.get(status) ?? []
         if (tasks.length === 0) return null
@@ -226,6 +277,105 @@ export function TodayPage() {
           )}
         </section>
       )}
+
+      <Modal open={closeOpen} onClose={() => setCloseOpen(false)} width={560} label="今天收尾">
+        <ModalHeader
+          title="今天收尾"
+          description={`${fullDateLabel(today)} · 给今天一个句号，明天会更清楚。`}
+          onClose={() => setCloseOpen(false)}
+        />
+        <div className="modal-body">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
+            {[
+              ['已完成', completedToday.length, '项'],
+              ['未完成', openTasks.length, '项'],
+              ['专注', data?.focusMinutes ?? 0, '分钟'],
+              ['安排', data?.plannedMinutes ?? 0, '分钟'],
+            ].map(([label, value, suffix]) => (
+              <div key={String(label)} style={{ background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 8, padding: '9px 11px' }}>
+                <div style={{ fontSize: 10, color: 'var(--ink-3)' }}>{label}</div>
+                <div className="tnum" style={{ fontSize: 20, fontWeight: 650, marginTop: 2 }}>
+                  {value}<span style={{ fontSize: 9.5, color: 'var(--ink-3)', marginLeft: 2 }}>{suffix}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {completedToday.length > 0 && (
+            <>
+              <div style={{ fontSize: 10.5, color: 'var(--ink-3)', marginBottom: 6 }}>今天完成的</div>
+              <div style={{ maxHeight: 120, overflowY: 'auto', marginBottom: 14 }}>
+                {completedToday.map((task) => (
+                  <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 11.5, padding: '3px 0' }}>
+                    <CheckCircle2 size={12} color="var(--success)" />
+                    <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task.title}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {openTasks.length > 0 && (
+            <div style={{ fontSize: 11, color: 'var(--ink-3)', background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 7, padding: '9px 11px', marginBottom: 14 }}>
+              还有 {openTasks.length} 项已安排但未完成。可以把它们挪到明天，明天重新决定优先级。
+            </div>
+          )}
+
+          <div className="form-row">
+            <label>给今天留一句话（可选）</label>
+            <textarea
+              className="field"
+              rows={2}
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              placeholder="今天的节奏如何？明天最想先做什么？"
+            />
+          </div>
+        </div>
+        <div className="modal-foot" style={{ justifyContent: 'space-between' }}>
+          <button
+            className="btn"
+            disabled={closing}
+            onClick={async () => {
+              try {
+                await callOp('capacity.set', { date: today, capacityMinutes: data?.capacityMinutes ?? 300, note })
+                toast.success('这句话已记下')
+                void queryClient.invalidateQueries()
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : '保存失败')
+              }
+            }}
+          >
+            只保存这句话
+          </button>
+          <button
+            className="btn primary"
+            disabled={closing}
+            onClick={async () => {
+              setClosing(true)
+              try {
+                await callOp('capacity.set', { date: today, capacityMinutes: data?.capacityMinutes ?? 300, note })
+                if (openTasks.length > 0) {
+                  await Promise.all(
+                    openTasks.map((task) =>
+                      callOp('task.update', { id: task.id, scheduledDate: addDays(today, 1) }),
+                    ),
+                  )
+                }
+                toast.success(openTasks.length > 0 ? '已收尾，未完成项移到明天' : '今天收尾完成')
+                void queryClient.invalidateQueries()
+                setCloseOpen(false)
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : '收尾失败')
+              } finally {
+                setClosing(false)
+              }
+            }}
+          >
+            {closing ? '收尾中…' : openTasks.length > 0 ? `移到明天并收尾（${openTasks.length}）` : '完成收尾'}
+          </button>
+        </div>
+      </Modal>
 
       <Modal open={capacityOpen} onClose={() => setCapacityOpen(false)} label="调整今日容量">
         <ModalHeader
