@@ -22,6 +22,10 @@ logs/
 .idea/
 .vscode/
 
+# Claude Code: 本机配置，含绝对路径与本地授权
+.claude/*
+!.claude/settings.json
+
 # Frontend (planned)
 node_modules/
 web/dist/
