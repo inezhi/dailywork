@@ -60,13 +60,18 @@
 - **02 补齐 12 条验收并定稿**：原 21 条 FR 里只有 9 条带验收。5.1–5.5 的验收段各扩写，
   覆盖账户三态、空间归档、创建默认值、cascade、删除级联、归档不进今天、汇总与断线重连；
   §4 范围表的标点歧义一并修正。
+- **06/07/08/13 定稿**：六篇阻塞 M1 的文档在 2026-10-31 全部通过判定。
+  06 把 `notes`/`description` 改成 `MEDIUMTEXT`、今天 SQL 补 `inbox`、补
+  `processed_events`；07 补齐 `POST /tasks` 的 `spaceId`/`parentId`/`notes`、列表分页
+  信封、`IdentityService.ValidateSession`；08 新增 §6.1 失败与 DLQ、单实例假设；
+  13 给 11 条 ADR 补上被放弃的替代方案。
 
 已逐篇读过正文的：
 
 - **02 PRD**：完整。有用户故事、5.x 功能需求（任务/今天/实时更新/设置）、
   字段规则表、非目标、指标、依赖与风险。FR 编号连续，每条带验收描述。
-- **06 数据模型**：有 MySQL DDL。
-- **05 / 07 / 08 / 13**：读过大纲结构，未逐段核对。
+- **05 / 06 / 07 / 08 / 13**：逐条对过验收判据，见 [gate-checklist.md](gate-checklist.md)。
+- **01 / 03 / 04 / 09 / 10 / 11 / 12 / 14**：结构完整，不阻塞 M1，尚未逐段核对。
 
 关键内容摘录：
 
@@ -94,7 +99,11 @@
 | 部署到哪、怎么编排没写 | 03 M6、04 §7、13 ADR-0021/0022 定为服务器单节点 k3s |
 | 端口与域名受限，公网入口不成立 | 13 ADR-0023、04 §7、09 §1、03 M6、14 环境表改为 tailnet 入口 |
 | 会话校验走哪条路没写 | 05 §4 补明：gateway 调 identity 的 `ValidateSession`，不读 `sessions` 表 |
-| `processed_events` 没有归属服务 | 待 08 定稿时改措辞，方向是 SSE 消费者不建幂等表 |
+| `processed_events` 没有归属服务 | 已闭合：06 §8 补表，08 §6 限定只有写状态的消费者建，SSE 消费者不落库 |
+| `notes` 上限 20,000 字符，`TEXT` 只能装 65,535 字节 | 06 §3 改为 `MEDIUMTEXT` |
+| 收件箱任务进不了今天页 | 02 FR-D2 与 06 §9 的 SQL 都把 `inbox` 并入第 5 组 |
+| `POST /tasks` 缺 `spaceId`/`parentId`/`notes`，子任务建不出来 | 07 §7.1 补齐，并写明三个默认值 |
+| 07 的 Thrift 引用了未定义的 `UpdateTaskRequest`/`Today` | 07 §11 补全，新增 `IdentityService.ValidateSession` |
 
 ## 怎么读
 
