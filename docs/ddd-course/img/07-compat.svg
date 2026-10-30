@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="420" viewBox="0 0 860 420" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <rect width="860" height="420" fill="#FFFFFF"/>
+  <text x="40" y="34" font-size="13" font-weight="600" fill="#616E7C">改了什么</text>
+  <text x="560" y="34" font-size="13" font-weight="600" fill="#616E7C">结论</text>
+
+  <rect x="40" y="52" width="470" height="42" rx="6" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.2"/>
+  <text x="58" y="79" font-size="12.5" fill="#1F2933">加一个可选字段</text>
+  <rect x="540" y="52" width="280" height="42" rx="6" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.2"/>
+  <text x="680" y="79" text-anchor="middle" font-size="12.5" fill="#2B6CB0">✓ 兼容，不换版本</text>
+
+  <rect x="40" y="106" width="470" height="42" rx="6" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.2"/>
+  <text x="58" y="133" font-size="12.5" fill="#1F2933">加一个必填字段</text>
+  <rect x="540" y="106" width="280" height="42" rx="6" fill="#FFF4E5" stroke="#C05621" stroke-width="1.2"/>
+  <text x="680" y="133" text-anchor="middle" font-size="12.5" fill="#C05621">✕ 破坏，老客户端传不出</text>
+
+  <rect x="40" y="160" width="470" height="42" rx="6" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.2"/>
+  <text x="58" y="187" font-size="12.5" fill="#1F2933">删字段、改类型、改字段名</text>
+  <rect x="540" y="160" width="280" height="42" rx="6" fill="#FFF4E5" stroke="#C05621" stroke-width="1.2"/>
+  <text x="680" y="187" text-anchor="middle" font-size="12.5" fill="#C05621">✕ 破坏</text>
+
+  <rect x="40" y="214" width="470" height="42" rx="6" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.2"/>
+  <text x="58" y="241" font-size="12.5" fill="#1F2933">改字段含义，值没变</text>
+  <rect x="540" y="214" width="280" height="42" rx="6" fill="#FFF4E5" stroke="#C05621" stroke-width="1.2"/>
+  <text x="680" y="241" text-anchor="middle" font-size="12.5" fill="#C05621">✕ 破坏，最隐蔽</text>
+
+  <rect x="40" y="268" width="470" height="42" rx="6" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.2"/>
+  <text x="58" y="295" font-size="12.5" fill="#1F2933">枚举加一个值</text>
+  <rect x="540" y="268" width="280" height="42" rx="6" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.2"/>
+  <text x="680" y="295" text-anchor="middle" font-size="12.5" fill="#2B6CB0">✓ 兼容，但要有 default</text>
+
+  <rect x="40" y="322" width="470" height="42" rx="6" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.2"/>
+  <text x="58" y="349" font-size="12.5" fill="#1F2933">新增必填的请求参数</text>
+  <rect x="540" y="322" width="280" height="42" rx="6" fill="#FFF4E5" stroke="#C05621" stroke-width="1.2"/>
+  <text x="680" y="349" text-anchor="middle" font-size="12.5" fill="#C05621">✕ 破坏，只能出新前缀</text>
+
+  <text x="430" y="400" text-anchor="middle" font-size="12" fill="#616E7C">口诀：只加不改不删；真要改，换大版本，新旧并行。</text>
+</svg>

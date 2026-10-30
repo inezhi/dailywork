@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="420" viewBox="0 0 860 420" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <rect width="860" height="420" fill="#FFFFFF"/>
+
+  <!-- 聚合边界 -->
+  <rect x="50" y="60" width="330" height="250" rx="14" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="2"/>
+  <text x="72" y="92" font-size="16" font-weight="600" fill="#2B6CB0">聚合 · Order（聚合根）</text>
+
+  <rect x="72" y="110" width="286" height="54" rx="8" fill="#FFFFFF" stroke="#7FA8D4" stroke-width="1.5"/>
+  <text x="88" y="133" font-size="14" font-weight="600" fill="#1F2933">OrderLine × N</text>
+  <text x="88" y="153" font-size="12" fill="#616E7C">实体 · 总额 = 各行之和</text>
+
+  <rect x="72" y="176" width="286" height="54" rx="8" fill="#FFFFFF" stroke="#7FA8D4" stroke-width="1.5"/>
+  <text x="88" y="199" font-size="14" font-weight="600" fill="#1F2933">Address</text>
+  <text x="88" y="219" font-size="12" fill="#616E7C">值对象 · 不可变，改就是造新的</text>
+
+  <text x="72" y="264" font-size="12" fill="#2B6CB0">不变量：总额 = 所有行之和，必须同时正确</text>
+  <text x="72" y="286" font-size="12" fill="#2B6CB0">一个事务只改这一个聚合</text>
+
+  <!-- 聚合外 -->
+  <rect x="560" y="56" width="250" height="64" rx="8" fill="#FFFFFF" stroke="#9AA5B1" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="578" y="82" font-size="14" font-weight="600" fill="#1F2933">Customer</text>
+  <text x="578" y="104" font-size="12" fill="#616E7C">只存 customerID</text>
+
+  <rect x="560" y="152" width="250" height="64" rx="8" fill="#FFFFFF" stroke="#9AA5B1" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="578" y="178" font-size="14" font-weight="600" fill="#1F2933">Product</text>
+  <text x="578" y="200" font-size="12" fill="#616E7C">只存 productID + 下单时快照</text>
+
+  <rect x="560" y="248" width="250" height="64" rx="8" fill="#FFFFFF" stroke="#9AA5B1" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="578" y="274" font-size="14" font-weight="600" fill="#1F2933">Payment</text>
+  <text x="578" y="296" font-size="12" fill="#616E7C">独立聚合，存 orderID</text>
+
+  <!-- 连接 -->
+  <line x1="380" y1="88" x2="552" y2="88" stroke="#9AA5B1" stroke-width="1.5"/>
+  <text x="466" y="80" text-anchor="middle" font-size="11" fill="#616E7C">ID</text>
+
+  <line x1="380" y1="184" x2="552" y2="184" stroke="#9AA5B1" stroke-width="1.5"/>
+  <text x="466" y="176" text-anchor="middle" font-size="11" fill="#616E7C">ID + 快照</text>
+
+  <line x1="380" y1="280" x2="552" y2="280" stroke="#9AA5B1" stroke-width="1.5"/>
+  <text x="466" y="272" text-anchor="middle" font-size="11" fill="#616E7C">ID</text>
+
+  <!-- 图例 -->
+  <rect x="50" y="368" width="26" height="16" rx="3" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.5"/>
+  <text x="86" y="381" font-size="12" fill="#616E7C">聚合内：同一事务，一起正确</text>
+  <rect x="330" y="368" width="26" height="16" rx="3" fill="#FFFFFF" stroke="#9AA5B1" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="366" y="381" font-size="12" fill="#616E7C">聚合外：只带 ID 或不变快照，不带活对象</text>
+</svg>
