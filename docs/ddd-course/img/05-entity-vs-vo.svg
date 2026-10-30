@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="360" viewBox="0 0 800 360" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#616E7C"/>
+    </marker>
+  </defs>
+  <rect width="800" height="360" fill="#FFFFFF"/>
+
+  <!-- 起点 -->
+  <rect x="280" y="26" width="240" height="52" rx="8" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="400" y="58" text-anchor="middle" font-size="16" fill="#1F2933">把所有属性都换掉</text>
+
+  <line x1="400" y1="78" x2="400" y2="112" stroke="#616E7C" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- 判断 -->
+  <rect x="270" y="118" width="260" height="52" rx="8" fill="#FFFFFF" stroke="#616E7C" stroke-width="1.5"/>
+  <text x="400" y="150" text-anchor="middle" font-size="16" fill="#1F2933">还是不是同一个东西？</text>
+
+  <!-- 分支 -->
+  <path d="M400,170 V202 H200 V232" fill="none" stroke="#616E7C" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M400,170 V202 H600 V232" fill="none" stroke="#616E7C" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="205" y="195" font-size="13" fill="#2B6CB0">是，ID 没变</text>
+  <text x="545" y="195" font-size="13" fill="#C05621">否，换掉就不是它了</text>
+
+  <!-- 实体 -->
+  <rect x="60" y="238" width="280" height="100" rx="10" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.5"/>
+  <text x="80" y="266" font-size="17" font-weight="600" fill="#2B6CB0">实体</text>
+  <text x="80" y="292" font-size="13" fill="#1F2933">有身份，相等性看 ID</text>
+  <text x="80" y="316" font-size="13" fill="#616E7C">Task #A12 改标题、改日期，还是它</text>
+
+  <!-- 值对象 -->
+  <rect x="460" y="238" width="280" height="100" rx="10" fill="#FFF4E5" stroke="#C05621" stroke-width="1.5"/>
+  <text x="480" y="266" font-size="17" font-weight="600" fill="#C05621">值对象</text>
+  <text x="480" y="292" font-size="13" fill="#1F2933">没有身份，靠属性定义自己</text>
+  <text x="480" y="316" font-size="13" fill="#616E7C">地址改一个字，就是另一个地址</text>
+</svg>

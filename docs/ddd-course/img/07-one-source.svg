@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="400" viewBox="0 0 860 400" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="ar6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#9AA5B1"/>
+    </marker>
+  </defs>
+  <rect width="860" height="400" fill="#FFFFFF"/>
+  <line x1="425" y1="30" x2="425" y2="300" stroke="#E4E7EB" stroke-width="1.5"/>
+
+  <!-- 左：手写 -->
+  <text x="40" y="36" font-size="15" font-weight="600" fill="#C05621">✕ 文档手写</text>
+  <rect x="40" y="58" width="330" height="48" rx="8" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="205" y="88" text-anchor="middle" font-size="13" fill="#1F2933">代码里把 status 加了 archived</text>
+
+  <path d="M205,106 H95 V266" fill="none" stroke="#9AA5B1" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="95" y1="150" x2="114" y2="150" stroke="#9AA5B1" stroke-width="1.5" marker-end="url(#ar6)"/>
+  <line x1="95" y1="208" x2="114" y2="208" stroke="#9AA5B1" stroke-width="1.5" marker-end="url(#ar6)"/>
+  <line x1="95" y1="266" x2="114" y2="266" stroke="#9AA5B1" stroke-width="1.5" marker-end="url(#ar6)"/>
+
+  <rect x="120" y="128" width="250" height="44" rx="8" fill="#FFFFFF" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="136" y="155" font-size="12.5" fill="#1F2933">REST 文档：done | todo</text>
+  <rect x="120" y="186" width="250" height="44" rx="8" fill="#FFFFFF" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="136" y="213" font-size="12.5" fill="#1F2933">Thrift IDL：加了值，没写语义</text>
+  <rect x="120" y="244" width="250" height="44" rx="8" fill="#FFFFFF" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="136" y="271" font-size="12.5" fill="#1F2933">事件 schema：没动</text>
+
+  <text x="40" y="330" font-size="12.5" fill="#C05621">三份文档，三种说法</text>
+  <text x="40" y="352" font-size="12" fill="#616E7C">代码改了，没人知道文档跟上没有</text>
+
+  <!-- 右：生成 -->
+  <text x="460" y="36" font-size="15" font-weight="600" fill="#2B6CB0">✓ 契约生成</text>
+  <rect x="460" y="58" width="330" height="48" rx="8" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.5"/>
+  <text x="625" y="88" text-anchor="middle" font-size="13" fill="#1F2933">契约文件里改一次</text>
+
+  <path d="M625,106 H515 V266" fill="none" stroke="#2B6CB0" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="515" y1="150" x2="534" y2="150" stroke="#2B6CB0" stroke-width="1.5" marker-end="url(#ar6)"/>
+  <line x1="515" y1="208" x2="534" y2="208" stroke="#2B6CB0" stroke-width="1.5" marker-end="url(#ar6)"/>
+  <line x1="515" y1="266" x2="534" y2="266" stroke="#2B6CB0" stroke-width="1.5" marker-end="url(#ar6)"/>
+
+  <rect x="540" y="128" width="250" height="44" rx="8" fill="#FFFFFF" stroke="#7FA8D4" stroke-width="1.5"/>
+  <text x="556" y="155" font-size="12.5" fill="#1F2933">生成 Go / TS 类型</text>
+  <rect x="540" y="186" width="250" height="44" rx="8" fill="#FFFFFF" stroke="#7FA8D4" stroke-width="1.5"/>
+  <text x="556" y="213" font-size="12.5" fill="#1F2933">生成接口文档</text>
+  <rect x="540" y="244" width="250" height="44" rx="8" fill="#FFFFFF" stroke="#7FA8D4" stroke-width="1.5"/>
+  <text x="556" y="271" font-size="12.5" fill="#1F2933">CI 比对漂移</text>
+
+  <text x="460" y="330" font-size="12.5" fill="#2B6CB0">一个源，三处一致</text>
+  <text x="460" y="352" font-size="12" fill="#616E7C">改了源文件，生成物和 CI 一起说话</text>
+
+  <text x="430" y="386" text-anchor="middle" font-size="12" fill="#616E7C">契约的价值不在写下来，在于能被机器比对。</text>
+</svg>

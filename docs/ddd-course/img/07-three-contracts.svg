@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="420" viewBox="0 0 860 420" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="ar7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#616E7C"/>
+    </marker>
+  </defs>
+  <rect width="860" height="420" fill="#FFFFFF"/>
+
+  <rect x="270" y="44" width="320" height="56" rx="10" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="430" y="78" text-anchor="middle" font-size="13.5" fill="#1F2933">外部客户端 · 浏览器 / CLI / AI 工具</text>
+
+  <line x1="430" y1="100" x2="430" y2="130" stroke="#616E7C" stroke-width="1.5" marker-end="url(#ar7)"/>
+  <text x="450" y="120" font-size="12" fill="#2B6CB0">OpenAPI 3.1 ／ /api/v1</text>
+
+  <rect x="270" y="136" width="320" height="56" rx="10" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.8"/>
+  <text x="430" y="170" text-anchor="middle" font-size="13.5" fill="#1F2933">gateway · Hertz + BFF</text>
+
+  <line x1="430" y1="192" x2="430" y2="222" stroke="#616E7C" stroke-width="1.5" marker-end="url(#ar7)"/>
+  <text x="450" y="212" font-size="12" fill="#2B6CB0">Thrift IDL ／ v1</text>
+
+  <rect x="270" y="228" width="320" height="56" rx="10" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.8"/>
+  <text x="430" y="262" text-anchor="middle" font-size="13.5" fill="#1F2933">task · identity · docs</text>
+
+  <line x1="430" y1="284" x2="430" y2="314" stroke="#616E7C" stroke-width="1.5" marker-end="url(#ar7)"/>
+  <text x="450" y="304" font-size="12" fill="#C05621">JSON Schema ／ task.events.v1</text>
+
+  <rect x="270" y="320" width="320" height="56" rx="10" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="430" y="354" text-anchor="middle" font-size="13.5" fill="#1F2933">Kafka · 消费者</text>
+
+  <text x="430" y="404" text-anchor="middle" font-size="12" fill="#616E7C">跨过哪条边界，就用那一份；三份不能互相替代。</text>
+</svg>

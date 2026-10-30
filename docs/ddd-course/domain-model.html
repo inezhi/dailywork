@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Task Domain Model</title>
+<style>
+  :root {
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #d1d5db;
+    --border-light: #e5e7eb;
+    --bg: #ffffff;
+    --panel: #f9fafb;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --red: #b91c1c;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { scroll-padding-top: 64px; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent); }
+  code, pre, kbd { font-family: var(--mono); }
+  code { font-size: .92em; }
+  button, input { font: inherit; }
+  button { cursor: pointer; }
+  [hidden] { display: none !important; }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    min-height: 100vh;
+  }
+
+  /* ---------- sidebar ---------- */
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: auto;
+    padding: 18px 14px 16px;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .brand {
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .brand-title {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .brand-title span {
+    margin-left: 6px;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .brand-sub {
+    margin-top: 3px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0;
+  }
+
+  .nav a {
+    display: block;
+    padding: 4px 0;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 12px;
+  }
+
+  .nav a:hover { color: var(--accent); }
+  .nav a.active { color: var(--accent); font-weight: 600; }
+
+  .nav a.sub {
+    padding-left: 12px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .nav a.sub:hover { color: var(--accent); }
+
+  .sidebar-actions {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* ---------- buttons ---------- */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 11px;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .btn.primary:hover { opacity: .9; color: #fff; }
+
+  .btn.small {
+    min-height: 24px;
+    padding: 0 6px;
+    font-family: var(--mono);
+    font-size: 10px;
+  }
+
+  /* ---------- main ---------- */
+
+  main { min-width: 0; }
+  .content { max-width: 1120px; margin: 0 auto; padding: 0 24px 48px; }
+
+  .page-header {
+    padding: 28px 0 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .page-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .page-header h1 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.2;
+    letter-spacing: -.01em;
+  }
+
+  .page-meta {
+    margin-top: 4px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .page-stats {
+    margin-top: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 1px 5px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--panel);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 9px;
+    line-height: 1.5;
+    vertical-align: 1px;
+    white-space: nowrap;
+  }
+
+  /* ---------- toolbar ---------- */
+
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    padding: 10px 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search {
+    flex: 1 1 240px;
+    min-width: 180px;
+  }
+
+  .search input {
+    width: 100%;
+    min-height: 30px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 12px;
+    outline: none;
+  }
+
+  .search input:focus { border-color: var(--accent); }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .filter {
+    min-height: 26px;
+    padding: 0 7px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 10px;
+  }
+
+  .filter:hover { border-color: var(--accent); color: var(--accent); }
+
+  .filter.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+  }
+
+  .match-count {
+    margin-right: 4px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ---------- sections ---------- */
+
+  .section {
+    padding: 26px 0;
+    border-bottom: 1px solid var(--border);
+    scroll-margin-top: 56px;
+  }
+
+  .section h2 {
+    margin: 0 0 3px;
+    font-size: 18px;
+    line-height: 1.3;
+  }
+
+  .section-desc {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .section.is-filtered-out { display: none; }
+
+  /* ---------- aggregate cards ---------- */
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    scroll-margin-top: 64px;
+  }
+
+  .card-header {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .card-title {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.25;
+  }
+
+  .card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .count {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .card-summary {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .card-body { padding: 0 14px 10px; }
+
+  .card-section { border-top: 1px solid var(--border-light); }
+
+  .card-section summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text);
+    user-select: none;
+  }
+
+  .card-section summary::-webkit-details-marker { display: none; }
+
+  .card-section summary::before {
+    content: "▸";
+    margin-right: 6px;
+    color: var(--muted);
+    transition: transform .15s ease;
+  }
+
+  .card-section[open] summary::before { transform: rotate(90deg); }
+
+  .section-count {
+    margin-left: auto;
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  .card-section .section-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .card-empty {
+    display: none;
+    padding: 18px 0;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .card.is-empty .card-empty { display: block; }
+  .card.is-empty .card-section { display: none; }
+
+  /* ---------- tables ---------- */
+
+  .table-scroll { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  th, td {
+    padding: 5px 6px;
+    border-top: 1px solid var(--border-light);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: var(--panel);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .card-table { min-width: 430px; }
+  .card-table th:first-child, .card-table td:first-child { padding-left: 0; }
+  .card-table th:last-child, .card-table td:last-child { padding-right: 0; }
+
+  .field-table td:nth-child(1) { width: 72px; color: var(--muted); font-family: var(--mono); font-size: 9px; }
+  .field-table td:nth-child(2) { white-space: nowrap; }
+  .field-table td:nth-child(3) { white-space: nowrap; color: var(--accent); font-family: var(--mono); font-size: 10px; }
+  .field-table td:nth-child(4) { color: var(--muted); font-size: 11px; }
+  .behavior-table td:nth-child(2) { width: 64px; white-space: nowrap; }
+  .behavior-table td:nth-child(3) { color: var(--muted); font-size: 11px; }
+  .invariant-table td:first-child { width: 28px; font-family: var(--mono); font-size: 9px; color: var(--muted); }
+  .invariant-table td:last-child { font-size: 11px; }
+  .repo-table td:last-child { color: var(--muted); font-size: 11px; white-space: nowrap; }
+
+  .event-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 8px 0;
+  }
+
+  .event-list code {
+    padding: 2px 5px;
+    border: 1px solid var(--border-light);
+    border-radius: 3px;
+    background: var(--panel);
+    font-size: 10px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .rule-link {
+    display: inline-block;
+    margin-right: 3px;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .rule-link:hover { text-decoration: underline; }
+
+  /* ---------- rules ---------- */
+
+  .rule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .rule {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    scroll-margin-top: 64px;
+  }
+
+  .rule:target { border-color: var(--accent); }
+
+  .rule summary {
+    display: block;
+    padding: 9px 11px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+
+  .rule summary::-webkit-details-marker { display: none; }
+
+  .rule-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .rule-id {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+  }
+
+  .rule-name {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .rule-tag {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  .rule-summary {
+    display: block;
+    margin-top: 3px;
+    padding-left: 22px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .rule-caret {
+    width: 12px;
+    color: var(--muted);
+    font-size: 10px;
+    transition: transform .15s ease;
+  }
+
+  .rule[open] .rule-caret { transform: rotate(90deg); }
+
+  .rule-body {
+    padding: 0 11px 10px 27px;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .rule-table { margin-top: 6px; }
+  .rule-table td:first-child { width: 60px; color: var(--muted); font-family: var(--mono); font-size: 9px; }
+  .rule-table td:last-child { font-size: 11px; }
+
+  .rule-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-light);
+    margin-top: 6px;
+  }
+
+  /* ---------- reference tables ---------- */
+
+  .data-table {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 640px;
+  }
+
+  .data-table th { border-top: 0; }
+  .data-table tr:first-child td { border-top: 0; }
+  .data-table td { font-size: 11px; }
+  .data-table td code { white-space: nowrap; }
+
+  .layer-table td:first-child { width: 110px; font-family: var(--mono); font-size: 10px; }
+  .layer-table td:nth-child(2) { color: var(--muted); }
+  .layer-table td:last-child { width: 180px; font-family: var(--mono); font-size: 10px; }
+
+  .pipeline {
+    margin: 10px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--panel);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+
+  .code-block {
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+
+  .code-head {
+    padding: 5px 9px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  pre {
+    margin: 0;
+    padding: 9px;
+    overflow: auto;
+    font-size: 10px;
+    line-height: 1.6;
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 22px 0 4px;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  /* ---------- toast ---------- */
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translate(-50%, 10px);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 50;
+    padding: 7px 10px;
+    border-radius: 4px;
+    background: var(--text);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 10px;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast.error { background: var(--red); }
+
+  /* ---------- readability scale ---------- */
+
+  body { font-size: 16px; line-height: 1.6; }
+
+  .brand-title { font-size: 16px; }
+  .brand-sub { font-size: 12px; }
+  .nav a { font-size: 14px; }
+  .nav a.sub { font-size: 13px; }
+  .btn { font-size: 13px; }
+  .btn.small { font-size: 12px; }
+
+  .page-header h1 { font-size: 30px; }
+  .page-meta,
+  .page-stats { font-size: 12px; }
+  .tag { font-size: 11px; }
+
+  .search input { font-size: 14px; }
+  .filter { font-size: 12px; }
+  .match-count { font-size: 12px; }
+
+  .section h2 { font-size: 22px; }
+  .section-desc { font-size: 14px; }
+
+  .card-title { font-size: 24px; }
+  .count { font-size: 12px; }
+  .card-summary { font-size: 13px; }
+  .card-section summary { font-size: 13px; }
+  .section-count { font-size: 12px; }
+  .card-empty { font-size: 12px; }
+
+  table { font-size: 14px; }
+  th { font-size: 12px; }
+  .field-table td:nth-child(1) { font-size: 12px; }
+  .field-table td:nth-child(3) { font-size: 13px; }
+  .field-table td:nth-child(4) { font-size: 13px; }
+  .behavior-table td:nth-child(3) { font-size: 13px; }
+  .invariant-table td:first-child { font-size: 12px; }
+  .invariant-table td:last-child { font-size: 13px; }
+  .repo-table td:last-child { font-size: 13px; }
+  .event-list code { font-size: 12px; }
+  .rule-link { font-size: 11px; }
+  .card-table { min-width: 500px; }
+
+  .rule-id { font-size: 12px; }
+  .rule-name { font-size: 15px; }
+  .rule-tag { font-size: 11px; }
+  .rule-summary { font-size: 13px; }
+  .rule-table td:first-child { font-size: 12px; }
+  .rule-table td:last-child { font-size: 13px; }
+
+  .data-table { min-width: 720px; }
+  .data-table td { font-size: 13px; }
+  .layer-table td:first-child,
+  .layer-table td:last-child { font-size: 12px; }
+  .pipeline { font-size: 12px; }
+  .code-head { font-size: 11px; }
+  pre { font-size: 12px; }
+  .footer { font-size: 11px; }
+  .toast { font-size: 12px; }
+
+  /* ---------- responsive ---------- */
+
+  @media (max-width: 900px) {
+    .layout { display: block; }
+
+    .sidebar {
+      position: relative;
+      height: auto;
+      padding: 14px 16px 10px;
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav {
+      flex-direction: row;
+      overflow-x: auto;
+      gap: 10px;
+      padding: 8px 0 2px;
+    }
+
+    .nav a { white-space: nowrap; padding: 2px 0; }
+    .nav a.sub { display: none; }
+    .sidebar-actions { display: none; }
+
+    .content { padding: 0 16px 40px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .toolbar-actions { margin-left: 0; }
+  }
+
+  @media (max-width: 640px) {
+    .page-header { padding-top: 20px; }
+    .page-header h1 { font-size: 20px; }
+    .search { flex-basis: 100%; }
+    .toolbar { gap: 6px; }
+    .card-top { flex-direction: column; }
+    .card-actions { justify-content: flex-start; }
+    .card-header { padding: 10px 12px; }
+    .card-body { padding: 0 12px 8px; }
+    .rule-body { padding-left: 11px; }
+    .rule-tag { margin-left: 0; }
+  }
+
+  @media print {
+    .sidebar, .toolbar, .card-actions, .rule-footer .btn, .toast { display: none !important; }
+    .layout { display: block; }
+    .content { max-width: none; padding: 0; }
+    .card, .rule { break-inside: avoid; }
+    .section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-title">task-domain-model <span>v0.1</span></div>
+      <div class="brand-sub">task service · DDD reference</div>
+    </div>
+    <nav class="nav" aria-label="模型导航">
+      <a href="#map">模型关系</a>
+      <a href="#aggregates">聚合卡</a>
+      <div id="nav-cards"></div>
+      <a href="#rules">领域规则</a>
+      <a href="#layers">DDD 分层</a>
+      <a href="#value-objects">值对象</a>
+      <a href="#events">领域事件</a>
+      <a href="#application">应用服务</a>
+      <a href="#repositories">仓储接口</a>
+    </nav>
+    <div class="sidebar-actions">
+      <button class="btn" id="copy-all-rail" type="button">复制全部 Markdown</button>
+      <button class="btn" id="print-page" type="button">打印 / PDF</button>
+    </div>
+  </aside>
+
+  <main>
+    <div class="content">
+      <header class="page-header">
+        <div class="page-title-row">
+          <h1>Task Domain Model</h1>
+          <span class="tag">v0.1</span>
+        </div>
+        <div class="page-meta">task service · DDD reference · 2026-10-28</div>
+        <div class="page-stats" id="page-stats"></div>
+      </header>
+
+      <div class="toolbar" role="search" aria-label="模型检索">
+        <div class="search">
+          <input id="model-search" type="search" placeholder="搜索字段、行为、规则、事件…" autocomplete="off" aria-label="搜索模型">
+        </div>
+        <div class="filters" role="group" aria-label="按类型筛选">
+          <button class="filter active" data-filter="all" type="button">全部</button>
+          <button class="filter" data-filter="field" type="button">字段</button>
+          <button class="filter" data-filter="behavior" type="button">行为</button>
+          <button class="filter" data-filter="invariant" type="button">不变量</button>
+          <button class="filter" data-filter="event" type="button">事件</button>
+          <button class="filter" data-filter="rule" type="button">规则</button>
+          <button class="filter" data-filter="value" type="button">值对象</button>
+        </div>
+        <div class="toolbar-actions">
+          <span class="match-count" id="match-count"></span>
+          <button class="btn small" id="clear-filter" type="button">清除</button>
+          <button class="btn small" id="expand-all" type="button">展开全部</button>
+          <button class="btn small" id="collapse-all" type="button">收起全部</button>
+          <button class="btn small" id="copy-all" type="button">复制全部</button>
+        </div>
+      </div>
+
+      <section id="map" class="section" data-page-section>
+        <h2>模型关系</h2>
+        <p class="section-desc">task 服务内的聚合关系；跨聚合只存 ID，不做跨库 JOIN</p>
+        <div class="table-scroll">
+          <table class="data-table">
+            <caption class="sr-only">模型关系</caption>
+            <thead><tr><th>从</th><th>关系</th><th>到</th><th>说明</th></tr></thead>
+            <tbody id="relation-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="aggregates" class="section" data-page-section>
+        <h2>聚合卡</h2>
+        <p class="section-desc">聚合根、字段、行为、不变量、事件、仓储</p>
+        <div class="card-grid" id="aggregate-list"></div>
+      </section>
+
+      <section id="rules" class="section" data-page-section>
+        <h2>领域规则</h2>
+        <p class="section-desc">聚合内不变量 / 跨聚合策略 / 应用用例 / 持久化约束</p>
+        <div class="rule-list" id="rule-list"></div>
+      </section>
+
+      <section id="layers" class="section" data-page-section>
+        <h2>DDD 分层</h2>
+        <p class="section-desc">依赖方向 adapters → application → domain；domain 不 import GORM、Hertz、Kitex、MongoDB、Kafka</p>
+        <div class="table-scroll">
+          <table class="data-table layer-table">
+            <caption class="sr-only">DDD 分层</caption>
+            <thead><tr><th>层</th><th>包含</th><th>依赖</th></tr></thead>
+            <tbody id="layer-body"></tbody>
+          </table>
+        </div>
+        <div class="table-scroll" style="margin-top:10px">
+          <table class="data-table">
+            <caption class="sr-only">规则落点</caption>
+            <thead><tr><th>规则</th><th>层</th><th>执行方式</th></tr></thead>
+            <tbody id="layer-rule-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="value-objects" class="section" data-page-section>
+        <h2>值对象</h2>
+        <p class="section-desc">ID、日期、时间戳、枚举、版本</p>
+        <div class="table-scroll">
+          <table class="data-table">
+            <caption class="sr-only">值对象</caption>
+            <thead><tr><th>名称</th><th>形态</th><th>规则</th></tr></thead>
+            <tbody id="value-object-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="events" class="section" data-page-section>
+        <h2>领域事件</h2>
+        <p class="section-desc">outbox → Kafka → gateway SSE；消费者按 event_id 幂等</p>
+        <div class="table-scroll">
+          <table class="data-table">
+            <caption class="sr-only">领域事件</caption>
+            <thead><tr><th>事件</th><th>聚合</th><th>触发</th><th>Payload</th></tr></thead>
+            <tbody id="event-body"></tbody>
+          </table>
+        </div>
+        <div class="code-block">
+          <div class="code-head">event envelope · JSON</div>
+          <pre><code>{
+  "event_id": "evt_01J8Q7",
+  "event_type": "task.completed",
+  "aggregate_type": "task",
+  "aggregate_id": "tsk_01J8M4Q2",
+  "version": 8,
+  "occurred_at": "2026-10-28T09:30:00Z",
+  "payload": {
+    "status": "done",
+    "completed_at": "2026-10-28T09:30:00Z"
+  },
+  "trace_id": "4bf92f3577b34da6"
+}</code></pre>
+        </div>
+        <p class="pipeline">business write + outbox → relay → Kafka task.events.v1 → gateway-sse → browser</p>
+      </section>
+
+      <section id="application" class="section" data-page-section>
+        <h2>应用服务</h2>
+        <p class="section-desc">事务边界、跨聚合编排、outbox 写入</p>
+        <div class="table-scroll">
+          <table class="data-table">
+            <caption class="sr-only">应用用例</caption>
+            <thead><tr><th>用例</th><th>聚合</th><th>事务 / 锁</th><th>规则</th><th>事件</th></tr></thead>
+            <tbody id="use-case-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="repositories" class="section" data-page-section>
+        <h2>仓储接口</h2>
+        <p class="section-desc">domain/application 定义接口；GORM 实现位于 adapters</p>
+        <div class="table-scroll">
+          <table class="data-table">
+            <caption class="sr-only">仓储接口</caption>
+            <thead><tr><th>接口</th><th>方法</th><th>返回 / 说明</th></tr></thead>
+            <tbody id="repo-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>task-domain-model v0.1</span>
+        <span>2026-10-28 · task service</span>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+  const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char]);
+  const attr = (value) => escapeHtml(value);
+  const norm = (value) => String(value).toLowerCase();
+
+  // 新增聚合卡：在 MODEL.cards 追加对象。
+  // 卡片网格、侧栏子链接、统计、搜索和复制全部会自动更新。
+  const TASK_CARD = {
+    key: 'task',
+    name: 'Task',
+    kind: 'aggregate root',
+    boundary: '事务边界 A',
+    idType: 'TaskID',
+    summary: 'Task 聚合根 · 状态、完成时间、计划日期、父子归属',
+    fields: [
+      { group: '身份', name: 'id', type: 'TaskID', note: 'UUIDv7；聚合根标识' },
+      { group: '归属', name: 'userID', type: 'UserID', note: '任务所有者' },
+      { group: '归属', name: 'spaceID', type: 'SpaceID', note: '必填；子任务复制父任务' },
+      { group: '归属', name: 'projectID?', type: 'ProjectID', note: '可空；子任务复制父任务' },
+      { group: '归属', name: 'parentID?', type: 'TaskID', note: '可空；只允许一层父子关系' },
+      { group: '内容', name: 'title', type: 'string', note: '非空，≤200 字符' },
+      { group: '内容', name: 'notes', type: 'string', note: '纯文本备注' },
+      { group: '状态', name: 'status', type: 'Status', note: 'inbox/next/doing/waiting/blocked/done' },
+      { group: '状态', name: 'priority', type: 'Priority', note: 'none/low/medium/high/urgent' },
+      { group: '状态', name: 'completedAt?', type: 'Instant', note: 'done 时必填；离开 done 清空' },
+      { group: '时间', name: 'scheduledDate?', type: 'Date', note: 'YYYY-MM-DD；客户端传入' },
+      { group: '时间', name: 'dueDate?', type: 'Date', note: 'YYYY-MM-DD；客户端传入' },
+      { group: '时间', name: 'estimateMinutes?', type: 'int', note: '≥ 0' },
+      { group: '时间', name: 'actualMinutes', type: 'int', note: '≥ 0，默认 0' },
+      { group: '排序/并发', name: 'sortOrder', type: 'int64', note: '同列表内排序' },
+      { group: '排序/并发', name: 'version', type: 'int', note: '乐观锁；每次写入 +1' },
+      { group: '审计/删除', name: 'deletedAt?', type: 'Instant', note: '软删除；父任务级联子任务' },
+      { group: '审计/删除', name: 'createdAt', type: 'Instant', note: 'UTC' },
+      { group: '审计/删除', name: 'updatedAt', type: 'Instant', note: 'UTC' }
+    ],
+    behaviors: [
+      { key: 'create', name: 'Create(...)', note: '创建任务；写入必填字段和初始 status', rules: [] },
+      { key: 'rename', name: 'Rename(title)', note: '校验非空和长度', rules: [] },
+      { key: 'change-notes', name: 'ChangeNotes(notes)', note: '更新备注', rules: [] },
+      { key: 'change-status', name: 'ChangeStatus(next)', note: '只接受活跃状态；目标 done 返回 USE_COMPLETE', rules: ['R2'] },
+      { key: 'complete', name: 'Complete(now)', note: '活跃状态 → done；写 completedAt；幂等', rules: ['R1', 'R2'] },
+      { key: 'reopen', name: 'Reopen(now)', note: 'done → doing；清空 completedAt；幂等', rules: ['R1', 'R2'] },
+      { key: 'set-priority', name: 'SetPriority(priority)', note: '更新优先级', rules: [] },
+      { key: 'schedule', name: 'Schedule(date?)', note: '设置/清空计划日期', rules: [] },
+      { key: 'set-due-date', name: 'SetDueDate(date?)', note: '设置/清空截止日期', rules: [] },
+      { key: 'set-estimate', name: 'SetEstimate(minutes?)', note: '校验 ≥ 0', rules: [] },
+      { key: 'move-to', name: 'MoveTo(spaceID, projectID?)', note: '只改自己的归属；子任务由应用服务同步', rules: ['R4', 'R7'] },
+      { key: 'soft-delete', name: 'SoftDelete(now)', note: '标记 deletedAt；子任务由应用服务级联', rules: ['R6'] }
+    ],
+    invariants: [
+      { id: 'I1', text: 'status = done ⇔ completedAt ≠ nil' },
+      { id: 'I2', text: '只有 Complete() 能进入 done；只有 Reopen() 能离开 done' },
+      { id: 'I3', text: '活跃状态之间可以自由切换；ChangeStatus 不接受 done' },
+      { id: 'I4', text: 'title 非空且 ≤ 200 字符；estimateMinutes、actualMinutes ≥ 0' },
+      { id: 'I5', text: 'parentID ≠ id；父子只允许一层' },
+      { id: 'I6', text: 'version 每次写入递增；repository 用 version 做乐观锁' }
+    ],
+    events: [
+      { name: 'task.created' },
+      { name: 'task.updated' },
+      { name: 'task.completed' },
+      { name: 'task.reopened' },
+      { name: 'task.deleted' }
+    ],
+    repos: [
+      { name: 'TaskRepository.FindByID(id)', note: '→ Task' },
+      { name: 'TaskRepository.Save(task)', note: '→ version' },
+      { name: 'TaskRepository.ListByParent(parentID)', note: '→ Task[]' },
+      { name: 'TaskRepository.CountUnfinishedByProject(projectID)', note: '→ int' },
+      { name: 'TaskRepository.ListToday(userID, date)', note: '→ Task[]' }
+    ]
+  };
+
+  const PROJECT_CARD = {
+    key: 'project',
+    name: 'Project',
+    kind: 'aggregate root',
+    boundary: '事务边界 B',
+    idType: 'ProjectID',
+    summary: 'Project 聚合根 · 名称、时间范围、归档状态',
+    fields: [
+      { group: '身份', name: 'id', type: 'ProjectID', note: 'UUIDv7；聚合根标识' },
+      { group: '归属', name: 'userID', type: 'UserID', note: '项目所有者' },
+      { group: '归属', name: 'spaceID', type: 'SpaceID', note: '必填；项目归属空间' },
+      { group: '内容', name: 'name', type: 'string', note: '非空，≤80 字符；活跃名称同空间唯一' },
+      { group: '内容', name: 'description', type: 'string', note: '项目说明' },
+      { group: '内容', name: 'color', type: 'string', note: '十六进制颜色' },
+      { group: '时间', name: 'startDate?', type: 'Date', note: 'YYYY-MM-DD' },
+      { group: '时间', name: 'dueDate?', type: 'Date', note: 'YYYY-MM-DD' },
+      { group: '状态', name: 'archivedAt?', type: 'Instant', note: '归档时间；null 表示活跃' },
+      { group: '并发', name: 'version', type: 'int', note: '乐观锁；每次写入 +1' },
+      { group: '审计', name: 'createdAt', type: 'Instant', note: 'UTC' },
+      { group: '审计', name: 'updatedAt', type: 'Instant', note: 'UTC' }
+    ],
+    behaviors: [
+      { key: 'create', name: 'Create(...)', note: '创建项目；写入必填字段', rules: [] },
+      { key: 'rename', name: 'Rename(name)', note: '校验非空和长度；活跃名称同空间唯一', rules: [] },
+      { key: 'change-description', name: 'ChangeDescription(description)', note: '更新项目说明', rules: [] },
+      { key: 'change-color', name: 'ChangeColor(color)', note: '更新项目颜色', rules: [] },
+      { key: 'change-dates', name: 'ChangeDates(startDate?, dueDate?)', note: '更新项目时间范围', rules: [] },
+      { key: 'archive', name: 'Archive(now)', note: '写 archivedAt；归档前由 ProjectArchivePolicy 检查', rules: ['R3'] }
+    ],
+    invariants: [
+      { id: 'P1', text: 'name 非空且 ≤ 80 字符；活跃项目名称在同一空间内唯一' },
+      { id: 'P2', text: 'archivedAt ≠ nil 表示已归档；归档后不允许创建任务' },
+      { id: 'P3', text: '归档前必须没有未完成任务；由 ProjectArchivePolicy 在应用层检查' }
+    ],
+    events: [
+      { name: 'project.created' },
+      { name: 'project.updated' },
+      { name: 'project.archived' }
+    ],
+    repos: [
+      { name: 'ProjectRepository.FindByID(id)', note: '→ Project' },
+      { name: 'ProjectRepository.Save(project)', note: '→ version' },
+      { name: 'ProjectLockRepository.FindByIDForUpdate(id)', note: '→ Project；application port' }
+    ]
+  };
+
+  const RELATIONS = [
+    { from: 'Space', edge: '1 : N', to: 'Project', note: '项目必须归属一个空间；spaceID 必填' },
+    { from: 'Space', edge: '1 : N', to: 'Task', note: '任务必须归属一个空间；子任务复制父任务的 spaceID' },
+    { from: 'Project', edge: '1 : N', to: 'Task', note: 'projectID 可空；子任务复制父任务的 projectID' },
+    { from: 'Task', edge: '1 : N', to: 'Task', note: 'parentID 可空；只允许一层父子关系' },
+    { from: 'User', edge: '1 : N', to: 'Task / Project', note: '只存 userID；来自 identity，不做跨库 JOIN' }
+  ];
+
+  // 规则、值对象、事件、用例、仓储都是数据数组；加条目即可自动渲染。
+  const RULES = [
+    {
+      id: 'R1', name: '完成时间不变量', tag: '聚合内',
+      summary: 'status = done ⇔ completedAt ≠ nil',
+      rows: [
+        ['规则', '进入 done 必须写 completedAt；离开 done 必须清空 completedAt'],
+        ['触发', 'Complete(now) / Reopen(now)'],
+        ['失败', 'ChangeStatus(done) → USE_COMPLETE；从 done 改回活跃状态 → USE_REOPEN'],
+        ['事务', '聚合内，无跨聚合锁'],
+        ['关联', 'Task.Complete() / Task.Reopen()']
+      ],
+      links: [['Task.Complete()', '#task-complete'], ['Task.Reopen()', '#task-reopen']]
+    },
+    {
+      id: 'R2', name: '状态机', tag: '聚合内',
+      summary: '活跃状态自由切换；done 只有 Complete / Reopen 两个入口',
+      rows: [
+        ['规则', 'inbox/next/doing/waiting/blocked 可互相切换；done 只能 Complete；离开 done 只能 Reopen 到 doing'],
+        ['触发', 'ChangeStatus(next) / Complete(now) / Reopen(now)'],
+        ['失败', 'USE_COMPLETE / USE_REOPEN'],
+        ['幂等', 'Complete / Reopen 重复调用不改变状态，也不重复发事件'],
+        ['关联', 'Task.ChangeStatus() / Task.Complete() / Task.Reopen()']
+      ],
+      links: [['ChangeStatus', '#task-change-status'], ['Complete', '#task-complete'], ['Reopen', '#task-reopen']]
+    },
+    {
+      id: 'R3', name: '项目归档', tag: '跨聚合',
+      summary: '还有未完成任务时禁止归档',
+      rows: [
+        ['规则', 'count(project_id = P AND deleted_at IS NULL AND status <> done) == 0'],
+        ['触发', 'ArchiveProject(projectID)'],
+        ['失败', 'PROJECT_HAS_UNFINISHED_TASKS + 未完成数量'],
+        ['事务', '锁 Project 行 → 统计 → Project.Archive(now) → outbox project.archived'],
+        ['关联', 'Project.Archive() / TaskRepository.CountUnfinishedByProject()']
+      ],
+      links: [['Project.Archive()', '#project-archive'], ['CountUnfinishedByProject', '#repositories']]
+    },
+    {
+      id: 'R4', name: '子任务归属继承', tag: '跨聚合',
+      summary: '子任务的 spaceID / projectID 始终等于父任务',
+      rows: [
+        ['规则', 'child.spaceID = parent.spaceID；child.projectID = parent.projectID；子任务不能独立改归属'],
+        ['触发', 'CreateTask(parentID) / MoveTask(parentID)'],
+        ['失败', '拒绝；错误码待定'],
+        ['事务', '锁目标 Project → 更新父任务和全部子任务 → outbox task.updated × N'],
+        ['关联', 'Task.MoveTo() / MoveTask()']
+      ],
+      links: [['Task.MoveTo()', '#task-move-to'], ['MoveTask', '#application']]
+    },
+    {
+      id: 'R5', name: '父任务完成策略', tag: '应用策略',
+      summary: '父任务可独立完成；是否带上子任务由用户选择',
+      rows: [
+        ['规则', 'cascadeSubtasks = false 只完成父任务；true 在同一事务里完成活跃子任务'],
+        ['触发', 'CompleteTask(parentID, cascadeSubtasks)'],
+        ['失败', '无；这不是领域不变量'],
+        ['事务', '一个事务；每个完成的任务各写一条 task.completed'],
+        ['关联', 'CompleteTask() / Task.Complete()']
+      ],
+      links: [['Task.Complete()', '#task-complete'], ['CompleteTask', '#application']]
+    },
+    {
+      id: 'R6', name: '软删除级联', tag: '应用策略',
+      summary: '删除父任务时，子任务一起软删除',
+      rows: [
+        ['规则', '父任务 deletedAt = now；全部子任务同事务 deletedAt = now'],
+        ['触发', 'DeleteTask(parentID)'],
+        ['失败', '无'],
+        ['事务', '一个事务；每个任务各写一条 task.deleted'],
+        ['关联', 'Task.SoftDelete() / DeleteTask()']
+      ],
+      links: [['Task.SoftDelete()', '#task-soft-delete'], ['DeleteTask', '#application']]
+    },
+    {
+      id: 'R7', name: '目标项目必须活跃', tag: '应用策略',
+      summary: '任务不能移入或创建在已归档项目',
+      rows: [
+        ['规则', 'target Project.archivedAt == nil'],
+        ['触发', 'CreateTask / MoveTask'],
+        ['失败', 'PROJECT_ARCHIVED'],
+        ['事务', '锁目标 Project 行；与归档互斥'],
+        ['关联', 'MoveTask() / CreateTask()']
+      ],
+      links: [['MoveTask', '#application'], ['Task.MoveTo()', '#task-move-to']]
+    },
+    {
+      id: 'R8', name: '乐观锁', tag: '持久化',
+      summary: '每次更新带 version；冲突返回 409',
+      rows: [
+        ['规则', 'UPDATE ... WHERE id = ? AND version = ?；RowsAffected == 0 → VERSION_CONFLICT'],
+        ['触发', 'repository.Save(task / project)'],
+        ['失败', '409 VERSION_CONFLICT'],
+        ['事务', '在应用用例的事务内；版本不匹配则整个用例回滚'],
+        ['关联', 'TaskRepository.Save() / ProjectRepository.Save()']
+      ],
+      links: [['TaskRepository.Save()', '#repositories'], ['ProjectRepository.Save()', '#repositories']]
+    }
+  ];
+
+  const VALUE_OBJECTS = [
+    { name: 'TaskID', shape: 'UUIDv7 string', note: '任务聚合根标识；对外统一字符串' },
+    { name: 'ProjectID', shape: 'UUIDv7 string', note: '项目聚合根标识；任务只存引用' },
+    { name: 'SpaceID', shape: 'UUIDv7 string', note: '空间归属；任务和项目都必须有' },
+    { name: 'UserID', shape: 'UUIDv7 string', note: '账户标识；服务间只传 ID' },
+    { name: 'Date', shape: 'YYYY-MM-DD', note: '业务日期；由客户端传入，不存时区' },
+    { name: 'Instant', shape: 'UTC ISO-8601', note: '时间戳；MySQL 用 DATETIME(3)，统一 UTC' },
+    { name: 'Status', shape: 'enum', note: 'inbox、next、doing、waiting、blocked、done；活跃状态自由切换' },
+    { name: 'Priority', shape: 'enum', note: 'none、low、medium、high、urgent' },
+    { name: 'Version', shape: 'positive int', note: '乐观锁令牌；每次写入 +1' }
+  ];
+
+  const EVENTS = [
+    { name: 'task.created', aggregate: 'Task', trigger: 'CreateTask', payload: 'task_id, project_id, status' },
+    { name: 'task.updated', aggregate: 'Task', trigger: 'Rename / ChangeStatus / MoveTask', payload: 'task_id, changed_fields' },
+    { name: 'task.completed', aggregate: 'Task', trigger: 'CompleteTask', payload: 'task_id, completed_at' },
+    { name: 'task.reopened', aggregate: 'Task', trigger: 'ReopenTask', payload: 'task_id' },
+    { name: 'task.deleted', aggregate: 'Task', trigger: 'DeleteTask', payload: 'task_id' },
+    { name: 'project.created', aggregate: 'Project', trigger: 'CreateProject', payload: 'project_id, space_id' },
+    { name: 'project.updated', aggregate: 'Project', trigger: 'UpdateProject', payload: 'project_id, changed_fields' },
+    { name: 'project.archived', aggregate: 'Project', trigger: 'ArchiveProject', payload: 'project_id, archived_at' }
+  ];
+
+  const USE_CASES = [
+    { name: 'CreateTask', aggregates: 'Task + Project (read)', tx: 'lock target Project; insert task + outbox', rules: 'R4, R7', events: 'task.created' },
+    { name: 'UpdateTask', aggregates: 'Task', tx: 'no cross-aggregate lock', rules: '—', events: 'task.updated' },
+    { name: 'ChangeTaskStatus', aggregates: 'Task', tx: 'no cross-aggregate lock', rules: 'R2', events: 'task.updated' },
+    { name: 'CompleteTask', aggregates: 'Task (+ children)', tx: 'one transaction; cascade optional', rules: 'R1, R2, R5', events: 'task.completed × N' },
+    { name: 'ReopenTask', aggregates: 'Task', tx: 'no cross-aggregate lock', rules: 'R1, R2', events: 'task.reopened' },
+    { name: 'MoveTask', aggregates: 'Task + children', tx: 'lock target Project; update parent + children + outbox', rules: 'R4, R7', events: 'task.updated × N' },
+    { name: 'DeleteTask', aggregates: 'Task + children', tx: 'soft delete parent + children + outbox', rules: 'R6', events: 'task.deleted × N' },
+    { name: 'CreateProject', aggregates: 'Project', tx: 'insert project + outbox', rules: '—', events: 'project.created' },
+    { name: 'UpdateProject', aggregates: 'Project', tx: 'no cross-aggregate lock', rules: '—', events: 'project.updated' },
+    { name: 'ArchiveProject', aggregates: 'Project + Task (count)', tx: 'lock Project; count; archive + outbox', rules: 'R3', events: 'project.archived' }
+  ];
+
+  const REPOSITORIES = [
+    { name: 'TaskRepository', method: 'FindByID(id)', note: '→ Task' },
+    { name: 'TaskRepository', method: 'Save(task)', note: '→ version' },
+    { name: 'TaskRepository', method: 'ListByParent(parentID)', note: '→ Task[]' },
+    { name: 'TaskRepository', method: 'CountUnfinishedByProject(projectID)', note: '→ int' },
+    { name: 'TaskRepository', method: 'ListToday(userID, date)', note: '→ Task[]' },
+    { name: 'ProjectRepository', method: 'FindByID(id)', note: '→ Project' },
+    { name: 'ProjectRepository', method: 'Save(project)', note: '→ version' },
+    { name: 'ProjectRepository', method: 'ListBySpace(spaceID)', note: '→ Project[]' },
+    { name: 'ProjectLockRepository', method: 'FindByIDForUpdate(id)', note: '→ Project; application port' },
+    { name: 'OutboxRepository', method: 'Append(event)', note: '→ void' }
+  ];
+
+  const LAYERS = [
+    { name: 'adapters', contains: 'Hertz / Kitex / GORM / Kafka', depends: '→ application' },
+    { name: 'application', contains: 'use cases / transaction boundaries / ports / DTO', depends: '→ domain' },
+    { name: 'domain', contains: 'Task / Project / value objects / policies / events / repository interfaces', depends: 'no framework imports' },
+    { name: 'infrastructure', contains: 'config / logging / OpenTelemetry / connection pool / migrations', depends: 'supports all layers' }
+  ];
+
+  const LAYER_RULES = [
+    { rule: 'R1 / R2', layer: 'Task aggregate', how: 'entity behavior: Complete / Reopen / ChangeStatus' },
+    { rule: 'R3 / R4', layer: 'domain policy + application service', how: 'policy check + row lock + count / bulk update' },
+    { rule: 'R5 / R6 / R7', layer: 'application service', how: 'use-case orchestration: cascade, soft-delete cascade, target project check' },
+    { rule: 'R8', layer: 'repository adapter', how: 'conditional update WHERE id = ? AND version = ?' }
+  ];
+
+  // MODEL 是页面唯一数据源；新增聚合卡只改 cards 数组。
+  const MODEL = {
+    cards: [TASK_CARD, PROJECT_CARD],
+    relations: RELATIONS,
+    rules: RULES,
+    valueObjects: VALUE_OBJECTS,
+    events: EVENTS,
+    useCases: USE_CASES,
+    repositories: REPOSITORIES,
+    layers: LAYERS,
+    layerRules: LAYER_RULES
+  };
+
+  const totalItems = (card) => (
+    card.fields.length + card.behaviors.length + card.invariants.length + card.events.length + card.repos.length
+  );
+
+  const specRow = (tag, kind, search, inner, id = '') => {
+    const idAttr = id ? ` id="${attr(id)}"` : '';
+    return `<${tag} data-row data-kind="${kind}" data-search="${attr(search)}"${idAttr}>${inner}</${tag}>`;
+  };
+
+  const ruleLinks = (rules) => rules.map((id) => (
+    `<a class="rule-link" href="#rule-${id.toLowerCase()}">${escapeHtml(id)}</a>`
+  )).join('');
+
+  const renderCard = (card) => {
+    const fieldRows = card.fields.map((field) => specRow(
+      'tr', 'field',
+      [field.group, field.name, field.type, field.note].join(' '),
+      `<td>${escapeHtml(field.group)}</td><td><code>${escapeHtml(field.name)}</code></td><td>${escapeHtml(field.type)}</td><td>${escapeHtml(field.note)}</td>`
+    )).join('');
+
+    const behaviorRows = card.behaviors.map((behavior) => specRow(
+      'tr', 'behavior',
+      [behavior.name, behavior.note, (behavior.rules || []).join(' ')].join(' '),
+      `<td><code>${escapeHtml(behavior.name)}</code></td><td>${ruleLinks(behavior.rules || [])}</td><td>${escapeHtml(behavior.note)}</td>`,
+      `${card.key}-${behavior.key}`
+    )).join('');
+
+    const invariantRows = card.invariants.map((invariant) => specRow(
+      'tr', 'invariant',
+      [invariant.id, invariant.text].join(' '),
+      `<td>${escapeHtml(invariant.id)}</td><td>${escapeHtml(invariant.text)}</td>`
+    )).join('');
+
+    const eventRows = card.events.map((event) => (
+      `<code data-row data-kind="event" data-search="${attr(event.name)}">${escapeHtml(event.name)}</code>`
+    )).join('');
+
+    const repoRows = card.repos.map((repo) => specRow(
+      'tr', 'repo',
+      [repo.name, repo.note].join(' '),
+      `<td><code>${escapeHtml(repo.name)}</code></td><td>${escapeHtml(repo.note)}</td>`
+    )).join('');
+
+    return `
+      <article class="card" id="card-${card.key}" data-card="${card.key}">
+        <header class="card-header">
+          <div class="card-top">
+            <h3 class="card-title">${escapeHtml(card.name)}</h3>
+            <div class="card-actions">
+              <span class="count" data-card-count>${totalItems(card)} 项</span>
+              <button class="btn small" data-copy-card="${card.key}" type="button">复制 Markdown</button>
+            </div>
+          </div>
+          <div class="card-meta">
+            <span class="tag">${escapeHtml(card.kind)}</span>
+            <span class="tag">${escapeHtml(card.boundary)}</span>
+            <span class="tag">id: ${escapeHtml(card.idType)}</span>
+          </div>
+          <p class="card-summary">${escapeHtml(card.summary)}</p>
+        </header>
+        <div class="card-body">
+          <details class="card-section" data-section data-kind="field" data-expandable open>
+            <summary><span class="section-title">字段</span><span class="section-count" data-count>${card.fields.length}</span></summary>
+            <div class="table-scroll"><table class="card-table field-table"><thead><tr><th>分组</th><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>${fieldRows}</tbody></table></div>
+          </details>
+          <details class="card-section" data-section data-kind="behavior" data-expandable open>
+            <summary><span class="section-title">行为</span><span class="section-count" data-count>${card.behaviors.length}</span></summary>
+            <div class="table-scroll"><table class="card-table behavior-table"><thead><tr><th>行为</th><th>规则</th><th>说明</th></tr></thead><tbody>${behaviorRows}</tbody></table></div>
+          </details>
+          <details class="card-section" data-section data-kind="invariant" data-expandable open>
+            <summary><span class="section-title">不变量</span><span class="section-count" data-count>${card.invariants.length}</span></summary>
+            <div class="table-scroll"><table class="card-table invariant-table"><thead><tr><th>ID</th><th>规则</th></tr></thead><tbody>${invariantRows}</tbody></table></div>
+          </details>
+          <details class="card-section" data-section data-kind="event" data-expandable open>
+            <summary><span class="section-title">事件</span><span class="section-count" data-count>${card.events.length}</span></summary>
+            <div class="event-list">${eventRows}</div>
+          </details>
+          <details class="card-section" data-section data-kind="repo" data-expandable open>
+            <summary><span class="section-title">仓储</span><span class="section-count" data-count>${card.repos.length}</span></summary>
+            <div class="table-scroll"><table class="card-table repo-table"><thead><tr><th>方法</th><th>返回 / 说明</th></tr></thead><tbody>${repoRows}</tbody></table></div>
+          </details>
+          <div class="card-empty">没有匹配项</div>
+        </div>
+      </article>
+    `;
+  };
+
+  const renderCards = () => {
+    $('#aggregate-list').innerHTML = MODEL.cards.map(renderCard).join('');
+    $('#nav-cards').innerHTML = MODEL.cards.map((card) => (
+      `<a class="sub" href="#card-${card.key}">${escapeHtml(card.name)}</a>`
+    )).join('');
+  };
+
+  const renderRelations = () => {
+    $('#relation-body').innerHTML = MODEL.relations.map((relation) => specRow(
+      'tr', 'relation',
+      [relation.from, relation.edge, relation.to, relation.note].join(' '),
+      `<td><code>${escapeHtml(relation.from)}</code></td><td>${escapeHtml(relation.edge)}</td><td><code>${escapeHtml(relation.to)}</code></td><td>${escapeHtml(relation.note)}</td>`
+    )).join('');
+  };
+
+  const renderRules = () => {
+    $('#rule-list').innerHTML = MODEL.rules.map((rule) => {
+      const rows = rule.rows.map(([key, value]) => `<tr><td>${escapeHtml(key)}</td><td>${escapeHtml(value)}</td></tr>`).join('');
+      const links = rule.links.map(([label, href]) => `<a class="rule-link" href="${attr(href)}">${escapeHtml(label)}</a>`).join('');
+      const search = [rule.id, rule.name, rule.tag, rule.summary, ...rule.rows.flat(), ...rule.links.map((item) => item[0])].join(' ');
+      return `
+        <details class="rule" id="rule-${rule.id.toLowerCase()}" data-row data-kind="rule" data-expandable data-search="${attr(search)}">
+          <summary>
+            <span class="rule-head">
+              <span class="rule-caret" aria-hidden="true">▸</span>
+              <span class="rule-id">${escapeHtml(rule.id)}</span>
+              <span class="rule-name">${escapeHtml(rule.name)}</span>
+              <span class="rule-tag">${escapeHtml(rule.tag)}</span>
+            </span>
+            <span class="rule-summary">${escapeHtml(rule.summary)}</span>
+          </summary>
+          <div class="rule-body">
+            <table class="rule-table"><tbody>${rows}</tbody></table>
+            <div class="rule-footer">
+              <span>${links}</span>
+              <button class="btn small" data-copy-rule="${rule.id}" type="button">复制</button>
+            </div>
+          </div>
+        </details>
+      `;
+    }).join('');
+  };
+
+  const renderLayers = () => {
+    $('#layer-body').innerHTML = MODEL.layers.map((layer) => specRow(
+      'tr', 'layer',
+      [layer.name, layer.contains, layer.depends].join(' '),
+      `<td><code>${escapeHtml(layer.name)}</code></td><td>${escapeHtml(layer.contains)}</td><td>${escapeHtml(layer.depends)}</td>`
+    )).join('');
+
+    $('#layer-rule-body').innerHTML = MODEL.layerRules.map((item) => specRow(
+      'tr', 'layer',
+      [item.rule, item.layer, item.how].join(' '),
+      `<td><code>${escapeHtml(item.rule)}</code></td><td>${escapeHtml(item.layer)}</td><td>${escapeHtml(item.how)}</td>`
+    )).join('');
+  };
+
+  const renderValueObjects = () => {
+    $('#value-object-body').innerHTML = MODEL.valueObjects.map((vo) => specRow(
+      'tr', 'value',
+      [vo.name, vo.shape, vo.note].join(' '),
+      `<td><code>${escapeHtml(vo.name)}</code></td><td><code>${escapeHtml(vo.shape)}</code></td><td>${escapeHtml(vo.note)}</td>`
+    )).join('');
+  };
+
+  const renderEvents = () => {
+    $('#event-body').innerHTML = MODEL.events.map((event) => specRow(
+      'tr', 'event',
+      [event.name, event.aggregate, event.trigger, event.payload].join(' '),
+      `<td><code>${escapeHtml(event.name)}</code></td><td>${escapeHtml(event.aggregate)}</td><td>${escapeHtml(event.trigger)}</td><td>${escapeHtml(event.payload)}</td>`
+    )).join('');
+  };
+
+  const renderUseCases = () => {
+    $('#use-case-body').innerHTML = MODEL.useCases.map((useCase) => specRow(
+      'tr', 'use-case',
+      [useCase.name, useCase.aggregates, useCase.tx, useCase.rules, useCase.events].join(' '),
+      `<td><code>${escapeHtml(useCase.name)}</code></td><td>${escapeHtml(useCase.aggregates)}</td><td>${escapeHtml(useCase.tx)}</td><td>${escapeHtml(useCase.rules)}</td><td>${escapeHtml(useCase.events)}</td>`
+    )).join('');
+  };
+
+  const renderRepositories = () => {
+    $('#repo-body').innerHTML = MODEL.repositories.map((repo) => specRow(
+      'tr', 'repo',
+      [repo.name, repo.method, repo.note].join(' '),
+      `<td><code>${escapeHtml(repo.name)}</code></td><td><code>${escapeHtml(repo.method)}</code></td><td>${escapeHtml(repo.note)}</td>`
+    )).join('');
+  };
+
+  const renderStats = () => {
+    const repoCount = new Set(MODEL.repositories.map((repo) => repo.name)).size;
+    $('#page-stats').textContent = [
+      `${MODEL.cards.length} 聚合`,
+      `${MODEL.valueObjects.length} 值对象`,
+      `${MODEL.rules.length} 规则`,
+      `${MODEL.events.length} 事件`,
+      `${MODEL.useCases.length} 用例`,
+      `${repoCount} 仓储接口`
+    ].join(' · ');
+  };
+
+  const renderAll = () => {
+    renderCards();
+    renderRelations();
+    renderRules();
+    renderLayers();
+    renderValueObjects();
+    renderEvents();
+    renderUseCases();
+    renderRepositories();
+    renderStats();
+  };
+
+  // ---------- search / filter ----------
+
+  const filterState = { query: '', kind: 'all' };
+
+  const applyFilter = () => {
+    const query = norm(filterState.query.trim());
+    const kind = filterState.kind;
+    let visibleTotal = 0;
+
+    $$('[data-row]').forEach((row) => {
+      const matchesQuery = !query || norm(row.dataset.search || '').includes(query);
+      const matchesKind = kind === 'all' || row.dataset.kind === kind;
+      const visible = matchesQuery && matchesKind;
+      row.hidden = !visible;
+      if (visible) visibleTotal += 1;
+    });
+
+    $$('[data-section]').forEach((section) => {
+      const rows = $$('[data-row]', section);
+      const visible = rows.filter((row) => !row.hidden).length;
+      section.hidden = visible === 0;
+      const count = $('[data-count]', section);
+      if (count) count.textContent = String(visible);
+      if (query || kind !== 'all') {
+        section.open = visible > 0;
+      } else if (visible > 0) {
+        section.open = true;
+      }
+    });
+
+    $$('[data-card]').forEach((card) => {
+      const rows = $$('[data-row]', card);
+      const visible = rows.filter((row) => !row.hidden).length;
+      card.classList.toggle('is-empty', visible === 0);
+      const count = $('[data-card-count]', card);
+      if (count) count.textContent = `${visible} 项`;
+    });
+
+    $$('.rule').forEach((rule) => {
+      if (!rule.hidden && (query || kind !== 'all')) rule.open = true;
+    });
+
+    $$('[data-page-section]').forEach((section) => {
+      const rows = $$('[data-row]', section);
+      const visible = rows.filter((row) => !row.hidden).length;
+      section.classList.toggle('is-filtered-out', visible === 0);
+    });
+
+    $('#match-count').textContent = query || kind !== 'all' ? `${visibleTotal} 项匹配` : `${visibleTotal} 项`;
+  };
+
+  const setFilter = (kind) => {
+    filterState.kind = kind;
+    $$('.filter').forEach((button) => {
+      button.classList.toggle('active', button.dataset.filter === kind);
+    });
+    applyFilter();
+  };
+
+  const clearFilter = () => {
+    filterState.query = '';
+    $('#model-search').value = '';
+    setFilter('all');
+  };
+
+  // ---------- copy ----------
+
+  let toastTimer = null;
+
+  const showToast = (message, error = false) => {
+    const toast = $('#toast');
+    toast.textContent = message;
+    toast.className = `toast show${error ? ' error' : ''}`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.className = 'toast'; }, 2000);
+  };
+
+  const copyText = async (text, label) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(`已复制：${label}`);
+    } catch (error) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast(`已复制：${label}`);
+      } catch (fallbackError) {
+        showToast('复制失败', true);
+      }
+      textarea.remove();
+    }
+  };
+
+  const mdEscape = (value) => String(value).replace(/\|/g, '\\|');
+
+  const cardMarkdown = (card) => {
+    const lines = [
+      `## ${card.name}`,
+      '',
+      `> ${card.kind} · ${card.boundary} · id: ${card.idType}`,
+      '',
+      card.summary,
+      '',
+      '### Fields',
+      '',
+      '| Group | Field | Type | Notes |',
+      '|---|---|---|---|'
+    ];
+    card.fields.forEach((field) => {
+      lines.push(`| ${mdEscape(field.group)} | \`${field.name}\` | \`${field.type}\` | ${mdEscape(field.note)} |`);
+    });
+    lines.push('', '### Behaviors', '');
+    card.behaviors.forEach((behavior) => {
+      const rules = behavior.rules && behavior.rules.length ? ` [${behavior.rules.join(', ')}]` : '';
+      lines.push(`- \`${behavior.name}\` — ${behavior.note}${rules}`);
+    });
+    lines.push('', '### Invariants', '');
+    card.invariants.forEach((invariant) => lines.push(`- **${invariant.id}** — ${invariant.text}`));
+    lines.push('', '### Events', '');
+    card.events.forEach((event) => lines.push(`- \`${event.name}\``));
+    lines.push('', '### Repository', '');
+    card.repos.forEach((repo) => lines.push(`- \`${repo.name}\` ${repo.note}`));
+    return lines.join('\n');
+  };
+
+  const ruleMarkdown = (rule) => {
+    const lines = [`### ${rule.id} · ${rule.name}`, '', `> ${rule.tag}`, '', rule.summary, ''];
+    rule.rows.forEach(([key, value]) => lines.push(`- **${key}**: ${value}`));
+    if (rule.links.length) {
+      lines.push('', `Links: ${rule.links.map(([label]) => label).join(' / ')}`);
+    }
+    return lines.join('\n');
+  };
+
+  const relationsMarkdown = () => {
+    const lines = ['## Model relations', ''];
+    MODEL.relations.forEach((relation) => lines.push(`- ${relation.from} ${relation.edge} ${relation.to} — ${relation.note}`));
+    return lines.join('\n');
+  };
+
+  const valueObjectsMarkdown = () => {
+    const lines = ['## Value objects', '', '| Name | Shape | Rules |', '|---|---|---|'];
+    MODEL.valueObjects.forEach((vo) => lines.push(`| \`${vo.name}\` | \`${vo.shape}\` | ${mdEscape(vo.note)} |`));
+    return lines.join('\n');
+  };
+
+  const eventsMarkdown = () => {
+    const lines = ['## Events', '', '| Event | Aggregate | Trigger | Payload |', '|---|---|---|---|'];
+    MODEL.events.forEach((event) => lines.push(`| \`${event.name}\` | ${event.aggregate} | ${mdEscape(event.trigger)} | ${mdEscape(event.payload)} |`));
+    return lines.join('\n');
+  };
+
+  const useCasesMarkdown = () => {
+    const lines = ['## Use cases', '', '| Use case | Aggregates | Transaction / lock | Rules | Events |', '|---|---|---|---|---|'];
+    MODEL.useCases.forEach((useCase) => lines.push(`| \`${useCase.name}\` | ${mdEscape(useCase.aggregates)} | ${mdEscape(useCase.tx)} | ${mdEscape(useCase.rules)} | ${mdEscape(useCase.events)} |`));
+    return lines.join('\n');
+  };
+
+  const repositoriesMarkdown = () => {
+    const lines = ['## Repositories', '', '| Interface | Method | Returns / note |', '|---|---|---|'];
+    MODEL.repositories.forEach((repo) => lines.push(`| \`${repo.name}\` | \`${repo.method}\` | ${mdEscape(repo.note)} |`));
+    return lines.join('\n');
+  };
+
+  const layersMarkdown = () => {
+    const lines = ['## Layers', '', '| Layer | Contains | Depends on |', '|---|---|---|'];
+    MODEL.layers.forEach((layer) => lines.push(`| \`${layer.name}\` | ${mdEscape(layer.contains)} | ${mdEscape(layer.depends)} |`));
+    lines.push('', '| Rule | Layer | Enforcement |', '|---|---|---|');
+    MODEL.layerRules.forEach((item) => lines.push(`| \`${item.rule}\` | ${mdEscape(item.layer)} | ${mdEscape(item.how)} |`));
+    return lines.join('\n');
+  };
+
+  const allMarkdown = () => [
+    relationsMarkdown(),
+    ...MODEL.cards.map(cardMarkdown),
+    MODEL.rules.map(ruleMarkdown).join('\n\n'),
+    layersMarkdown(),
+    valueObjectsMarkdown(),
+    eventsMarkdown(),
+    useCasesMarkdown(),
+    repositoriesMarkdown()
+  ].join('\n\n---\n\n');
+
+  // ---------- events ----------
+
+  renderAll();
+  applyFilter();
+
+  const openHashTarget = () => {
+    if (!location.hash) return;
+    let target = null;
+    try {
+      target = document.querySelector(location.hash);
+    } catch (error) {
+      return;
+    }
+    if (!target) return;
+    const details = target.closest('details');
+    if (details) details.open = true;
+  };
+
+  window.addEventListener('hashchange', openHashTarget);
+  openHashTarget();
+
+  $('#model-search').addEventListener('input', (event) => {
+    filterState.query = event.target.value;
+    applyFilter();
+  });
+
+  $$('.filter').forEach((button) => {
+    button.addEventListener('click', () => setFilter(button.dataset.filter));
+  });
+
+  $('#clear-filter').addEventListener('click', clearFilter);
+
+  $('#expand-all').addEventListener('click', () => {
+    $$('details[data-expandable]').forEach((details) => { details.open = true; });
+  });
+
+  $('#collapse-all').addEventListener('click', () => {
+    $$('details[data-expandable]').forEach((details) => { details.open = false; });
+  });
+
+  const copyAll = () => copyText(allMarkdown(), '全部模型 Markdown');
+  $('#copy-all').addEventListener('click', copyAll);
+  $('#copy-all-rail').addEventListener('click', copyAll);
+  $('#print-page').addEventListener('click', () => window.print());
+
+  document.addEventListener('click', (event) => {
+    const cardButton = event.target.closest('[data-copy-card]');
+    if (cardButton) {
+      const card = MODEL.cards.find((item) => item.key === cardButton.dataset.copyCard);
+      if (card) copyText(cardMarkdown(card), `${card.name} 聚合卡`);
+      return;
+    }
+
+    const ruleButton = event.target.closest('[data-copy-rule]');
+    if (ruleButton) {
+      const rule = MODEL.rules.find((item) => item.id === ruleButton.dataset.copyRule);
+      if (rule) copyText(ruleMarkdown(rule), `${rule.id} 规则`);
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const target = event.target;
+    const typing = target instanceof HTMLElement && (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.tagName === 'SELECT' ||
+      target.isContentEditable
+    );
+
+    if (event.key === '/' && !typing) {
+      event.preventDefault();
+      $('#model-search').focus();
+    }
+
+    if (event.key === 'Escape' && document.activeElement === $('#model-search')) {
+      clearFilter();
+      $('#model-search').blur();
+    }
+  });
+
+  window.addEventListener('beforeprint', () => {
+    $$('details').forEach((details) => { details.open = true; });
+  });
+
+  if ('IntersectionObserver' in window) {
+    const navLinks = $$('.nav a');
+    const sections = $$('main section[id]');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        navLinks.forEach((link) => {
+          link.classList.toggle('active', link.getAttribute('href') === `#${entry.target.id}`);
+        });
+      });
+    }, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
+
+    sections.forEach((section) => observer.observe(section));
+  }
+})();
+</script>
+</body>
+</html>

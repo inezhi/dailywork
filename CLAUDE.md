@@ -56,8 +56,10 @@ README.md     # 项目说明与文档入口
 | 对象存储 | MinIO（docs 附件，后续） |
 | 外部契约 | REST + OpenAPI 3.1 |
 | 可观测性 | `slog` + OpenTelemetry + Prometheus + Grafana + Jaeger |
-| 本地编排 | Docker Compose；M6 可选 k3d/kind |
+| 本地编排 | 本地开发 Docker Compose；服务器部署单节点 k3s（M6） |
+| 访问入口 | Tailscale（tailnet 内 HTTPS，不开公网端口） |
 | 前端 | React + Vite + TanStack Router/Query（后续接入） |
+| 桌面端 | Tauri 2 外壳，加载同一份 React 构建产物（仅 macOS；Windows/移动端后续） |
 
 ## 服务与数据所有权
 
@@ -89,7 +91,7 @@ api/
   events/       # 事件 JSON Schema
   gen/          # 生成代码（提交，CI 检查漂移）
 deploy/         # docker-compose, apisix, kafka, k8s, grafana, prometheus
-web/            # React SPA
+web/            # React SPA；桌面端外壳放 web/src-tauri
 docs/           # 本地只放索引；正式文档在飞书
 ```
 

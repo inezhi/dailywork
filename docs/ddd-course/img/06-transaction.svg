@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="430" viewBox="0 0 860 430" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#616E7C"/>
+    </marker>
+  </defs>
+  <rect width="860" height="430" fill="#FFFFFF"/>
+  <line x1="430" y1="30" x2="430" y2="392" stroke="#E4E7EB" stroke-width="1.5"/>
+
+  <!-- 左：错误 -->
+  <text x="40" y="36" font-size="15" font-weight="600" fill="#C05621">✕ 一个事务里改两个聚合</text>
+  <rect x="40" y="58" width="150" height="42" rx="8" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="115" y="84" text-anchor="middle" font-size="13" fill="#1F2933">完成父任务</text>
+  <line x1="115" y1="100" x2="115" y2="122" stroke="#616E7C" stroke-width="1.5" marker-end="url(#ar3)"/>
+
+  <rect x="40" y="126" width="330" height="106" rx="10" fill="none" stroke="#C05621" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="54" y="146" font-size="11" fill="#C05621">一个事务</text>
+  <rect x="60" y="158" width="130" height="48" rx="8" fill="#FFF4E5" stroke="#C05621" stroke-width="1.5"/>
+  <text x="125" y="188" text-anchor="middle" font-size="13" fill="#1F2933">父 Task</text>
+  <rect x="220" y="158" width="130" height="48" rx="8" fill="#FFF4E5" stroke="#C05621" stroke-width="1.5"/>
+  <text x="285" y="188" text-anchor="middle" font-size="13" fill="#1F2933">子 Task</text>
+
+  <text x="40" y="264" font-size="12.5" fill="#616E7C">两个聚合的不变量被绑在一起</text>
+  <text x="40" y="286" font-size="12.5" fill="#616E7C">锁变多、事务变长、冲突增加</text>
+  <text x="40" y="308" font-size="12.5" fill="#616E7C">而子任务可能有一百个</text>
+
+  <!-- 右：正确 -->
+  <text x="470" y="36" font-size="15" font-weight="600" fill="#2B6CB0">✓ 两次事务，用事件串起来</text>
+  <rect x="470" y="58" width="150" height="42" rx="8" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="545" y="84" text-anchor="middle" font-size="13" fill="#1F2933">完成父任务</text>
+  <line x1="545" y1="100" x2="545" y2="120" stroke="#616E7C" stroke-width="1.5" marker-end="url(#ar3)"/>
+
+  <rect x="470" y="124" width="340" height="62" rx="8" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.5"/>
+  <text x="488" y="148" font-size="12.5" font-weight="600" fill="#2B6CB0">事务 ①</text>
+  <text x="488" y="170" font-size="12" fill="#1F2933">父 Task.Complete() + 写 outbox</text>
+
+  <line x1="640" y1="186" x2="640" y2="214" stroke="#616E7C" stroke-width="1.5" marker-end="url(#ar3)"/>
+  <rect x="470" y="218" width="340" height="40" rx="8" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="640" y="243" text-anchor="middle" font-size="12" fill="#616E7C">Kafka · task.events.v1</text>
+
+  <line x1="640" y1="258" x2="640" y2="284" stroke="#616E7C" stroke-width="1.5" marker-end="url(#ar3)"/>
+  <rect x="470" y="288" width="340" height="62" rx="8" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.5"/>
+  <text x="488" y="312" font-size="12.5" font-weight="600" fill="#2B6CB0">事务 ②</text>
+  <text x="488" y="334" font-size="12" fill="#1F2933">子任务的消费者在另一个事务里处理</text>
+
+  <text x="470" y="380" font-size="12.5" fill="#2B6CB0">一个用例可以有多个事务；</text>
+  <text x="470" y="400" font-size="12.5" fill="#2B6CB0">一个事务只改一个聚合。</text>
+</svg>

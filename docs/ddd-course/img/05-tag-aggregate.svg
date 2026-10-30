@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="380" viewBox="0 0 860 380" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#9AA5B1"/>
+    </marker>
+  </defs>
+  <rect width="860" height="380" fill="#FFFFFF"/>
+  <line x1="430" y1="40" x2="430" y2="320" stroke="#E4E7EB" stroke-width="1.5"/>
+
+  <!-- 左：错误 -->
+  <text x="40" y="38" font-size="15" font-weight="600" fill="#C05621">✕ 标签放进 Task 聚合</text>
+  <rect x="40" y="70" width="120" height="48" rx="8" fill="#FFF4E5" stroke="#C05621" stroke-width="1.5"/>
+  <text x="100" y="99" text-anchor="middle" font-size="14" fill="#1F2933">Tag 紧急</text>
+
+  <rect x="270" y="62" width="140" height="46" rx="8" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.5"/>
+  <text x="340" y="90" text-anchor="middle" font-size="14" fill="#1F2933">Task A</text>
+  <rect x="270" y="132" width="140" height="46" rx="8" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.5"/>
+  <text x="340" y="160" text-anchor="middle" font-size="14" fill="#1F2933">Task B</text>
+  <rect x="270" y="202" width="140" height="46" rx="8" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.5"/>
+  <text x="340" y="230" text-anchor="middle" font-size="14" fill="#1F2933">Task C …</text>
+
+  <path d="M160,90 C210,90 220,85 264,85" fill="none" stroke="#9AA5B1" stroke-width="1.5" marker-end="url(#arrow2)"/>
+  <path d="M160,96 C210,96 220,155 264,155" fill="none" stroke="#9AA5B1" stroke-width="1.5" marker-end="url(#arrow2)"/>
+  <path d="M160,102 C210,102 220,225 264,225" fill="none" stroke="#9AA5B1" stroke-width="1.5" marker-end="url(#arrow2)"/>
+
+  <text x="40" y="296" font-size="13" fill="#C05621">改一次标签名 → 要改 N 个聚合</text>
+  <text x="40" y="318" font-size="13" fill="#C05621">而一个事务只能改一个 → 做不到</text>
+
+  <!-- 右：正确 -->
+  <text x="470" y="38" font-size="15" font-weight="600" fill="#2B6CB0">✓ Tag 独立聚合，Task 只存 ID</text>
+  <rect x="470" y="70" width="120" height="48" rx="8" fill="#FFF4E5" stroke="#C05621" stroke-width="1.5"/>
+  <text x="530" y="99" text-anchor="middle" font-size="14" fill="#1F2933">Tag 紧急</text>
+
+  <rect x="700" y="62" width="130" height="46" rx="8" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.5"/>
+  <text x="765" y="82" text-anchor="middle" font-size="13" fill="#1F2933">Task A</text>
+  <text x="765" y="99" text-anchor="middle" font-size="10" fill="#616E7C">tagIDs: [t1]</text>
+  <rect x="700" y="132" width="130" height="46" rx="8" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.5"/>
+  <text x="765" y="152" text-anchor="middle" font-size="13" fill="#1F2933">Task B</text>
+  <text x="765" y="169" text-anchor="middle" font-size="10" fill="#616E7C">tagIDs: [t1]</text>
+  <rect x="700" y="202" width="130" height="46" rx="8" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.5"/>
+  <text x="765" y="222" text-anchor="middle" font-size="13" fill="#1F2933">Task C …</text>
+  <text x="765" y="239" text-anchor="middle" font-size="10" fill="#616E7C">tagIDs: [t1]</text>
+
+  <path d="M696,85 C650,85 640,90 596,90" fill="none" stroke="#9AA5B1" stroke-width="1.5" marker-end="url(#arrow2)"/>
+  <path d="M696,155 C650,155 640,96 596,96" fill="none" stroke="#9AA5B1" stroke-width="1.5" marker-end="url(#arrow2)"/>
+  <path d="M696,225 C650,225 640,102 596,102" fill="none" stroke="#9AA5B1" stroke-width="1.5" marker-end="url(#arrow2)"/>
+
+  <text x="470" y="296" font-size="13" fill="#2B6CB0">改一次标签名 → 只改 Tag 一个聚合</text>
+  <text x="470" y="318" font-size="13" fill="#2B6CB0">任务下次查询时自然看到新名字</text>
+</svg>

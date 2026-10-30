@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="400" viewBox="0 0 860 400" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#616E7C"/>
+    </marker>
+  </defs>
+  <rect width="860" height="400" fill="#FFFFFF"/>
+  <line x1="430" y1="44" x2="430" y2="344" stroke="#E4E7EB" stroke-width="1.5"/>
+
+  <text x="40" y="34" font-size="14" font-weight="600" fill="#2B6CB0">写 · 命令</text>
+  <rect x="40" y="54" width="340" height="48" rx="8" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="210" y="83" text-anchor="middle" font-size="13" fill="#1F2933">PUT /tasks/{id}/complete</text>
+  <line x1="210" y1="102" x2="210" y2="122" stroke="#616E7C" stroke-width="1.5" marker-end="url(#ar4)"/>
+
+  <rect x="40" y="126" width="340" height="48" rx="8" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.5"/>
+  <text x="210" y="155" text-anchor="middle" font-size="13" fill="#1F2933">应用服务 CompleteTask</text>
+  <line x1="210" y1="174" x2="210" y2="194" stroke="#616E7C" stroke-width="1.5" marker-end="url(#ar4)"/>
+
+  <rect x="40" y="198" width="340" height="48" rx="8" fill="#EAF2FB" stroke="#2B6CB0" stroke-width="1.5"/>
+  <text x="210" y="227" text-anchor="middle" font-size="13" fill="#1F2933">Task 聚合 · 守不变量</text>
+  <line x1="210" y1="246" x2="210" y2="266" stroke="#616E7C" stroke-width="1.5" marker-end="url(#ar4)"/>
+
+  <rect x="40" y="270" width="340" height="48" rx="8" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="210" y="299" text-anchor="middle" font-size="13" fill="#1F2933">MySQL · task 表</text>
+
+  <text x="470" y="34" font-size="14" font-weight="600" fill="#C05621">读 · 查询 Today</text>
+  <rect x="470" y="54" width="340" height="48" rx="8" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="640" y="83" text-anchor="middle" font-size="13" fill="#1F2933">GET /today?date=2026-10-31</text>
+  <line x1="640" y1="102" x2="640" y2="122" stroke="#616E7C" stroke-width="1.5" marker-end="url(#ar4)"/>
+
+  <rect x="470" y="126" width="340" height="48" rx="8" fill="#FFF4E5" stroke="#C05621" stroke-width="1.5"/>
+  <text x="640" y="155" text-anchor="middle" font-size="13" fill="#1F2933">TodayQuery（应用层查询）</text>
+  <line x1="640" y1="174" x2="640" y2="194" stroke="#616E7C" stroke-width="1.5" marker-end="url(#ar4)"/>
+
+  <rect x="470" y="198" width="340" height="48" rx="8" fill="#FFFFFF" stroke="#C05621" stroke-width="1.5"/>
+  <text x="640" y="227" text-anchor="middle" font-size="12" fill="#1F2933">一条 SQL：status&lt;&gt;'done' AND scheduled_date&lt;=?</text>
+  <line x1="640" y1="246" x2="640" y2="266" stroke="#616E7C" stroke-width="1.5" marker-end="url(#ar4)"/>
+
+  <rect x="470" y="270" width="340" height="48" rx="8" fill="#F5F7FA" stroke="#CBD2D9" stroke-width="1.5"/>
+  <text x="640" y="299" text-anchor="middle" font-size="13" fill="#1F2933">DTO 列表</text>
+
+  <text x="430" y="378" text-anchor="middle" font-size="12" fill="#616E7C">读不创建聚合、不校验不变量：它要的是形状，不是规则。</text>
+</svg>
