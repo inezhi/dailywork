@@ -165,7 +165,7 @@ X，最终因 Y 放弃"。另外两处对齐：0009 补一句仓库现有 `docs/
 - [ ] `docker compose`：MySQL、Redis、Kafka（KRaft 单节点）
 - [ ] `Makefile`：up / down / test / lint / migrate / codegen
 - [ ] CI：gofmt、golangci-lint、单测、生成漂移
-- [ ] 分支：`v2` 集成，`feat/*` 开发，`main` 只收 PR
+- [ ] 分支：`main` 只收 PR，功能从 `main` 切 `feat/*`，合并后删除（原 `v2` 集成分支已停用）
 
 ## H. 开 Gate 的判定
 
