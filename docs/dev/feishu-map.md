@@ -93,6 +93,8 @@
 | 桌面端跨源 Cookie 没答案 | 09 §5.1、07 §1、ADR-0020 定为 Bearer + Keychain |
 | 部署到哪、怎么编排没写 | 03 M6、04 §7、13 ADR-0021/0022 定为服务器单节点 k3s |
 | 端口与域名受限，公网入口不成立 | 13 ADR-0023、04 §7、09 §1、03 M6、14 环境表改为 tailnet 入口 |
+| 会话校验走哪条路没写 | 05 §4 补明：gateway 调 identity 的 `ValidateSession`，不读 `sessions` 表 |
+| `processed_events` 没有归属服务 | 待 08 定稿时改措辞，方向是 SSE 消费者不建幂等表 |
 
 ## 怎么读
 
