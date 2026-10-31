@@ -132,8 +132,9 @@ X，最终因 Y 放弃"。另外两处对齐：0009 补一句仓库现有 `docs/
   - `POST /api/v1/tasks`；`GET /api/v1/today`（第一刀只需要前者）
   - `Idempotency-Key`、`expectedVersion` 的约定
   - 完成接口的 `cascade` 参数（A1 定，已写进 07）
-- [ ] `api/thrift/task/v1/task.thrift`：`CreateTask`、`GetToday`
-- [ ] `api/thrift/identity/v1/identity.thrift`：`Register`、`Login`、`Verify`（第二刀才用）
+- [ ] `api/thrift/v1/task.thrift`：`CreateTask`、`ListToday`
+- [ ] `api/thrift/v1/identity.thrift`：`ValidateSession`（注册登录等接口切片 2 再加）
+- [ ] `api/thrift/v1/base.thrift`：`Base`、`BaseResp`（各请求 / 响应放在 255 号字段）
 - [ ] `api/events/task.events.v1/`：事件信封 + 5 个事件的 JSON Schema
 - [ ] 生成代码进 `api/gen/`，CI 做漂移检查
 
