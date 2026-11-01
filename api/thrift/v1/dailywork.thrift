@@ -36,7 +36,7 @@ struct CreateTaskReq {
   4: optional string projectId       // 任务所属项目，在空间之下；可空，表示只挂在空间上
   5: optional string parentId        // 父任务 id，用来建子任务；只允许一层，父任务自身不能再有父任务
   6: optional string notes           // 任务正文，纯文本；上限 20,000 字符，省略存空串
-  7: optional task_const.TaskStatus status         // 任务状态，决定它出现在哪个视图；省略为 INBOX
+  7: optional task_const.TaskStatus status         // 省略为 INBOX；不接受 DONE，完成必须走 CompleteTask
   8: optional task_const.TaskPriority priority     // 优先级，只影响排序与视觉，不参与今天分组；省略为 NONE
   9: optional string scheduledDate   // 计划哪天做，YYYY-MM-DD；决定"今天计划"分组
   10: optional string dueDate        // 哪天必须交，YYYY-MM-DD；早于今天且未完成即为"逾期"

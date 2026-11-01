@@ -117,6 +117,8 @@ gateway 只连一个 RPC 进程。**这是相对 05 服务边界的简化**：id
 进程里，数据库仍按 05 分开，等真正需要独立部署或扩容时再拆成两个 service。
 
 `Echo` 只把传入的 message 原样返回，用来确认 gateway ↔ 服务 的链路通不通，不做任何业务。
+对外也开了一个 `POST /api/v1/echo`（message 放在请求体里），它和 `/healthz` 分工不同：后者只证明进程活着，
+前者会一路调到 RPC 服务，能区分“网络断了”和“业务代码挂了”。
 
 `dailywork.thrift` 用 include 的文件名前缀引用类型，例如 `task_model.Task`、`base.Base`。
 include 写相对路径，从**源文件所在目录**算起：`model/task_model.thrift` 里写
@@ -128,6 +130,16 @@ thriftgo 不需要 `-I`。
 
 **一条工作方式的变更：** 契约文件（`api/openapi/*.yaml`、`api/thrift/*.thrift`）是实现时的准，
 飞书同步过去。发现契约有问题就直接改，再回写文档——飞书不是不可改的。
+
+**创建不能直接是 done：** 数据库有 `chk_tasks_done`（`status='done'` 时 `completed_at` 必须非空），
+但创建请求里没有 `completedAt`。契约改为禁止：OpenAPI 用 `CreateTaskStatus`（五个值，去掉 done），
+传 done 返回 400；完成只有 `CompleteTask` 一条路，`completedAt` 的来源唯一。
+
+**契约收口：** `servers` 改成相对路径 `/`，生成的客户端跟着当前域名走，不写死 localhost；
+所有 schema 统一 `additionalProperties: false`，只有 `ErrorBody.details` 保留 `true`——它本来就是自由字段。
+
+外部接口补了 `GET /api/v1/echo`，它和 `/healthz` 分工不同：后者只证明 gateway 进程活着，
+前者会一路调到 RPC 服务，能区分"网络断了"和"业务代码挂了"。
 
 ### 7. 提交记录
 

@@ -4,20 +4,47 @@ info:
   version: 1.0.0
   description: |
     对外 REST 契约，由 gateway 提供。浏览器与桌面端只看到这一层；
-    gateway 内部再用 Thrift 调用 task / identity，那些结构不出现在这里。
+    gateway 内部再用 Thrift 调用 DailyWorkService，那些结构不出现在这里。
 
     成功与错误都走统一信封：成功是 { data, meta }，错误是 { error, meta }。
-    meta.requestId 恒有，单资源响应额外带 meta.version。
+    meta.requestId 每次都有，与响应头 X-Request-Id 是同一个值。
 
 servers:
-  - url: http://localhost:8080
-    description: 本地开发
+  # 相对路径：生成的客户端跟着当前页面/网关的域名走，不写死主机
+  - url: /
 
 security:
   - sessionCookie: []
   - bearerAuth: []
 
 paths:
+  /api/v1/echo:
+    post:
+      operationId: echo
+      summary: 连通性检查
+      description: |
+        把请求体里的 message 原样返回。与 /healthz 的区别：/healthz 只证明 gateway 进程活着，
+        这个会一路调到 DailyWorkService.Echo，证明 gateway → RPC 服务 整条链路通。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EchoReq'
+      responses:
+        '200':
+          description: 链路通，data 里是原样回显的内容
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EchoEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/Internal'
+
   /api/v1/tasks:
     post:
       operationId: createTask
@@ -26,7 +53,8 @@ paths:
         title 必填。省略 spaceId 时落到用户的"个人"空间；
         带 parentId 时忽略 spaceId 与 projectId，继承父任务的空间与项目；
         省略 notes / status / priority 时分别为空串 / inbox / none。
-        user_id 永远来自会话，不接受请求体传入。
+        用户身份永远来自会话，不接受请求体传入。
+        不能直接建 completed 的任务：status 传 done 会被拒绝，完成请走 complete 接口。
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -74,6 +102,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TodayEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '500':
@@ -131,6 +161,35 @@ components:
             $ref: '#/components/schemas/ErrorEnvelope'
 
   schemas:
+    EchoReq:
+      type: object
+      additionalProperties: false
+      required: [message]
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 200
+
+    Echo:
+      type: object
+      additionalProperties: false
+      required: [message]
+      properties:
+        message:
+          type: string
+          description: 原样返回，调用方据此确认内容没被改写
+
+    EchoEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/Echo'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
     CreateTaskReq:
       type: object
       additionalProperties: false
@@ -153,7 +212,7 @@ components:
           type: [string, 'null']
           format: uuid
         status:
-          $ref: '#/components/schemas/TaskStatus'
+          $ref: '#/components/schemas/CreateTaskStatus'
         priority:
           $ref: '#/components/schemas/TaskPriority'
         scheduledDate:
@@ -175,6 +234,7 @@ components:
 
     Task:
       type: object
+      additionalProperties: false
       required:
         - id
         - spaceId
@@ -246,6 +306,14 @@ components:
       description: 任务没有 archived 状态
       enum: [inbox, next, doing, waiting, blocked, done]
 
+    CreateTaskStatus:
+      type: string
+      description: |
+        创建时允许的状态，比 TaskStatus 少一个 done。
+        创建即完成会让 completedAt 没有来源，完成必须走 POST /tasks/{id}/complete。
+        传 done 返回 400 VALIDATION_FAILED。
+      enum: [inbox, next, doing, waiting, blocked]
+
     TaskPriority:
       type: string
       description: 只影响排序与视觉，不参与今天分组
@@ -253,6 +321,7 @@ components:
 
     TodayGroup:
       type: object
+      additionalProperties: false
       required: [count, estimateMinutes, tasks]
       properties:
         count:
@@ -268,6 +337,7 @@ components:
 
     TodayGroups:
       type: object
+      additionalProperties: false
       description: 固定六个键，空组也要返回
       required: [overdue, dueToday, planned, doing, next, completed]
       properties:
@@ -286,6 +356,7 @@ components:
 
     Today:
       type: object
+      additionalProperties: false
       required: [date, groups]
       properties:
         date:
@@ -296,6 +367,7 @@ components:
 
     Meta:
       type: object
+      additionalProperties: false
       description: 每次响应都带。requestId 与响应头 X-Request-Id 是同一个值。
       required: [requestId]
       properties:
@@ -305,6 +377,7 @@ components:
 
     TaskEnvelope:
       type: object
+      additionalProperties: false
       required: [data, meta]
       properties:
         data:
@@ -314,6 +387,7 @@ components:
 
     TodayEnvelope:
       type: object
+      additionalProperties: false
       required: [data, meta]
       properties:
         data:
@@ -352,6 +426,7 @@ components:
 
     ErrorEnvelope:
       type: object
+      additionalProperties: false
       required: [error, meta]
       properties:
         error:

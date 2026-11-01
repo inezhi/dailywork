@@ -15,6 +15,33 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for CreateTaskStatus.
+const (
+	CreateTaskStatusBlocked CreateTaskStatus = "blocked"
+	CreateTaskStatusDoing   CreateTaskStatus = "doing"
+	CreateTaskStatusInbox   CreateTaskStatus = "inbox"
+	CreateTaskStatusNext    CreateTaskStatus = "next"
+	CreateTaskStatusWaiting CreateTaskStatus = "waiting"
+)
+
+// Valid indicates whether the value is a known member of the CreateTaskStatus enum.
+func (e CreateTaskStatus) Valid() bool {
+	switch e {
+	case CreateTaskStatusBlocked:
+		return true
+	case CreateTaskStatusDoing:
+		return true
+	case CreateTaskStatusInbox:
+		return true
+	case CreateTaskStatusNext:
+		return true
+	case CreateTaskStatusWaiting:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ErrorCode.
 const (
 	ALREADYEXISTS         ErrorCode = "ALREADY_EXISTS"
@@ -86,28 +113,28 @@ func (e TaskPriority) Valid() bool {
 
 // Defines values for TaskStatus.
 const (
-	Blocked TaskStatus = "blocked"
-	Doing   TaskStatus = "doing"
-	Done    TaskStatus = "done"
-	Inbox   TaskStatus = "inbox"
-	Next    TaskStatus = "next"
-	Waiting TaskStatus = "waiting"
+	TaskStatusBlocked TaskStatus = "blocked"
+	TaskStatusDoing   TaskStatus = "doing"
+	TaskStatusDone    TaskStatus = "done"
+	TaskStatusInbox   TaskStatus = "inbox"
+	TaskStatusNext    TaskStatus = "next"
+	TaskStatusWaiting TaskStatus = "waiting"
 )
 
 // Valid indicates whether the value is a known member of the TaskStatus enum.
 func (e TaskStatus) Valid() bool {
 	switch e {
-	case Blocked:
+	case TaskStatusBlocked:
 		return true
-	case Doing:
+	case TaskStatusDoing:
 		return true
-	case Done:
+	case TaskStatusDone:
 		return true
-	case Inbox:
+	case TaskStatusInbox:
 		return true
-	case Next:
+	case TaskStatusNext:
 		return true
-	case Waiting:
+	case TaskStatusWaiting:
 		return true
 	default:
 		return false
@@ -127,10 +154,36 @@ type CreateTaskReq struct {
 	ScheduledDate *openapi_types.Date `json:"scheduledDate,omitempty"`
 	SpaceId       *openapi_types.UUID `json:"spaceId,omitempty"`
 
-	// Status 任务没有 archived 状态
-	Status *TaskStatus          `json:"status,omitempty"`
+	// Status 创建时允许的状态，比 TaskStatus 少一个 done。
+	// 创建即完成会让 completedAt 没有来源，完成必须走 POST /tasks/{id}/complete。
+	// 传 done 返回 400 VALIDATION_FAILED。
+	Status *CreateTaskStatus    `json:"status,omitempty"`
 	TagIds []openapi_types.UUID `json:"tagIds,omitempty"`
 	Title  string               `json:"title"`
+}
+
+// CreateTaskStatus 创建时允许的状态，比 TaskStatus 少一个 done。
+// 创建即完成会让 completedAt 没有来源，完成必须走 POST /tasks/{id}/complete。
+// 传 done 返回 400 VALIDATION_FAILED。
+type CreateTaskStatus string
+
+// Echo defines model for Echo.
+type Echo struct {
+	// Message 原样返回，调用方据此确认内容没被改写
+	Message string `json:"message"`
+}
+
+// EchoEnvelope defines model for EchoEnvelope.
+type EchoEnvelope struct {
+	Data Echo `json:"data"`
+
+	// Meta 每次响应都带。requestId 与响应头 X-Request-Id 是同一个值。
+	Meta Meta `json:"meta"`
+}
+
+// EchoReq defines model for EchoReq.
+type EchoReq struct {
+	Message string `json:"message"`
 }
 
 // ErrorBody defines model for ErrorBody.
@@ -265,11 +318,17 @@ type ListTodayParams struct {
 	Date openapi_types.Date `form:"date" json:"date"`
 }
 
+// EchoJSONRequestBody defines body for Echo for application/json ContentType.
+type EchoJSONRequestBody = EchoReq
+
 // CreateTaskJSONRequestBody defines body for CreateTask for application/json ContentType.
 type CreateTaskJSONRequestBody = CreateTaskReq
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Echo 连通性检查
+	// (POST /api/v1/echo)
+	Echo(w http.ResponseWriter, r *http.Request)
 	// CreateTask 创建任务
 	// (POST /api/v1/tasks)
 	CreateTask(w http.ResponseWriter, r *http.Request, params CreateTaskParams)
@@ -286,6 +345,20 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// Echo operation middleware
+func (siw *ServerInterfaceWrapper) Echo(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.Echo(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
 
 // CreateTask operation middleware
 func (siw *ServerInterfaceWrapper) CreateTask(w http.ResponseWriter, r *http.Request) {
@@ -481,6 +554,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/echo", wrapper.Echo)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/tasks", wrapper.CreateTask)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/api/v1/today", wrapper.ListToday)
 
