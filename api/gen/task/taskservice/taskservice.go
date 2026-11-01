@@ -149,7 +149,7 @@ func newTaskServiceCreateTaskResult() interface{} {
 func getTaskHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	realArg := arg.(*task.TaskServiceGetTaskArgs)
 	realResult := result.(*task.TaskServiceGetTaskResult)
-	success, err := handler.(task.TaskService).GetTask(ctx, realArg.UserId, realArg.TaskId)
+	success, err := handler.(task.TaskService).GetTask(ctx, realArg.Req)
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func newTaskServiceUpdateTaskResult() interface{} {
 func completeTaskHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	realArg := arg.(*task.TaskServiceCompleteTaskArgs)
 	realResult := result.(*task.TaskServiceCompleteTaskResult)
-	success, err := handler.(task.TaskService).CompleteTask(ctx, realArg.UserId, realArg.TaskId, realArg.Cascade)
+	success, err := handler.(task.TaskService).CompleteTask(ctx, realArg.Req)
 	if err != nil {
 		return err
 	}
@@ -203,7 +203,7 @@ func newTaskServiceCompleteTaskResult() interface{} {
 func reopenTaskHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	realArg := arg.(*task.TaskServiceReopenTaskArgs)
 	realResult := result.(*task.TaskServiceReopenTaskResult)
-	success, err := handler.(task.TaskService).ReopenTask(ctx, realArg.UserId, realArg.TaskId)
+	success, err := handler.(task.TaskService).ReopenTask(ctx, realArg.Req)
 	if err != nil {
 		return err
 	}
@@ -221,7 +221,7 @@ func newTaskServiceReopenTaskResult() interface{} {
 func deleteTaskHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	realArg := arg.(*task.TaskServiceDeleteTaskArgs)
 	realResult := result.(*task.TaskServiceDeleteTaskResult)
-	success, err := handler.(task.TaskService).DeleteTask(ctx, realArg.UserId, realArg.TaskId, realArg.Confirm)
+	success, err := handler.(task.TaskService).DeleteTask(ctx, realArg.Req)
 	if err != nil {
 		return err
 	}
@@ -239,7 +239,7 @@ func newTaskServiceDeleteTaskResult() interface{} {
 func listTodayHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	realArg := arg.(*task.TaskServiceListTodayArgs)
 	realResult := result.(*task.TaskServiceListTodayResult)
-	success, err := handler.(task.TaskService).ListToday(ctx, realArg.UserId, realArg.Date)
+	success, err := handler.(task.TaskService).ListToday(ctx, realArg.Req)
 	if err != nil {
 		return err
 	}
@@ -274,10 +274,9 @@ func (p *kClient) CreateTask(ctx context.Context, req *task.CreateTaskRequest) (
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) GetTask(ctx context.Context, userId string, taskId string) (r *task.GetTaskResponse, err error) {
+func (p *kClient) GetTask(ctx context.Context, req *task.GetTaskRequest) (r *task.GetTaskResponse, err error) {
 	var _args task.TaskServiceGetTaskArgs
-	_args.UserId = userId
-	_args.TaskId = taskId
+	_args.Req = req
 	var _result task.TaskServiceGetTaskResult
 	if err = p.c.Call(ctx, "GetTask", &_args, &_result); err != nil {
 		return
@@ -295,11 +294,9 @@ func (p *kClient) UpdateTask(ctx context.Context, req *task.UpdateTaskRequest) (
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) CompleteTask(ctx context.Context, userId string, taskId string, cascade bool) (r *task.CompleteTaskResponse, err error) {
+func (p *kClient) CompleteTask(ctx context.Context, req *task.CompleteTaskRequest) (r *task.CompleteTaskResponse, err error) {
 	var _args task.TaskServiceCompleteTaskArgs
-	_args.UserId = userId
-	_args.TaskId = taskId
-	_args.Cascade = cascade
+	_args.Req = req
 	var _result task.TaskServiceCompleteTaskResult
 	if err = p.c.Call(ctx, "CompleteTask", &_args, &_result); err != nil {
 		return
@@ -307,10 +304,9 @@ func (p *kClient) CompleteTask(ctx context.Context, userId string, taskId string
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) ReopenTask(ctx context.Context, userId string, taskId string) (r *task.ReopenTaskResponse, err error) {
+func (p *kClient) ReopenTask(ctx context.Context, req *task.ReopenTaskRequest) (r *task.ReopenTaskResponse, err error) {
 	var _args task.TaskServiceReopenTaskArgs
-	_args.UserId = userId
-	_args.TaskId = taskId
+	_args.Req = req
 	var _result task.TaskServiceReopenTaskResult
 	if err = p.c.Call(ctx, "ReopenTask", &_args, &_result); err != nil {
 		return
@@ -318,11 +314,9 @@ func (p *kClient) ReopenTask(ctx context.Context, userId string, taskId string) 
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) DeleteTask(ctx context.Context, userId string, taskId string, confirm bool) (r *task.DeleteTaskResponse, err error) {
+func (p *kClient) DeleteTask(ctx context.Context, req *task.DeleteTaskRequest) (r *task.DeleteTaskResponse, err error) {
 	var _args task.TaskServiceDeleteTaskArgs
-	_args.UserId = userId
-	_args.TaskId = taskId
-	_args.Confirm = confirm
+	_args.Req = req
 	var _result task.TaskServiceDeleteTaskResult
 	if err = p.c.Call(ctx, "DeleteTask", &_args, &_result); err != nil {
 		return
@@ -330,10 +324,9 @@ func (p *kClient) DeleteTask(ctx context.Context, userId string, taskId string, 
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) ListToday(ctx context.Context, userId string, date string) (r *task.ListTodayResponse, err error) {
+func (p *kClient) ListToday(ctx context.Context, req *task.ListTodayRequest) (r *task.ListTodayResponse, err error) {
 	var _args task.TaskServiceListTodayArgs
-	_args.UserId = userId
-	_args.Date = date
+	_args.Req = req
 	var _result task.TaskServiceListTodayResult
 	if err = p.c.Call(ctx, "ListToday", &_args, &_result); err != nil {
 		return

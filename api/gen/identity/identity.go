@@ -10,7 +10,7 @@ import (
 
 type ValidateSessionRequest struct {
 	SessionToken string     `thrift:"sessionToken,1,required" frugal:"1,required,string" json:"sessionToken"`
-	Base         *base.Base `thrift:"Base,255,optional" frugal:"255,optional,base.Base" json:"Base,omitempty"`
+	Base         *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
 }
 
 func NewValidateSessionRequest() *ValidateSessionRequest {
@@ -59,7 +59,7 @@ type ValidateSessionResponse struct {
 	UserId    string         `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
 	Username  string         `thrift:"username,2,required" frugal:"2,required,string" json:"username"`
 	ExpiresAt string         `thrift:"expiresAt,3,required" frugal:"3,required,string" json:"expiresAt"`
-	BaseResp  *base.BaseResp `thrift:"BaseResp,255,optional" frugal:"255,optional,base.BaseResp" json:"BaseResp,omitempty"`
+	BaseResp  *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
 }
 
 func NewValidateSessionResponse() *ValidateSessionResponse {

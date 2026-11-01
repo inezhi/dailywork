@@ -22,7 +22,7 @@ type CreateTaskRequest struct {
 	EstimateMinutes *int32     `thrift:"estimateMinutes,11,optional" frugal:"11,optional,i32" json:"estimateMinutes,omitempty"`
 	TagIds          []string   `thrift:"tagIds,12,optional" frugal:"12,optional,list<string>" json:"tagIds,omitempty"`
 	IdempotencyKey  *string    `thrift:"idempotencyKey,13,optional" frugal:"13,optional,string" json:"idempotencyKey,omitempty"`
-	Base            *base.Base `thrift:"Base,255,optional" frugal:"255,optional,base.Base" json:"Base,omitempty"`
+	Base            *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
 }
 
 func NewCreateTaskRequest() *CreateTaskRequest {
@@ -262,6 +262,174 @@ var fieldIDToName_CreateTaskRequest = map[int16]string{
 	255: "Base",
 }
 
+type CreateTaskResponse struct {
+	Task     *Task          `thrift:"task,1,required" frugal:"1,required,Task" json:"task"`
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewCreateTaskResponse() *CreateTaskResponse {
+	return &CreateTaskResponse{}
+}
+
+func (p *CreateTaskResponse) InitDefault() {
+}
+
+var CreateTaskResponse_Task_DEFAULT *Task
+
+func (p *CreateTaskResponse) GetTask() (v *Task) {
+	if !p.IsSetTask() {
+		return CreateTaskResponse_Task_DEFAULT
+	}
+	return p.Task
+}
+
+var CreateTaskResponse_BaseResp_DEFAULT *base.BaseResp
+
+func (p *CreateTaskResponse) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return CreateTaskResponse_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *CreateTaskResponse) SetTask(val *Task) {
+	p.Task = val
+}
+func (p *CreateTaskResponse) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *CreateTaskResponse) IsSetTask() bool {
+	return p.Task != nil
+}
+
+func (p *CreateTaskResponse) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *CreateTaskResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CreateTaskResponse(%+v)", *p)
+}
+
+var fieldIDToName_CreateTaskResponse = map[int16]string{
+	1:   "task",
+	255: "BaseResp",
+}
+
+type GetTaskRequest struct {
+	UserId string     `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
+	TaskId string     `thrift:"taskId,2,required" frugal:"2,required,string" json:"taskId"`
+	Base   *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
+}
+
+func NewGetTaskRequest() *GetTaskRequest {
+	return &GetTaskRequest{}
+}
+
+func (p *GetTaskRequest) InitDefault() {
+}
+
+func (p *GetTaskRequest) GetUserId() (v string) {
+	return p.UserId
+}
+
+func (p *GetTaskRequest) GetTaskId() (v string) {
+	return p.TaskId
+}
+
+var GetTaskRequest_Base_DEFAULT *base.Base
+
+func (p *GetTaskRequest) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return GetTaskRequest_Base_DEFAULT
+	}
+	return p.Base
+}
+func (p *GetTaskRequest) SetUserId(val string) {
+	p.UserId = val
+}
+func (p *GetTaskRequest) SetTaskId(val string) {
+	p.TaskId = val
+}
+func (p *GetTaskRequest) SetBase(val *base.Base) {
+	p.Base = val
+}
+
+func (p *GetTaskRequest) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *GetTaskRequest) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetTaskRequest(%+v)", *p)
+}
+
+var fieldIDToName_GetTaskRequest = map[int16]string{
+	1:   "userId",
+	2:   "taskId",
+	255: "Base",
+}
+
+type GetTaskResponse struct {
+	Task     *Task          `thrift:"task,1,required" frugal:"1,required,Task" json:"task"`
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewGetTaskResponse() *GetTaskResponse {
+	return &GetTaskResponse{}
+}
+
+func (p *GetTaskResponse) InitDefault() {
+}
+
+var GetTaskResponse_Task_DEFAULT *Task
+
+func (p *GetTaskResponse) GetTask() (v *Task) {
+	if !p.IsSetTask() {
+		return GetTaskResponse_Task_DEFAULT
+	}
+	return p.Task
+}
+
+var GetTaskResponse_BaseResp_DEFAULT *base.BaseResp
+
+func (p *GetTaskResponse) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return GetTaskResponse_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *GetTaskResponse) SetTask(val *Task) {
+	p.Task = val
+}
+func (p *GetTaskResponse) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *GetTaskResponse) IsSetTask() bool {
+	return p.Task != nil
+}
+
+func (p *GetTaskResponse) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *GetTaskResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetTaskResponse(%+v)", *p)
+}
+
+var fieldIDToName_GetTaskResponse = map[int16]string{
+	1:   "task",
+	255: "BaseResp",
+}
+
 type UpdateTaskRequest struct {
 	UserId          string     `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
 	TaskId          string     `thrift:"taskId,2,required" frugal:"2,required,string" json:"taskId"`
@@ -276,7 +444,7 @@ type UpdateTaskRequest struct {
 	DueDate         *string    `thrift:"dueDate,11,optional" frugal:"11,optional,string" json:"dueDate,omitempty"`
 	EstimateMinutes *int32     `thrift:"estimateMinutes,12,optional" frugal:"12,optional,i32" json:"estimateMinutes,omitempty"`
 	TagIds          []string   `thrift:"tagIds,13,optional" frugal:"13,optional,list<string>" json:"tagIds,omitempty"`
-	Base            *base.Base `thrift:"Base,255,optional" frugal:"255,optional,base.Base" json:"Base,omitempty"`
+	Base            *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
 }
 
 func NewUpdateTaskRequest() *UpdateTaskRequest {
@@ -505,6 +673,525 @@ var fieldIDToName_UpdateTaskRequest = map[int16]string{
 	12:  "estimateMinutes",
 	13:  "tagIds",
 	255: "Base",
+}
+
+type UpdateTaskResponse struct {
+	Task     *Task          `thrift:"task,1,required" frugal:"1,required,Task" json:"task"`
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewUpdateTaskResponse() *UpdateTaskResponse {
+	return &UpdateTaskResponse{}
+}
+
+func (p *UpdateTaskResponse) InitDefault() {
+}
+
+var UpdateTaskResponse_Task_DEFAULT *Task
+
+func (p *UpdateTaskResponse) GetTask() (v *Task) {
+	if !p.IsSetTask() {
+		return UpdateTaskResponse_Task_DEFAULT
+	}
+	return p.Task
+}
+
+var UpdateTaskResponse_BaseResp_DEFAULT *base.BaseResp
+
+func (p *UpdateTaskResponse) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return UpdateTaskResponse_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *UpdateTaskResponse) SetTask(val *Task) {
+	p.Task = val
+}
+func (p *UpdateTaskResponse) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *UpdateTaskResponse) IsSetTask() bool {
+	return p.Task != nil
+}
+
+func (p *UpdateTaskResponse) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *UpdateTaskResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("UpdateTaskResponse(%+v)", *p)
+}
+
+var fieldIDToName_UpdateTaskResponse = map[int16]string{
+	1:   "task",
+	255: "BaseResp",
+}
+
+type CompleteTaskRequest struct {
+	UserId  string     `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
+	TaskId  string     `thrift:"taskId,2,required" frugal:"2,required,string" json:"taskId"`
+	Cascade bool       `thrift:"cascade,3" frugal:"3,default,bool" json:"cascade"`
+	Base    *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
+}
+
+func NewCompleteTaskRequest() *CompleteTaskRequest {
+	return &CompleteTaskRequest{
+		Cascade: false,
+	}
+}
+
+func (p *CompleteTaskRequest) InitDefault() {
+	p.Cascade = false
+}
+
+func (p *CompleteTaskRequest) GetUserId() (v string) {
+	return p.UserId
+}
+
+func (p *CompleteTaskRequest) GetTaskId() (v string) {
+	return p.TaskId
+}
+
+func (p *CompleteTaskRequest) GetCascade() (v bool) {
+	return p.Cascade
+}
+
+var CompleteTaskRequest_Base_DEFAULT *base.Base
+
+func (p *CompleteTaskRequest) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return CompleteTaskRequest_Base_DEFAULT
+	}
+	return p.Base
+}
+func (p *CompleteTaskRequest) SetUserId(val string) {
+	p.UserId = val
+}
+func (p *CompleteTaskRequest) SetTaskId(val string) {
+	p.TaskId = val
+}
+func (p *CompleteTaskRequest) SetCascade(val bool) {
+	p.Cascade = val
+}
+func (p *CompleteTaskRequest) SetBase(val *base.Base) {
+	p.Base = val
+}
+
+func (p *CompleteTaskRequest) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *CompleteTaskRequest) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CompleteTaskRequest(%+v)", *p)
+}
+
+var fieldIDToName_CompleteTaskRequest = map[int16]string{
+	1:   "userId",
+	2:   "taskId",
+	3:   "cascade",
+	255: "Base",
+}
+
+type CompleteTaskResponse struct {
+	Task     *Task          `thrift:"task,1,required" frugal:"1,required,Task" json:"task"`
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewCompleteTaskResponse() *CompleteTaskResponse {
+	return &CompleteTaskResponse{}
+}
+
+func (p *CompleteTaskResponse) InitDefault() {
+}
+
+var CompleteTaskResponse_Task_DEFAULT *Task
+
+func (p *CompleteTaskResponse) GetTask() (v *Task) {
+	if !p.IsSetTask() {
+		return CompleteTaskResponse_Task_DEFAULT
+	}
+	return p.Task
+}
+
+var CompleteTaskResponse_BaseResp_DEFAULT *base.BaseResp
+
+func (p *CompleteTaskResponse) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return CompleteTaskResponse_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *CompleteTaskResponse) SetTask(val *Task) {
+	p.Task = val
+}
+func (p *CompleteTaskResponse) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *CompleteTaskResponse) IsSetTask() bool {
+	return p.Task != nil
+}
+
+func (p *CompleteTaskResponse) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *CompleteTaskResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CompleteTaskResponse(%+v)", *p)
+}
+
+var fieldIDToName_CompleteTaskResponse = map[int16]string{
+	1:   "task",
+	255: "BaseResp",
+}
+
+type ReopenTaskRequest struct {
+	UserId string     `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
+	TaskId string     `thrift:"taskId,2,required" frugal:"2,required,string" json:"taskId"`
+	Base   *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
+}
+
+func NewReopenTaskRequest() *ReopenTaskRequest {
+	return &ReopenTaskRequest{}
+}
+
+func (p *ReopenTaskRequest) InitDefault() {
+}
+
+func (p *ReopenTaskRequest) GetUserId() (v string) {
+	return p.UserId
+}
+
+func (p *ReopenTaskRequest) GetTaskId() (v string) {
+	return p.TaskId
+}
+
+var ReopenTaskRequest_Base_DEFAULT *base.Base
+
+func (p *ReopenTaskRequest) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return ReopenTaskRequest_Base_DEFAULT
+	}
+	return p.Base
+}
+func (p *ReopenTaskRequest) SetUserId(val string) {
+	p.UserId = val
+}
+func (p *ReopenTaskRequest) SetTaskId(val string) {
+	p.TaskId = val
+}
+func (p *ReopenTaskRequest) SetBase(val *base.Base) {
+	p.Base = val
+}
+
+func (p *ReopenTaskRequest) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *ReopenTaskRequest) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ReopenTaskRequest(%+v)", *p)
+}
+
+var fieldIDToName_ReopenTaskRequest = map[int16]string{
+	1:   "userId",
+	2:   "taskId",
+	255: "Base",
+}
+
+type ReopenTaskResponse struct {
+	Task     *Task          `thrift:"task,1,required" frugal:"1,required,Task" json:"task"`
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewReopenTaskResponse() *ReopenTaskResponse {
+	return &ReopenTaskResponse{}
+}
+
+func (p *ReopenTaskResponse) InitDefault() {
+}
+
+var ReopenTaskResponse_Task_DEFAULT *Task
+
+func (p *ReopenTaskResponse) GetTask() (v *Task) {
+	if !p.IsSetTask() {
+		return ReopenTaskResponse_Task_DEFAULT
+	}
+	return p.Task
+}
+
+var ReopenTaskResponse_BaseResp_DEFAULT *base.BaseResp
+
+func (p *ReopenTaskResponse) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return ReopenTaskResponse_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *ReopenTaskResponse) SetTask(val *Task) {
+	p.Task = val
+}
+func (p *ReopenTaskResponse) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *ReopenTaskResponse) IsSetTask() bool {
+	return p.Task != nil
+}
+
+func (p *ReopenTaskResponse) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *ReopenTaskResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ReopenTaskResponse(%+v)", *p)
+}
+
+var fieldIDToName_ReopenTaskResponse = map[int16]string{
+	1:   "task",
+	255: "BaseResp",
+}
+
+type DeleteTaskRequest struct {
+	UserId  string     `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
+	TaskId  string     `thrift:"taskId,2,required" frugal:"2,required,string" json:"taskId"`
+	Confirm bool       `thrift:"confirm,3" frugal:"3,default,bool" json:"confirm"`
+	Base    *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
+}
+
+func NewDeleteTaskRequest() *DeleteTaskRequest {
+	return &DeleteTaskRequest{
+		Confirm: false,
+	}
+}
+
+func (p *DeleteTaskRequest) InitDefault() {
+	p.Confirm = false
+}
+
+func (p *DeleteTaskRequest) GetUserId() (v string) {
+	return p.UserId
+}
+
+func (p *DeleteTaskRequest) GetTaskId() (v string) {
+	return p.TaskId
+}
+
+func (p *DeleteTaskRequest) GetConfirm() (v bool) {
+	return p.Confirm
+}
+
+var DeleteTaskRequest_Base_DEFAULT *base.Base
+
+func (p *DeleteTaskRequest) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return DeleteTaskRequest_Base_DEFAULT
+	}
+	return p.Base
+}
+func (p *DeleteTaskRequest) SetUserId(val string) {
+	p.UserId = val
+}
+func (p *DeleteTaskRequest) SetTaskId(val string) {
+	p.TaskId = val
+}
+func (p *DeleteTaskRequest) SetConfirm(val bool) {
+	p.Confirm = val
+}
+func (p *DeleteTaskRequest) SetBase(val *base.Base) {
+	p.Base = val
+}
+
+func (p *DeleteTaskRequest) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *DeleteTaskRequest) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DeleteTaskRequest(%+v)", *p)
+}
+
+var fieldIDToName_DeleteTaskRequest = map[int16]string{
+	1:   "userId",
+	2:   "taskId",
+	3:   "confirm",
+	255: "Base",
+}
+
+type DeleteTaskResponse struct {
+	AffectedSubtasks int32          `thrift:"affectedSubtasks,1,required" frugal:"1,required,i32" json:"affectedSubtasks"`
+	BaseResp         *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewDeleteTaskResponse() *DeleteTaskResponse {
+	return &DeleteTaskResponse{}
+}
+
+func (p *DeleteTaskResponse) InitDefault() {
+}
+
+func (p *DeleteTaskResponse) GetAffectedSubtasks() (v int32) {
+	return p.AffectedSubtasks
+}
+
+var DeleteTaskResponse_BaseResp_DEFAULT *base.BaseResp
+
+func (p *DeleteTaskResponse) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return DeleteTaskResponse_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *DeleteTaskResponse) SetAffectedSubtasks(val int32) {
+	p.AffectedSubtasks = val
+}
+func (p *DeleteTaskResponse) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *DeleteTaskResponse) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *DeleteTaskResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DeleteTaskResponse(%+v)", *p)
+}
+
+var fieldIDToName_DeleteTaskResponse = map[int16]string{
+	1:   "affectedSubtasks",
+	255: "BaseResp",
+}
+
+type ListTodayRequest struct {
+	UserId string     `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
+	Date   string     `thrift:"date,2,required" frugal:"2,required,string" json:"date"`
+	Base   *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
+}
+
+func NewListTodayRequest() *ListTodayRequest {
+	return &ListTodayRequest{}
+}
+
+func (p *ListTodayRequest) InitDefault() {
+}
+
+func (p *ListTodayRequest) GetUserId() (v string) {
+	return p.UserId
+}
+
+func (p *ListTodayRequest) GetDate() (v string) {
+	return p.Date
+}
+
+var ListTodayRequest_Base_DEFAULT *base.Base
+
+func (p *ListTodayRequest) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return ListTodayRequest_Base_DEFAULT
+	}
+	return p.Base
+}
+func (p *ListTodayRequest) SetUserId(val string) {
+	p.UserId = val
+}
+func (p *ListTodayRequest) SetDate(val string) {
+	p.Date = val
+}
+func (p *ListTodayRequest) SetBase(val *base.Base) {
+	p.Base = val
+}
+
+func (p *ListTodayRequest) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *ListTodayRequest) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ListTodayRequest(%+v)", *p)
+}
+
+var fieldIDToName_ListTodayRequest = map[int16]string{
+	1:   "userId",
+	2:   "date",
+	255: "Base",
+}
+
+type ListTodayResponse struct {
+	Today    *Today         `thrift:"today,1,required" frugal:"1,required,Today" json:"today"`
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewListTodayResponse() *ListTodayResponse {
+	return &ListTodayResponse{}
+}
+
+func (p *ListTodayResponse) InitDefault() {
+}
+
+var ListTodayResponse_Today_DEFAULT *Today
+
+func (p *ListTodayResponse) GetToday() (v *Today) {
+	if !p.IsSetToday() {
+		return ListTodayResponse_Today_DEFAULT
+	}
+	return p.Today
+}
+
+var ListTodayResponse_BaseResp_DEFAULT *base.BaseResp
+
+func (p *ListTodayResponse) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return ListTodayResponse_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *ListTodayResponse) SetToday(val *Today) {
+	p.Today = val
+}
+func (p *ListTodayResponse) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *ListTodayResponse) IsSetToday() bool {
+	return p.Today != nil
+}
+
+func (p *ListTodayResponse) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *ListTodayResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ListTodayResponse(%+v)", *p)
+}
+
+var fieldIDToName_ListTodayResponse = map[int16]string{
+	1:   "today",
+	255: "BaseResp",
 }
 
 type Task struct {
@@ -837,403 +1524,20 @@ var fieldIDToName_Today = map[int16]string{
 	2: "groups",
 }
 
-type CreateTaskResponse struct {
-	Task     *Task          `thrift:"task,1,required" frugal:"1,required,Task" json:"task"`
-	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" frugal:"255,optional,base.BaseResp" json:"BaseResp,omitempty"`
-}
-
-func NewCreateTaskResponse() *CreateTaskResponse {
-	return &CreateTaskResponse{}
-}
-
-func (p *CreateTaskResponse) InitDefault() {
-}
-
-var CreateTaskResponse_Task_DEFAULT *Task
-
-func (p *CreateTaskResponse) GetTask() (v *Task) {
-	if !p.IsSetTask() {
-		return CreateTaskResponse_Task_DEFAULT
-	}
-	return p.Task
-}
-
-var CreateTaskResponse_BaseResp_DEFAULT *base.BaseResp
-
-func (p *CreateTaskResponse) GetBaseResp() (v *base.BaseResp) {
-	if !p.IsSetBaseResp() {
-		return CreateTaskResponse_BaseResp_DEFAULT
-	}
-	return p.BaseResp
-}
-func (p *CreateTaskResponse) SetTask(val *Task) {
-	p.Task = val
-}
-func (p *CreateTaskResponse) SetBaseResp(val *base.BaseResp) {
-	p.BaseResp = val
-}
-
-func (p *CreateTaskResponse) IsSetTask() bool {
-	return p.Task != nil
-}
-
-func (p *CreateTaskResponse) IsSetBaseResp() bool {
-	return p.BaseResp != nil
-}
-
-func (p *CreateTaskResponse) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("CreateTaskResponse(%+v)", *p)
-}
-
-var fieldIDToName_CreateTaskResponse = map[int16]string{
-	1:   "task",
-	255: "BaseResp",
-}
-
-type GetTaskResponse struct {
-	Task     *Task          `thrift:"task,1,required" frugal:"1,required,Task" json:"task"`
-	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" frugal:"255,optional,base.BaseResp" json:"BaseResp,omitempty"`
-}
-
-func NewGetTaskResponse() *GetTaskResponse {
-	return &GetTaskResponse{}
-}
-
-func (p *GetTaskResponse) InitDefault() {
-}
-
-var GetTaskResponse_Task_DEFAULT *Task
-
-func (p *GetTaskResponse) GetTask() (v *Task) {
-	if !p.IsSetTask() {
-		return GetTaskResponse_Task_DEFAULT
-	}
-	return p.Task
-}
-
-var GetTaskResponse_BaseResp_DEFAULT *base.BaseResp
-
-func (p *GetTaskResponse) GetBaseResp() (v *base.BaseResp) {
-	if !p.IsSetBaseResp() {
-		return GetTaskResponse_BaseResp_DEFAULT
-	}
-	return p.BaseResp
-}
-func (p *GetTaskResponse) SetTask(val *Task) {
-	p.Task = val
-}
-func (p *GetTaskResponse) SetBaseResp(val *base.BaseResp) {
-	p.BaseResp = val
-}
-
-func (p *GetTaskResponse) IsSetTask() bool {
-	return p.Task != nil
-}
-
-func (p *GetTaskResponse) IsSetBaseResp() bool {
-	return p.BaseResp != nil
-}
-
-func (p *GetTaskResponse) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("GetTaskResponse(%+v)", *p)
-}
-
-var fieldIDToName_GetTaskResponse = map[int16]string{
-	1:   "task",
-	255: "BaseResp",
-}
-
-type UpdateTaskResponse struct {
-	Task     *Task          `thrift:"task,1,required" frugal:"1,required,Task" json:"task"`
-	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" frugal:"255,optional,base.BaseResp" json:"BaseResp,omitempty"`
-}
-
-func NewUpdateTaskResponse() *UpdateTaskResponse {
-	return &UpdateTaskResponse{}
-}
-
-func (p *UpdateTaskResponse) InitDefault() {
-}
-
-var UpdateTaskResponse_Task_DEFAULT *Task
-
-func (p *UpdateTaskResponse) GetTask() (v *Task) {
-	if !p.IsSetTask() {
-		return UpdateTaskResponse_Task_DEFAULT
-	}
-	return p.Task
-}
-
-var UpdateTaskResponse_BaseResp_DEFAULT *base.BaseResp
-
-func (p *UpdateTaskResponse) GetBaseResp() (v *base.BaseResp) {
-	if !p.IsSetBaseResp() {
-		return UpdateTaskResponse_BaseResp_DEFAULT
-	}
-	return p.BaseResp
-}
-func (p *UpdateTaskResponse) SetTask(val *Task) {
-	p.Task = val
-}
-func (p *UpdateTaskResponse) SetBaseResp(val *base.BaseResp) {
-	p.BaseResp = val
-}
-
-func (p *UpdateTaskResponse) IsSetTask() bool {
-	return p.Task != nil
-}
-
-func (p *UpdateTaskResponse) IsSetBaseResp() bool {
-	return p.BaseResp != nil
-}
-
-func (p *UpdateTaskResponse) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("UpdateTaskResponse(%+v)", *p)
-}
-
-var fieldIDToName_UpdateTaskResponse = map[int16]string{
-	1:   "task",
-	255: "BaseResp",
-}
-
-type CompleteTaskResponse struct {
-	Task     *Task          `thrift:"task,1,required" frugal:"1,required,Task" json:"task"`
-	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" frugal:"255,optional,base.BaseResp" json:"BaseResp,omitempty"`
-}
-
-func NewCompleteTaskResponse() *CompleteTaskResponse {
-	return &CompleteTaskResponse{}
-}
-
-func (p *CompleteTaskResponse) InitDefault() {
-}
-
-var CompleteTaskResponse_Task_DEFAULT *Task
-
-func (p *CompleteTaskResponse) GetTask() (v *Task) {
-	if !p.IsSetTask() {
-		return CompleteTaskResponse_Task_DEFAULT
-	}
-	return p.Task
-}
-
-var CompleteTaskResponse_BaseResp_DEFAULT *base.BaseResp
-
-func (p *CompleteTaskResponse) GetBaseResp() (v *base.BaseResp) {
-	if !p.IsSetBaseResp() {
-		return CompleteTaskResponse_BaseResp_DEFAULT
-	}
-	return p.BaseResp
-}
-func (p *CompleteTaskResponse) SetTask(val *Task) {
-	p.Task = val
-}
-func (p *CompleteTaskResponse) SetBaseResp(val *base.BaseResp) {
-	p.BaseResp = val
-}
-
-func (p *CompleteTaskResponse) IsSetTask() bool {
-	return p.Task != nil
-}
-
-func (p *CompleteTaskResponse) IsSetBaseResp() bool {
-	return p.BaseResp != nil
-}
-
-func (p *CompleteTaskResponse) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("CompleteTaskResponse(%+v)", *p)
-}
-
-var fieldIDToName_CompleteTaskResponse = map[int16]string{
-	1:   "task",
-	255: "BaseResp",
-}
-
-type ReopenTaskResponse struct {
-	Task     *Task          `thrift:"task,1,required" frugal:"1,required,Task" json:"task"`
-	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" frugal:"255,optional,base.BaseResp" json:"BaseResp,omitempty"`
-}
-
-func NewReopenTaskResponse() *ReopenTaskResponse {
-	return &ReopenTaskResponse{}
-}
-
-func (p *ReopenTaskResponse) InitDefault() {
-}
-
-var ReopenTaskResponse_Task_DEFAULT *Task
-
-func (p *ReopenTaskResponse) GetTask() (v *Task) {
-	if !p.IsSetTask() {
-		return ReopenTaskResponse_Task_DEFAULT
-	}
-	return p.Task
-}
-
-var ReopenTaskResponse_BaseResp_DEFAULT *base.BaseResp
-
-func (p *ReopenTaskResponse) GetBaseResp() (v *base.BaseResp) {
-	if !p.IsSetBaseResp() {
-		return ReopenTaskResponse_BaseResp_DEFAULT
-	}
-	return p.BaseResp
-}
-func (p *ReopenTaskResponse) SetTask(val *Task) {
-	p.Task = val
-}
-func (p *ReopenTaskResponse) SetBaseResp(val *base.BaseResp) {
-	p.BaseResp = val
-}
-
-func (p *ReopenTaskResponse) IsSetTask() bool {
-	return p.Task != nil
-}
-
-func (p *ReopenTaskResponse) IsSetBaseResp() bool {
-	return p.BaseResp != nil
-}
-
-func (p *ReopenTaskResponse) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("ReopenTaskResponse(%+v)", *p)
-}
-
-var fieldIDToName_ReopenTaskResponse = map[int16]string{
-	1:   "task",
-	255: "BaseResp",
-}
-
-type DeleteTaskResponse struct {
-	AffectedSubtasks int32          `thrift:"affectedSubtasks,1,required" frugal:"1,required,i32" json:"affectedSubtasks"`
-	BaseResp         *base.BaseResp `thrift:"BaseResp,255,optional" frugal:"255,optional,base.BaseResp" json:"BaseResp,omitempty"`
-}
-
-func NewDeleteTaskResponse() *DeleteTaskResponse {
-	return &DeleteTaskResponse{}
-}
-
-func (p *DeleteTaskResponse) InitDefault() {
-}
-
-func (p *DeleteTaskResponse) GetAffectedSubtasks() (v int32) {
-	return p.AffectedSubtasks
-}
-
-var DeleteTaskResponse_BaseResp_DEFAULT *base.BaseResp
-
-func (p *DeleteTaskResponse) GetBaseResp() (v *base.BaseResp) {
-	if !p.IsSetBaseResp() {
-		return DeleteTaskResponse_BaseResp_DEFAULT
-	}
-	return p.BaseResp
-}
-func (p *DeleteTaskResponse) SetAffectedSubtasks(val int32) {
-	p.AffectedSubtasks = val
-}
-func (p *DeleteTaskResponse) SetBaseResp(val *base.BaseResp) {
-	p.BaseResp = val
-}
-
-func (p *DeleteTaskResponse) IsSetBaseResp() bool {
-	return p.BaseResp != nil
-}
-
-func (p *DeleteTaskResponse) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("DeleteTaskResponse(%+v)", *p)
-}
-
-var fieldIDToName_DeleteTaskResponse = map[int16]string{
-	1:   "affectedSubtasks",
-	255: "BaseResp",
-}
-
-type ListTodayResponse struct {
-	Today    *Today         `thrift:"today,1,required" frugal:"1,required,Today" json:"today"`
-	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" frugal:"255,optional,base.BaseResp" json:"BaseResp,omitempty"`
-}
-
-func NewListTodayResponse() *ListTodayResponse {
-	return &ListTodayResponse{}
-}
-
-func (p *ListTodayResponse) InitDefault() {
-}
-
-var ListTodayResponse_Today_DEFAULT *Today
-
-func (p *ListTodayResponse) GetToday() (v *Today) {
-	if !p.IsSetToday() {
-		return ListTodayResponse_Today_DEFAULT
-	}
-	return p.Today
-}
-
-var ListTodayResponse_BaseResp_DEFAULT *base.BaseResp
-
-func (p *ListTodayResponse) GetBaseResp() (v *base.BaseResp) {
-	if !p.IsSetBaseResp() {
-		return ListTodayResponse_BaseResp_DEFAULT
-	}
-	return p.BaseResp
-}
-func (p *ListTodayResponse) SetToday(val *Today) {
-	p.Today = val
-}
-func (p *ListTodayResponse) SetBaseResp(val *base.BaseResp) {
-	p.BaseResp = val
-}
-
-func (p *ListTodayResponse) IsSetToday() bool {
-	return p.Today != nil
-}
-
-func (p *ListTodayResponse) IsSetBaseResp() bool {
-	return p.BaseResp != nil
-}
-
-func (p *ListTodayResponse) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("ListTodayResponse(%+v)", *p)
-}
-
-var fieldIDToName_ListTodayResponse = map[int16]string{
-	1:   "today",
-	255: "BaseResp",
-}
-
 type TaskService interface {
 	CreateTask(ctx context.Context, req *CreateTaskRequest) (r *CreateTaskResponse, err error)
 
-	GetTask(ctx context.Context, userId string, taskId string) (r *GetTaskResponse, err error)
+	GetTask(ctx context.Context, req *GetTaskRequest) (r *GetTaskResponse, err error)
 
 	UpdateTask(ctx context.Context, req *UpdateTaskRequest) (r *UpdateTaskResponse, err error)
 
-	CompleteTask(ctx context.Context, userId string, taskId string, cascade bool) (r *CompleteTaskResponse, err error)
+	CompleteTask(ctx context.Context, req *CompleteTaskRequest) (r *CompleteTaskResponse, err error)
 
-	ReopenTask(ctx context.Context, userId string, taskId string) (r *ReopenTaskResponse, err error)
+	ReopenTask(ctx context.Context, req *ReopenTaskRequest) (r *ReopenTaskResponse, err error)
 
-	DeleteTask(ctx context.Context, userId string, taskId string, confirm bool) (r *DeleteTaskResponse, err error)
+	DeleteTask(ctx context.Context, req *DeleteTaskRequest) (r *DeleteTaskResponse, err error)
 
-	ListToday(ctx context.Context, userId string, date string) (r *ListTodayResponse, err error)
+	ListToday(ctx context.Context, req *ListTodayRequest) (r *ListTodayResponse, err error)
 }
 
 type TaskServiceCreateTaskArgs struct {
@@ -1313,8 +1617,7 @@ var fieldIDToName_TaskServiceCreateTaskResult = map[int16]string{
 }
 
 type TaskServiceGetTaskArgs struct {
-	UserId string `thrift:"userId,1" frugal:"1,default,string" json:"userId"`
-	TaskId string `thrift:"taskId,2" frugal:"2,default,string" json:"taskId"`
+	Req *GetTaskRequest `thrift:"req,1" frugal:"1,default,GetTaskRequest" json:"req"`
 }
 
 func NewTaskServiceGetTaskArgs() *TaskServiceGetTaskArgs {
@@ -1324,18 +1627,20 @@ func NewTaskServiceGetTaskArgs() *TaskServiceGetTaskArgs {
 func (p *TaskServiceGetTaskArgs) InitDefault() {
 }
 
-func (p *TaskServiceGetTaskArgs) GetUserId() (v string) {
-	return p.UserId
+var TaskServiceGetTaskArgs_Req_DEFAULT *GetTaskRequest
+
+func (p *TaskServiceGetTaskArgs) GetReq() (v *GetTaskRequest) {
+	if !p.IsSetReq() {
+		return TaskServiceGetTaskArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+func (p *TaskServiceGetTaskArgs) SetReq(val *GetTaskRequest) {
+	p.Req = val
 }
 
-func (p *TaskServiceGetTaskArgs) GetTaskId() (v string) {
-	return p.TaskId
-}
-func (p *TaskServiceGetTaskArgs) SetUserId(val string) {
-	p.UserId = val
-}
-func (p *TaskServiceGetTaskArgs) SetTaskId(val string) {
-	p.TaskId = val
+func (p *TaskServiceGetTaskArgs) IsSetReq() bool {
+	return p.Req != nil
 }
 
 func (p *TaskServiceGetTaskArgs) String() string {
@@ -1346,8 +1651,7 @@ func (p *TaskServiceGetTaskArgs) String() string {
 }
 
 var fieldIDToName_TaskServiceGetTaskArgs = map[int16]string{
-	1: "userId",
-	2: "taskId",
+	1: "req",
 }
 
 type TaskServiceGetTaskResult struct {
@@ -1465,40 +1769,30 @@ var fieldIDToName_TaskServiceUpdateTaskResult = map[int16]string{
 }
 
 type TaskServiceCompleteTaskArgs struct {
-	UserId  string `thrift:"userId,1" frugal:"1,default,string" json:"userId"`
-	TaskId  string `thrift:"taskId,2" frugal:"2,default,string" json:"taskId"`
-	Cascade bool   `thrift:"cascade,3" frugal:"3,default,bool" json:"cascade"`
+	Req *CompleteTaskRequest `thrift:"req,1" frugal:"1,default,CompleteTaskRequest" json:"req"`
 }
 
 func NewTaskServiceCompleteTaskArgs() *TaskServiceCompleteTaskArgs {
-	return &TaskServiceCompleteTaskArgs{
-		Cascade: false,
-	}
+	return &TaskServiceCompleteTaskArgs{}
 }
 
 func (p *TaskServiceCompleteTaskArgs) InitDefault() {
-	p.Cascade = false
 }
 
-func (p *TaskServiceCompleteTaskArgs) GetUserId() (v string) {
-	return p.UserId
+var TaskServiceCompleteTaskArgs_Req_DEFAULT *CompleteTaskRequest
+
+func (p *TaskServiceCompleteTaskArgs) GetReq() (v *CompleteTaskRequest) {
+	if !p.IsSetReq() {
+		return TaskServiceCompleteTaskArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+func (p *TaskServiceCompleteTaskArgs) SetReq(val *CompleteTaskRequest) {
+	p.Req = val
 }
 
-func (p *TaskServiceCompleteTaskArgs) GetTaskId() (v string) {
-	return p.TaskId
-}
-
-func (p *TaskServiceCompleteTaskArgs) GetCascade() (v bool) {
-	return p.Cascade
-}
-func (p *TaskServiceCompleteTaskArgs) SetUserId(val string) {
-	p.UserId = val
-}
-func (p *TaskServiceCompleteTaskArgs) SetTaskId(val string) {
-	p.TaskId = val
-}
-func (p *TaskServiceCompleteTaskArgs) SetCascade(val bool) {
-	p.Cascade = val
+func (p *TaskServiceCompleteTaskArgs) IsSetReq() bool {
+	return p.Req != nil
 }
 
 func (p *TaskServiceCompleteTaskArgs) String() string {
@@ -1509,9 +1803,7 @@ func (p *TaskServiceCompleteTaskArgs) String() string {
 }
 
 var fieldIDToName_TaskServiceCompleteTaskArgs = map[int16]string{
-	1: "userId",
-	2: "taskId",
-	3: "cascade",
+	1: "req",
 }
 
 type TaskServiceCompleteTaskResult struct {
@@ -1553,8 +1845,7 @@ var fieldIDToName_TaskServiceCompleteTaskResult = map[int16]string{
 }
 
 type TaskServiceReopenTaskArgs struct {
-	UserId string `thrift:"userId,1" frugal:"1,default,string" json:"userId"`
-	TaskId string `thrift:"taskId,2" frugal:"2,default,string" json:"taskId"`
+	Req *ReopenTaskRequest `thrift:"req,1" frugal:"1,default,ReopenTaskRequest" json:"req"`
 }
 
 func NewTaskServiceReopenTaskArgs() *TaskServiceReopenTaskArgs {
@@ -1564,18 +1855,20 @@ func NewTaskServiceReopenTaskArgs() *TaskServiceReopenTaskArgs {
 func (p *TaskServiceReopenTaskArgs) InitDefault() {
 }
 
-func (p *TaskServiceReopenTaskArgs) GetUserId() (v string) {
-	return p.UserId
+var TaskServiceReopenTaskArgs_Req_DEFAULT *ReopenTaskRequest
+
+func (p *TaskServiceReopenTaskArgs) GetReq() (v *ReopenTaskRequest) {
+	if !p.IsSetReq() {
+		return TaskServiceReopenTaskArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+func (p *TaskServiceReopenTaskArgs) SetReq(val *ReopenTaskRequest) {
+	p.Req = val
 }
 
-func (p *TaskServiceReopenTaskArgs) GetTaskId() (v string) {
-	return p.TaskId
-}
-func (p *TaskServiceReopenTaskArgs) SetUserId(val string) {
-	p.UserId = val
-}
-func (p *TaskServiceReopenTaskArgs) SetTaskId(val string) {
-	p.TaskId = val
+func (p *TaskServiceReopenTaskArgs) IsSetReq() bool {
+	return p.Req != nil
 }
 
 func (p *TaskServiceReopenTaskArgs) String() string {
@@ -1586,8 +1879,7 @@ func (p *TaskServiceReopenTaskArgs) String() string {
 }
 
 var fieldIDToName_TaskServiceReopenTaskArgs = map[int16]string{
-	1: "userId",
-	2: "taskId",
+	1: "req",
 }
 
 type TaskServiceReopenTaskResult struct {
@@ -1629,40 +1921,30 @@ var fieldIDToName_TaskServiceReopenTaskResult = map[int16]string{
 }
 
 type TaskServiceDeleteTaskArgs struct {
-	UserId  string `thrift:"userId,1" frugal:"1,default,string" json:"userId"`
-	TaskId  string `thrift:"taskId,2" frugal:"2,default,string" json:"taskId"`
-	Confirm bool   `thrift:"confirm,3" frugal:"3,default,bool" json:"confirm"`
+	Req *DeleteTaskRequest `thrift:"req,1" frugal:"1,default,DeleteTaskRequest" json:"req"`
 }
 
 func NewTaskServiceDeleteTaskArgs() *TaskServiceDeleteTaskArgs {
-	return &TaskServiceDeleteTaskArgs{
-		Confirm: false,
-	}
+	return &TaskServiceDeleteTaskArgs{}
 }
 
 func (p *TaskServiceDeleteTaskArgs) InitDefault() {
-	p.Confirm = false
 }
 
-func (p *TaskServiceDeleteTaskArgs) GetUserId() (v string) {
-	return p.UserId
+var TaskServiceDeleteTaskArgs_Req_DEFAULT *DeleteTaskRequest
+
+func (p *TaskServiceDeleteTaskArgs) GetReq() (v *DeleteTaskRequest) {
+	if !p.IsSetReq() {
+		return TaskServiceDeleteTaskArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+func (p *TaskServiceDeleteTaskArgs) SetReq(val *DeleteTaskRequest) {
+	p.Req = val
 }
 
-func (p *TaskServiceDeleteTaskArgs) GetTaskId() (v string) {
-	return p.TaskId
-}
-
-func (p *TaskServiceDeleteTaskArgs) GetConfirm() (v bool) {
-	return p.Confirm
-}
-func (p *TaskServiceDeleteTaskArgs) SetUserId(val string) {
-	p.UserId = val
-}
-func (p *TaskServiceDeleteTaskArgs) SetTaskId(val string) {
-	p.TaskId = val
-}
-func (p *TaskServiceDeleteTaskArgs) SetConfirm(val bool) {
-	p.Confirm = val
+func (p *TaskServiceDeleteTaskArgs) IsSetReq() bool {
+	return p.Req != nil
 }
 
 func (p *TaskServiceDeleteTaskArgs) String() string {
@@ -1673,9 +1955,7 @@ func (p *TaskServiceDeleteTaskArgs) String() string {
 }
 
 var fieldIDToName_TaskServiceDeleteTaskArgs = map[int16]string{
-	1: "userId",
-	2: "taskId",
-	3: "confirm",
+	1: "req",
 }
 
 type TaskServiceDeleteTaskResult struct {
@@ -1717,8 +1997,7 @@ var fieldIDToName_TaskServiceDeleteTaskResult = map[int16]string{
 }
 
 type TaskServiceListTodayArgs struct {
-	UserId string `thrift:"userId,1" frugal:"1,default,string" json:"userId"`
-	Date   string `thrift:"date,2" frugal:"2,default,string" json:"date"`
+	Req *ListTodayRequest `thrift:"req,1" frugal:"1,default,ListTodayRequest" json:"req"`
 }
 
 func NewTaskServiceListTodayArgs() *TaskServiceListTodayArgs {
@@ -1728,18 +2007,20 @@ func NewTaskServiceListTodayArgs() *TaskServiceListTodayArgs {
 func (p *TaskServiceListTodayArgs) InitDefault() {
 }
 
-func (p *TaskServiceListTodayArgs) GetUserId() (v string) {
-	return p.UserId
+var TaskServiceListTodayArgs_Req_DEFAULT *ListTodayRequest
+
+func (p *TaskServiceListTodayArgs) GetReq() (v *ListTodayRequest) {
+	if !p.IsSetReq() {
+		return TaskServiceListTodayArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+func (p *TaskServiceListTodayArgs) SetReq(val *ListTodayRequest) {
+	p.Req = val
 }
 
-func (p *TaskServiceListTodayArgs) GetDate() (v string) {
-	return p.Date
-}
-func (p *TaskServiceListTodayArgs) SetUserId(val string) {
-	p.UserId = val
-}
-func (p *TaskServiceListTodayArgs) SetDate(val string) {
-	p.Date = val
+func (p *TaskServiceListTodayArgs) IsSetReq() bool {
+	return p.Req != nil
 }
 
 func (p *TaskServiceListTodayArgs) String() string {
@@ -1750,8 +2031,7 @@ func (p *TaskServiceListTodayArgs) String() string {
 }
 
 var fieldIDToName_TaskServiceListTodayArgs = map[int16]string{
-	1: "userId",
-	2: "date",
+	1: "req",
 }
 
 type TaskServiceListTodayResult struct {

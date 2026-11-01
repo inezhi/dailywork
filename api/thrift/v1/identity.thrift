@@ -10,7 +10,7 @@ namespace go identity
 struct ValidateSessionRequest {
   1: required string sessionToken   // 原始令牌，不是哈希；identity 自己算哈希去比对
 
-  255: optional base.Base Base
+  255: required base.Base Base
 }
 
 // 校验通过时返回的三项。只返回调用方用得上的信息，
@@ -20,7 +20,7 @@ struct ValidateSessionResponse {
   2: required string username      // 显示用；gateway 写日志、放进响应
   3: required string expiresAt     // 会话过期时间，UTC ISO-8601；gateway 可据此决定 Cookie 的 Max-Age
 
-  255: optional base.BaseResp BaseResp
+  255: required base.BaseResp BaseResp
 }
 
 service IdentityService {

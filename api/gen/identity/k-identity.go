@@ -34,6 +34,7 @@ func (p *ValidateSessionRequest) FastRead(buf []byte) (int, error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
 	var issetSessionToken bool = false
+	var issetBase bool = false
 	for {
 		fieldTypeId, fieldId, l, err = thrift.Binary.ReadFieldBegin(buf[offset:])
 		offset += l
@@ -66,6 +67,7 @@ func (p *ValidateSessionRequest) FastRead(buf []byte) (int, error) {
 				if err != nil {
 					goto ReadFieldError
 				}
+				issetBase = true
 			} else {
 				l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
 				offset += l
@@ -84,6 +86,11 @@ func (p *ValidateSessionRequest) FastRead(buf []byte) (int, error) {
 
 	if !issetSessionToken {
 		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetBase {
+		fieldId = 255
 		goto RequiredFieldNotSetError
 	}
 	return offset, nil
@@ -156,10 +163,8 @@ func (p *ValidateSessionRequest) fastWriteField1(buf []byte, w thrift.NocopyWrit
 
 func (p *ValidateSessionRequest) fastWriteField255(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
-	if p.IsSetBase() {
-		offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRUCT, 255)
-		offset += p.Base.FastWriteNocopy(buf[offset:], w)
-	}
+	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRUCT, 255)
+	offset += p.Base.FastWriteNocopy(buf[offset:], w)
 	return offset
 }
 
@@ -172,10 +177,8 @@ func (p *ValidateSessionRequest) field1Length() int {
 
 func (p *ValidateSessionRequest) field255Length() int {
 	l := 0
-	if p.IsSetBase() {
-		l += thrift.Binary.FieldBeginLength()
-		l += p.Base.BLength()
-	}
+	l += thrift.Binary.FieldBeginLength()
+	l += p.Base.BLength()
 	return l
 }
 
@@ -189,6 +192,7 @@ func (p *ValidateSessionResponse) FastRead(buf []byte) (int, error) {
 	var issetUserId bool = false
 	var issetUsername bool = false
 	var issetExpiresAt bool = false
+	var issetBaseResp bool = false
 	for {
 		fieldTypeId, fieldId, l, err = thrift.Binary.ReadFieldBegin(buf[offset:])
 		offset += l
@@ -251,6 +255,7 @@ func (p *ValidateSessionResponse) FastRead(buf []byte) (int, error) {
 				if err != nil {
 					goto ReadFieldError
 				}
+				issetBaseResp = true
 			} else {
 				l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
 				offset += l
@@ -279,6 +284,11 @@ func (p *ValidateSessionResponse) FastRead(buf []byte) (int, error) {
 
 	if !issetExpiresAt {
 		fieldId = 3
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetBaseResp {
+		fieldId = 255
 		goto RequiredFieldNotSetError
 	}
 	return offset, nil
@@ -397,10 +407,8 @@ func (p *ValidateSessionResponse) fastWriteField3(buf []byte, w thrift.NocopyWri
 
 func (p *ValidateSessionResponse) fastWriteField255(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
-	if p.IsSetBaseResp() {
-		offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRUCT, 255)
-		offset += p.BaseResp.FastWriteNocopy(buf[offset:], w)
-	}
+	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRUCT, 255)
+	offset += p.BaseResp.FastWriteNocopy(buf[offset:], w)
 	return offset
 }
 
@@ -427,10 +435,8 @@ func (p *ValidateSessionResponse) field3Length() int {
 
 func (p *ValidateSessionResponse) field255Length() int {
 	l := 0
-	if p.IsSetBaseResp() {
-		l += thrift.Binary.FieldBeginLength()
-		l += p.BaseResp.BLength()
-	}
+	l += thrift.Binary.FieldBeginLength()
+	l += p.BaseResp.BLength()
 	return l
 }
 

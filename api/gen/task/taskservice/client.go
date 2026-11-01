@@ -12,12 +12,12 @@ import (
 // Client is designed to provide IDL-compatible methods with call-option parameter for kitex framework.
 type Client interface {
 	CreateTask(ctx context.Context, req *task.CreateTaskRequest, callOptions ...callopt.Option) (r *task.CreateTaskResponse, err error)
-	GetTask(ctx context.Context, userId string, taskId string, callOptions ...callopt.Option) (r *task.GetTaskResponse, err error)
+	GetTask(ctx context.Context, req *task.GetTaskRequest, callOptions ...callopt.Option) (r *task.GetTaskResponse, err error)
 	UpdateTask(ctx context.Context, req *task.UpdateTaskRequest, callOptions ...callopt.Option) (r *task.UpdateTaskResponse, err error)
-	CompleteTask(ctx context.Context, userId string, taskId string, cascade bool, callOptions ...callopt.Option) (r *task.CompleteTaskResponse, err error)
-	ReopenTask(ctx context.Context, userId string, taskId string, callOptions ...callopt.Option) (r *task.ReopenTaskResponse, err error)
-	DeleteTask(ctx context.Context, userId string, taskId string, confirm bool, callOptions ...callopt.Option) (r *task.DeleteTaskResponse, err error)
-	ListToday(ctx context.Context, userId string, date string, callOptions ...callopt.Option) (r *task.ListTodayResponse, err error)
+	CompleteTask(ctx context.Context, req *task.CompleteTaskRequest, callOptions ...callopt.Option) (r *task.CompleteTaskResponse, err error)
+	ReopenTask(ctx context.Context, req *task.ReopenTaskRequest, callOptions ...callopt.Option) (r *task.ReopenTaskResponse, err error)
+	DeleteTask(ctx context.Context, req *task.DeleteTaskRequest, callOptions ...callopt.Option) (r *task.DeleteTaskResponse, err error)
+	ListToday(ctx context.Context, req *task.ListTodayRequest, callOptions ...callopt.Option) (r *task.ListTodayResponse, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -54,9 +54,9 @@ func (p *kTaskServiceClient) CreateTask(ctx context.Context, req *task.CreateTas
 	return p.kClient.CreateTask(ctx, req)
 }
 
-func (p *kTaskServiceClient) GetTask(ctx context.Context, userId string, taskId string, callOptions ...callopt.Option) (r *task.GetTaskResponse, err error) {
+func (p *kTaskServiceClient) GetTask(ctx context.Context, req *task.GetTaskRequest, callOptions ...callopt.Option) (r *task.GetTaskResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.GetTask(ctx, userId, taskId)
+	return p.kClient.GetTask(ctx, req)
 }
 
 func (p *kTaskServiceClient) UpdateTask(ctx context.Context, req *task.UpdateTaskRequest, callOptions ...callopt.Option) (r *task.UpdateTaskResponse, err error) {
@@ -64,22 +64,22 @@ func (p *kTaskServiceClient) UpdateTask(ctx context.Context, req *task.UpdateTas
 	return p.kClient.UpdateTask(ctx, req)
 }
 
-func (p *kTaskServiceClient) CompleteTask(ctx context.Context, userId string, taskId string, cascade bool, callOptions ...callopt.Option) (r *task.CompleteTaskResponse, err error) {
+func (p *kTaskServiceClient) CompleteTask(ctx context.Context, req *task.CompleteTaskRequest, callOptions ...callopt.Option) (r *task.CompleteTaskResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.CompleteTask(ctx, userId, taskId, cascade)
+	return p.kClient.CompleteTask(ctx, req)
 }
 
-func (p *kTaskServiceClient) ReopenTask(ctx context.Context, userId string, taskId string, callOptions ...callopt.Option) (r *task.ReopenTaskResponse, err error) {
+func (p *kTaskServiceClient) ReopenTask(ctx context.Context, req *task.ReopenTaskRequest, callOptions ...callopt.Option) (r *task.ReopenTaskResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.ReopenTask(ctx, userId, taskId)
+	return p.kClient.ReopenTask(ctx, req)
 }
 
-func (p *kTaskServiceClient) DeleteTask(ctx context.Context, userId string, taskId string, confirm bool, callOptions ...callopt.Option) (r *task.DeleteTaskResponse, err error) {
+func (p *kTaskServiceClient) DeleteTask(ctx context.Context, req *task.DeleteTaskRequest, callOptions ...callopt.Option) (r *task.DeleteTaskResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.DeleteTask(ctx, userId, taskId, confirm)
+	return p.kClient.DeleteTask(ctx, req)
 }
 
-func (p *kTaskServiceClient) ListToday(ctx context.Context, userId string, date string, callOptions ...callopt.Option) (r *task.ListTodayResponse, err error) {
+func (p *kTaskServiceClient) ListToday(ctx context.Context, req *task.ListTodayRequest, callOptions ...callopt.Option) (r *task.ListTodayResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.ListToday(ctx, userId, date)
+	return p.kClient.ListToday(ctx, req)
 }

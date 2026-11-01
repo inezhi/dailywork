@@ -2,12 +2,15 @@
 // 这个服务管三样东西：空间（Space）、项目（Project）、任务（Task）。
 // 层级是 空间 → 项目 → 任务；任务可以再挂一层子任务，子任务只允许一层。
 // 字段编号即线协议：发布后不复用、不重排，新增字段只能往后追加。
+// 每个方法的请求与响应写在一起；255 号字段统一放 Base / BaseResp。
 // 字段的业务规则见飞书 07 §11（契约）与 06（tasks 表）。
 include "base.thrift"
 
 namespace go task
 
-// 创建任务。HTTP 的 POST /api/v1/tasks 映射到这里。
+// ===== 创建任务 =====
+
+// HTTP 的 POST /api/v1/tasks 映射到这里。
 // 三个默认值在服务端统一处理，各端不再各写一遍：
 //   省略 spaceId  → 落到用户的"个人"空间
 //   带 parentId  → 忽略 spaceId 与 projectId，继承父任务的空间与项目
@@ -27,11 +30,33 @@ struct CreateTaskRequest {
   12: optional list<string> tagIds   // 要挂的标签；标签是用户级资源，不参与今天分组
   13: optional string idempotencyKey // 幂等键；同一用户同一 key 重复提交返回首次结果，不会建出两条
 
-  255: optional base.Base Base       // 调用上下文：logId、caller
+  255: required base.Base Base       // 调用上下文：logId、caller
 }
 
-// 修改已有任务。局部更新：只改传了的字段。
-// optional 字段有两种含义，靠"字段缺省"与"传空串"区分：
+struct CreateTaskResponse {
+  1: required Task task              // 新建成功的任务，含服务端生成的 id 与 version=1
+
+  255: required base.BaseResp BaseResp
+}
+
+// ===== 读取任务 =====
+
+struct GetTaskRequest {
+  1: required string userId
+  2: required string taskId
+
+  255: required base.Base Base
+}
+
+struct GetTaskResponse {
+  1: required Task task
+
+  255: required base.BaseResp BaseResp
+}
+
+// ===== 修改任务 =====
+
+// 局部更新：只改传了的字段。optional 字段有两种含义：
 //   字段缺省   → 不修改这一列
 //   传空字符串 → 清空这一列（落库为 NULL）
 struct UpdateTaskRequest {
@@ -49,8 +74,78 @@ struct UpdateTaskRequest {
   12: optional i32 estimateMinutes
   13: optional list<string> tagIds   // 传了就整体替换，不是增量追加
 
-  255: optional base.Base Base
+  255: required base.Base Base
 }
+
+struct UpdateTaskResponse {
+  1: required Task task              // 写回后的任务，version 已加一
+
+  255: required base.BaseResp BaseResp
+}
+
+// ===== 完成任务 =====
+
+struct CompleteTaskRequest {
+  1: required string userId
+  2: required string taskId
+  3: bool cascade = false            // false 只完成任务本身；true 一并完成未完成的子任务
+
+  255: required base.Base Base
+}
+
+struct CompleteTaskResponse {
+  1: required Task task              // 完成后的任务，status=done，completedAt 已写入
+
+  255: required base.BaseResp BaseResp
+}
+
+// ===== 重新打开任务 =====
+
+struct ReopenTaskRequest {
+  1: required string userId
+  2: required string taskId
+
+  255: required base.Base Base
+}
+
+struct ReopenTaskResponse {
+  1: required Task task              // 重新打开后的任务，completedAt 已清空
+
+  255: required base.BaseResp BaseResp
+}
+
+// ===== 删除任务 =====
+
+struct DeleteTaskRequest {
+  1: required string userId
+  2: required string taskId
+  3: bool confirm = false            // 有子任务时必须为 true 才执行，否则只返回子任务数量
+
+  255: required base.Base Base
+}
+
+struct DeleteTaskResponse {
+  1: required i32 affectedSubtasks   // 跟着一起软删的子任务数量；前端用来提示"已删除 N 个子任务"
+
+  255: required base.BaseResp BaseResp
+}
+
+// ===== 今天视图 =====
+
+struct ListTodayRequest {
+  1: required string userId
+  2: required string date            // YYYY-MM-DD；服务端不用自己的时区推导"今天"
+
+  255: required base.Base Base
+}
+
+struct ListTodayResponse {
+  1: required Today today
+
+  255: required base.BaseResp BaseResp
+}
+
+// ===== 共用类型 =====
 
 // 读出来的任务。required 字段读出必有值；optional 字段是对应列为 NULL 的情况。
 struct Task {
@@ -89,57 +184,14 @@ struct Today {
   2: required list<TodayGroup> groups // 固定六组，即使为空也返回，前端不必判空
 }
 
-// 下面是各方法的返回。业务数据放在 1 号字段，处理结果放在 255 号的 BaseResp。
-// statusCode 非 0 时，1 号字段无意义，调用方只看 BaseResp。
-
-struct CreateTaskResponse {
-  1: required Task task              // 新建成功的任务，含服务端生成的 id 与 version=1
-
-  255: optional base.BaseResp BaseResp
-}
-
-struct GetTaskResponse {
-  1: required Task task
-
-  255: optional base.BaseResp BaseResp
-}
-
-struct UpdateTaskResponse {
-  1: required Task task              // 写回后的任务，version 已加一
-
-  255: optional base.BaseResp BaseResp
-}
-
-struct CompleteTaskResponse {
-  1: required Task task              // 完成后的任务，status=done，completedAt 已写入
-
-  255: optional base.BaseResp BaseResp
-}
-
-struct ReopenTaskResponse {
-  1: required Task task              // 重新打开后的任务，completedAt 已清空
-
-  255: optional base.BaseResp BaseResp
-}
-
-struct DeleteTaskResponse {
-  1: required i32 affectedSubtasks   // 跟着一起软删的子任务数量；前端用来提示"已删除 N 个子任务"
-
-  255: optional base.BaseResp BaseResp
-}
-
-struct ListTodayResponse {
-  1: required Today today
-
-  255: optional base.BaseResp BaseResp
-}
+// ===== 服务 =====
 
 service TaskService {
   // 创建任务。同一 userId + idempotencyKey 重复调用返回首次结果，不会建出两条。
   CreateTaskResponse CreateTask(1: CreateTaskRequest req)
 
   // 按 id 读取。任务不存在或已软删除时返回 NOT_FOUND。
-  GetTaskResponse GetTask(1: string userId, 2: string taskId)
+  GetTaskResponse GetTask(1: GetTaskRequest req)
 
   // 局部更新，靠 expectedVersion 做乐观锁；版本对不上时返回冲突，不写库。
   UpdateTaskResponse UpdateTask(1: UpdateTaskRequest req)
@@ -147,16 +199,16 @@ service TaskService {
   // 完成任务：status 置 done 并写 completedAt。
   // cascade=false 只动任务本身；true 时一并完成未完成的子任务，已完成的保持不变。
   // 联动在消费者里按子任务逐个开事务，不在父任务的聚合内完成，所以中间态可见。
-  CompleteTaskResponse CompleteTask(1: string userId, 2: string taskId, 3: bool cascade = false)
+  CompleteTaskResponse CompleteTask(1: CompleteTaskRequest req)
 
   // 重新打开：从 done 回到非 done 状态，同时清空 completedAt。
-  ReopenTaskResponse ReopenTask(1: string userId, 2: string taskId)
+  ReopenTaskResponse ReopenTask(1: ReopenTaskRequest req)
 
   // 软删除，写 deleted_at，保留 30 天后物理清理。
   // 有子任务且 confirm=false 时不删，返回子任务数量让前端来确认；
   // confirm=true 时父子在同一事务里一起软删，不留孤儿。
-  DeleteTaskResponse DeleteTask(1: string userId, 2: string taskId, 3: bool confirm = false)
+  DeleteTaskResponse DeleteTask(1: DeleteTaskRequest req)
 
   // 今天视图。date 由客户端传入，服务端不推导"今天"；归档项目下的任务不进任何分组。
-  ListTodayResponse ListToday(1: string userId, 2: string date)
+  ListTodayResponse ListToday(1: ListTodayRequest req)
 }
