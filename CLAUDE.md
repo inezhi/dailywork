@@ -226,6 +226,7 @@ docs/           # 本地只放索引；正式文档在飞书
 ## Git 与发布
 
 - 提交遵循 Conventional Commits：`feat(scope):`、`fix(scope):`、`docs:`、`refactor:`、`test:`、`chore:`。
+- 每次提交前更新 `docs/dev/devlog.md`：记下这一步做了什么、为什么这么做、踩了什么坑。日志只记过程，规格仍以飞书为准。
 - 一个 PR 只做一件事；行为变化先改文档/契约，再改代码。
 - 发布前跑 lint、unit、integration、contract、e2e；生成代码无漂移；迁移在空库和旧库都能执行。
 - v2 从 `2.0.0` 开始；MVP 完成后打第一个 tag。版本记录在飞书 14 文档的 CHANGELOG 小节维护。

@@ -127,16 +127,16 @@ X，最终因 Y 放弃"。另外两处对齐：0009 补一句仓库现有 `docs/
 
 ## D. 契约文件（M1 只要最小集）
 
-- [ ] `api/openapi/v1/openapi.yaml`
-  - 统一错误信封 `{data, error}`
-  - `POST /api/v1/tasks`；`GET /api/v1/today`（第一刀只需要前者）
-  - `Idempotency-Key`、`expectedVersion` 的约定
-  - 完成接口的 `cascade` 参数（A1 定，已写进 07）
-- [ ] `api/thrift/v1/task.thrift`：`CreateTask`、`ListToday`
-- [ ] `api/thrift/v1/identity.thrift`：`ValidateSession`（注册登录等接口切片 2 再加）
-- [ ] `api/thrift/v1/base.thrift`：`Base`、`BaseResp`（各请求 / 响应放在 255 号字段）
-- [ ] `api/events/task.events.v1/`：事件信封 + 5 个事件的 JSON Schema
-- [ ] 生成代码进 `api/gen/`，CI 做漂移检查
+- [x] `api/openapi/v1/openapi.yaml`（2026-11-02）
+  - 统一信封：成功 `{data, meta}`，错误 `{error, meta}`
+  - `POST /api/v1/tasks`；`GET /api/v1/today`
+  - `Idempotency-Key` 请求头
+  - `expectedVersion` 属于更新接口，切片 3 补 `PATCH /tasks/{id}` 时再加
+- [x] `api/thrift/v1/task.thrift`：七个方法，请求与响应成对
+- [x] `api/thrift/v1/identity.thrift`：`ValidateSession`（注册登录等接口切片 2 再加）
+- [x] `api/thrift/v1/base.thrift`：`Base`、`BaseResp`（各请求 / 响应放在 255 号字段）
+- [ ] `api/events/task.events.v1/`：事件信封 + 5 个事件的 JSON Schema（切片 4 再做）
+- [x] 生成代码进 `api/gen/`；[ ] CI 漂移检查（随 `make codegen` 一起补）
 
 判据：契约能生成代码，重新生成后 `git diff` 为空。
 
@@ -184,7 +184,7 @@ X，最终因 Y 放弃"。另外两处对齐：0009 补一句仓库现有 `docs/
 |---|---|
 | 1. 五条规则写进 PRD 和术语表 | **满足**：A 组已写进 PRD，术语表见 02 §6.1 |
 | 2. 6 篇定稿 | **满足**：02 / 05 / 06 / 07 / 08 / 13 于 2026-10-31 逐条判定通过 |
-| 3. 第一刀契约能生成代码 | **未满足**：`api/` 尚未创建，属性上属于实现 |
+| 3. 第一刀契约能生成代码 | **满足**：Thrift 与 OpenAPI 都能生成，重跑无差异（2026-11-02） |
 
 ## 不用等的事
 

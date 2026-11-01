@@ -1,0 +1,358 @@
+openapi: 3.1.0
+info:
+  title: 时序 API
+  version: 1.0.0
+  description: |
+    对外 REST 契约，由 gateway 提供。浏览器与桌面端只看到这一层；
+    gateway 内部再用 Thrift 调用 task / identity，那些结构不出现在这里。
+
+    成功与错误都走统一信封：成功是 { data, meta }，错误是 { error, meta }。
+    meta.requestId 恒有，单资源响应额外带 meta.version。
+
+servers:
+  - url: http://localhost:8080
+    description: 本地开发
+
+security:
+  - sessionCookie: []
+  - bearerAuth: []
+
+paths:
+  /api/v1/tasks:
+    post:
+      operationId: createTask
+      summary: 创建任务
+      description: |
+        title 必填。省略 spaceId 时落到用户的"个人"空间；
+        带 parentId 时忽略 spaceId 与 projectId，继承父任务的空间与项目；
+        省略 notes / status / priority 时分别为空串 / inbox / none。
+        user_id 永远来自会话，不接受请求体传入。
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/Internal'
+
+  /api/v1/today:
+    get:
+      operationId: listToday
+      summary: 今天分组
+      description: |
+        按客户端传入的日期计算六个分组，一个任务只进优先级最高的那一组：
+        逾期 → 今天到期 → 今天计划 → 进行中 → 下一步 → 今日完成。
+        服务端不用自己的时区推导"今天"。归档项目下的任务不进任何分组。
+      parameters:
+        - name: date
+          in: query
+          required: true
+          description: 客户端本地日期，YYYY-MM-DD
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: 六个分组，固定返回，即使为空
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodayEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/Internal'
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: daily_session
+      description: 网页端使用；HttpOnly Cookie
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: '桌面端与脚本客户端使用；登录时带 X-Client: desktop 换取'
+
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: |
+        建议所有写请求都带。键长 16–128 字符，按用户隔离、保留 24 小时。
+        同一用户同一 key 同一请求体：返回首次响应；同一 key 不同请求体：返回 409。
+      schema:
+        type: string
+        minLength: 16
+        maxLength: 128
+
+  responses:
+    ValidationFailed:
+      description: 字段缺失、格式错误或长度越界
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Unauthorized:
+      description: 未登录、会话过期或令牌无效
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Conflict:
+      description: 版本冲突、幂等键复用或唯一约束冲突
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Internal:
+      description: 未预期错误，细节只出现在日志里
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+  schemas:
+    CreateTaskRequest:
+      type: object
+      additionalProperties: false
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        notes:
+          type: string
+          maxLength: 20000
+        spaceId:
+          type: string
+          format: uuid
+        projectId:
+          type: [string, 'null']
+          format: uuid
+        parentId:
+          type: [string, 'null']
+          format: uuid
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+        scheduledDate:
+          type: [string, 'null']
+          format: date
+        dueDate:
+          type: [string, 'null']
+          format: date
+        estimateMinutes:
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 10000
+        tagIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    Task:
+      type: object
+      required:
+        - id
+        - spaceId
+        - title
+        - notes
+        - status
+        - priority
+        - actualMinutes
+        - version
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        spaceId:
+          type: string
+          format: uuid
+        projectId:
+          type: [string, 'null']
+          format: uuid
+        parentId:
+          type: [string, 'null']
+          format: uuid
+        title:
+          type: string
+          maxLength: 200
+        notes:
+          type: string
+          maxLength: 20000
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+        scheduledDate:
+          type: [string, 'null']
+          format: date
+        dueDate:
+          type: [string, 'null']
+          format: date
+        estimateMinutes:
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 10000
+        actualMinutes:
+          type: integer
+          minimum: 0
+        completedAt:
+          type: [string, 'null']
+          format: date-time
+        tagIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    TaskStatus:
+      type: string
+      description: 任务没有 archived 状态
+      enum: [inbox, next, doing, waiting, blocked, done]
+
+    TaskPriority:
+      type: string
+      description: 只影响排序与视觉，不参与今天分组
+      enum: [none, low, medium, high, urgent]
+
+    TodayGroup:
+      type: object
+      required: [count, estimateMinutes, tasks]
+      properties:
+        count:
+          type: integer
+        estimateMinutes:
+          type: integer
+          description: 只累加 estimateMinutes 非空的任务
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+
+    TodayGroups:
+      type: object
+      description: 固定六个键，空组也要返回
+      required: [overdue, dueToday, planned, doing, next, completed]
+      properties:
+        overdue:
+          $ref: '#/components/schemas/TodayGroup'
+        dueToday:
+          $ref: '#/components/schemas/TodayGroup'
+        planned:
+          $ref: '#/components/schemas/TodayGroup'
+        doing:
+          $ref: '#/components/schemas/TodayGroup'
+        next:
+          $ref: '#/components/schemas/TodayGroup'
+        completed:
+          $ref: '#/components/schemas/TodayGroup'
+
+    Today:
+      type: object
+      required: [date, groups]
+      properties:
+        date:
+          type: string
+          format: date
+        groups:
+          $ref: '#/components/schemas/TodayGroups'
+
+    Meta:
+      type: object
+      required: [requestId]
+      properties:
+        requestId:
+          type: string
+        version:
+          type: integer
+          description: 只有单资源响应才有
+
+    TaskEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Task'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    TodayEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Today'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    ErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+        message:
+          type: string
+          description: 面向用户，可直接展示
+        details:
+          type: object
+          additionalProperties: true
+          description: 结构化补充，如 currentVersion、taskId
+
+    ErrorCode:
+      type: string
+      description: 面向程序，稳定不变；HTTP 状态码表达大类，错误码表达具体原因
+      enum:
+        - VALIDATION_FAILED
+        - UNAUTHORIZED
+        - FORBIDDEN
+        - NOT_FOUND
+        - VERSION_CONFLICT
+        - IDEMPOTENCY_KEY_REUSED
+        - ALREADY_EXISTS
+        - RATE_LIMITED
+        - INTERNAL
+        - DEPENDENCY_UNAVAILABLE
+
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorBody'
+        meta:
+          $ref: '#/components/schemas/Meta'
