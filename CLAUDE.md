@@ -241,15 +241,19 @@ docs/           # 本地只放索引；正式文档在飞书
 
 ## 常用命令
 
-代码阶段尚未开始，以下命令是规划占位，暂不可用：
+代码阶段刚开始，目前只有契约相关目标可用；其余仍是占位，切片开始后再补：
 
 ```bash
-make up           # docker compose up -d
-make down         # docker compose down
-make test         # go test ./... + 集成测试
-make lint         # go vet + golangci-lint
-make migrate      # 各服务迁移
-make codegen      # thrift/kitex 与 OpenAPI 生成
+make codegen        # 从 IDL 生成 Go 代码（Thrift + OpenAPI），已可用
+make codegen-check  # 重新生成并确认 api/gen 无差异，已可用
+make build          # go build ./...，已可用
+make vet            # go vet ./...，已可用
+
+make up             # docker compose up -d（待建）
+make down           # docker compose down（待建）
+make test           # go test ./... + 集成测试（待建）
+make lint           # golangci-lint（待建）
+make migrate        # 各服务迁移（待建）
 ```
 
 当前可用的只有 Git 与文档命令。`old/` 下的 pnpm/Node 命令已失效，不要执行。

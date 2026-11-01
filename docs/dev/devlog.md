@@ -141,6 +141,13 @@ thriftgo 不需要 `-I`。
 外部接口补了 `GET /api/v1/echo`，它和 `/healthz` 分工不同：后者只证明 gateway 进程活着，
 前者会一路调到 RPC 服务，能区分"网络断了"和"业务代码挂了"。
 
+**生成命令固化：** 新建 `Makefile`，`make codegen` 跑两条命令（kitex + oapi-codegen），
+`make codegen-check` 重新生成后 `git diff --exit-code -- api/gen`，有漂移就失败。
+CI 的漂移检查直接复用这个目标。
+
+kitex 已经内嵌 thriftgo，所以只需要装 kitex 与 oapi-codegen 两个工具，
+版本钉在 Makefile 头部注释里。
+
 ### 7. 提交记录
 
 | 提交 | 内容 |
