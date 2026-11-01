@@ -115,7 +115,7 @@ docs/           # 本地只放索引；正式文档在飞书
 
 ## Kitex + Thrift
 
-- Thrift IDL 放 `api/thrift/<service>/v1/*.thrift`；用 `kitex` / `thriftgo` 生成 `kitex_gen`。
+- Thrift IDL 统一放 `api/thrift/v1/`：`base/`（公共结构）、`const/<domain>_const.thrift`（枚举）、`model/<domain>_model.thrift`（只放领域对象，不放请求与响应）；请求、响应和所有 service 都写在入口文件 `dailywork.thrift` 里。include 用相对路径，从源文件所在目录算起，不需要 `-I`。用 `kitex` / `thriftgo` 生成 `kitex_gen`。
 - 生成代码提交到仓库；CI 检查生成漂移；不要手改 `kitex_gen`。
 - gateway 用生成的 Kitex Client 调用业务服务；不要在 handler 里手写 RPC 编解码。
 - Kitex 客户端统一配置超时、重试和连接池；重试只用于幂等请求。
@@ -226,6 +226,7 @@ docs/           # 本地只放索引；正式文档在飞书
 ## Git 与发布
 
 - 提交遵循 Conventional Commits：`feat(scope):`、`fix(scope):`、`docs:`、`refactor:`、`test:`、`chore:`。
+- 每次提交前更新 `docs/dev/devlog.md`：记下这一步做了什么、为什么这么做、踩了什么坑。日志只记过程，规格仍以飞书为准。
 - 一个 PR 只做一件事；行为变化先改文档/契约，再改代码。
 - 发布前跑 lint、unit、integration、contract、e2e；生成代码无漂移；迁移在空库和旧库都能执行。
 - v2 从 `2.0.0` 开始；MVP 完成后打第一个 tag。版本记录在飞书 14 文档的 CHANGELOG 小节维护。
@@ -240,15 +241,19 @@ docs/           # 本地只放索引；正式文档在飞书
 
 ## 常用命令
 
-代码阶段尚未开始，以下命令是规划占位，暂不可用：
+代码阶段刚开始，目前只有契约相关目标可用；其余仍是占位，切片开始后再补：
 
 ```bash
-make up           # docker compose up -d
-make down         # docker compose down
-make test         # go test ./... + 集成测试
-make lint         # go vet + golangci-lint
-make migrate      # 各服务迁移
-make codegen      # thrift/kitex 与 OpenAPI 生成
+make codegen        # 从 IDL 生成 Go 代码（Thrift + OpenAPI），已可用
+make codegen-check  # 重新生成并确认 api/gen 无差异，已可用
+make build          # go build ./...，已可用
+make vet            # go vet ./...，已可用
+
+make up             # docker compose up -d（待建）
+make down           # docker compose down（待建）
+make test           # go test ./... + 集成测试（待建）
+make lint           # golangci-lint（待建）
+make migrate        # 各服务迁移（待建）
 ```
 
 当前可用的只有 Git 与文档命令。`old/` 下的 pnpm/Node 命令已失效，不要执行。

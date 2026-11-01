@@ -1,0 +1,5 @@
+package: apiv1
+output: api/gen/http/v1/api.gen.go
+generate:
+  models: true
+  std-http-server: true
