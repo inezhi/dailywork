@@ -13,7 +13,9 @@ THRIFT_ENTRY := api/thrift/v1/dailywork.thrift
 OPENAPI_ENTRY := api/openapi/v1/openapi.yaml
 OPENAPI_CONFIG := api/openapi/oapi-codegen.yaml
 
-.PHONY: codegen codegen-check build vet
+.PHONY: codegen codegen-check build vet up down down-v ps
+
+COMPOSE := docker compose -f deploy/docker-compose.yml --env-file deploy/.env
 
 ## codegen: 从 IDL 生成 Go 代码（Thrift → api/gen，OpenAPI → api/gen/http）
 codegen:
@@ -33,3 +35,19 @@ build:
 ## vet: 静态检查
 vet:
 	go vet ./...
+
+## up: 起本地依赖（MySQL / Redis / Kafka），首次会执行 deploy/mysql/init
+up:
+	$(COMPOSE) up -d
+
+## down: 停掉依赖，保留数据卷
+down:
+	$(COMPOSE) down
+
+## down-v: 停掉并删除数据卷（清库，下次 up 会重新初始化）
+down-v:
+	$(COMPOSE) down -v
+
+## ps: 看依赖容器状态
+ps:
+	$(COMPOSE) ps

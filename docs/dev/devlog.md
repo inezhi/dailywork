@@ -5,6 +5,29 @@
 
 ---
 
+---
+
+## 阶段 1 · 本地环境（2026-11-02）
+
+**目标：** 切片 1 之前把中间件跑起来。
+
+- **colima**：`colima start --cpu 4 --memory 8`，然后把 docker context 切到 `colima`
+  （默认 context 指向 `/var/run/docker.sock`，连不上）
+- **`deploy/docker-compose.yml`**：`mysql:8.4`、`redis:7.4-alpine`、
+  `apache/kafka:3.9.0`（KRaft 单节点，没有 ZooKeeper）
+- **一个库一个账号**：库 `dailywork`、账号 `dailywork`，首次由
+  `deploy/mysql/init/01-databases.sh` 创建；改了这个脚本要 `make down-v` 重建才生效
+- **密码**：放 `deploy/.env`（gitignored），仓库里只有 `.env.example`
+- **命令**：`make up / down / down-v / ps`
+
+**与 05 的偏差：** 05/06 写的是 identity 与 task 各一个库。服务已经合并成一个
+`DailyWorkService`，本地先用单库 `dailywork`；等把服务拆回去时再分库。
+
+**验证：** 三个容器都 healthy；MySQL 8.4.13，`dailywork` 账号能连；
+3306 / 6379 / 9092 宿主机可达；`redis-cli ping` 返回 PONG。
+
+---
+
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）
 
 **目标：** 闭合 Gate 条件 3 —— 第一刀的契约能生成代码，重新生成后 `git diff` 为空。

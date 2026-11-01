@@ -180,6 +180,37 @@ docs/       本地只放索引；正式文档在飞书
 - `old/` 是冻结参考：不参与构建，不从中 import，不修改。
 - v1 的完整历史在 `main` 分支与 `v0.2.0` tag；远端仓库：<https://github.com/inezhi/dailywork>。
 
+## 本地开发
+
+**工具版本**（升级时连同 `api/gen` 一起提交）：
+
+| 工具 | 版本 | 用途 |
+|---|---|---|
+| Go | 1.27 | 编译 |
+| kitex | v0.16.3 | Thrift 代码生成（已内嵌 thriftgo，不必单独装） |
+| oapi-codegen | v2.8.1 | OpenAPI 代码生成 |
+
+**本地依赖**（Docker：colima 或 Docker Desktop）：
+
+```bash
+cp deploy/.env.example deploy/.env   # 首次：填密码；.env 不进仓库
+make up                              # MySQL 8 / Redis / Kafka(KRaft)
+make ps                              # 看容器状态
+```
+
+**常用命令**：
+
+```bash
+make codegen         # 从 IDL 重新生成 Go 代码（api/thrift、api/openapi → api/gen）
+make codegen-check   # 生成后检查 api/gen 有无未提交的差异
+make build           # go build ./...
+make vet             # go vet ./...
+make down            # 停掉依赖，保留数据
+make down-v          # 连数据卷一起删，下次 up 重新初始化
+```
+
+`api/gen/` 进仓库：改了 `.thrift` 或 `openapi.yaml` 之后要重新生成并一起提交，否则 `make codegen-check` 会失败。
+
 ## 工作方式
 
 - `main` 只收 PR，不直接开发；也是唯一长期分支。
