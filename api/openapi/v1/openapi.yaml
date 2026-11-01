@@ -34,7 +34,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateTaskRequest'
+              $ref: '#/components/schemas/CreateTaskReq'
       responses:
         '200':
           description: 创建成功
@@ -131,7 +131,7 @@ components:
             $ref: '#/components/schemas/ErrorEnvelope'
 
   schemas:
-    CreateTaskRequest:
+    CreateTaskReq:
       type: object
       additionalProperties: false
       required: [title]
@@ -168,6 +168,7 @@ components:
           maximum: 10000
         tagIds:
           type: array
+          x-go-type-skip-optional-pointer: true
           items:
             type: string
             format: uuid
@@ -226,6 +227,7 @@ components:
           format: date-time
         tagIds:
           type: array
+          x-go-type-skip-optional-pointer: true
           items:
             type: string
             format: uuid
@@ -255,9 +257,10 @@ components:
       properties:
         count:
           type: integer
+          description: 以服务端为准；tasks 将来可能被截断，别拿 tasks.length 代替
         estimateMinutes:
           type: integer
-          description: 只累加 estimateMinutes 非空的任务
+          description: 只累加 estimateMinutes 非空的任务；同样以服务端为准
         tasks:
           type: array
           items:
@@ -293,17 +296,16 @@ components:
 
     Meta:
       type: object
+      description: 每次响应都带。requestId 与响应头 X-Request-Id 是同一个值。
       required: [requestId]
       properties:
         requestId:
           type: string
-        version:
-          type: integer
-          description: 只有单资源响应才有
+          description: gateway 生成的 UUIDv7，用于串联日志
 
     TaskEnvelope:
       type: object
-      required: [data]
+      required: [data, meta]
       properties:
         data:
           $ref: '#/components/schemas/Task'
@@ -312,7 +314,7 @@ components:
 
     TodayEnvelope:
       type: object
-      required: [data]
+      required: [data, meta]
       properties:
         data:
           $ref: '#/components/schemas/Today'
@@ -350,7 +352,7 @@ components:
 
     ErrorEnvelope:
       type: object
-      required: [error]
+      required: [error, meta]
       properties:
         error:
           $ref: '#/components/schemas/ErrorBody'

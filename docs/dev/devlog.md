@@ -37,7 +37,7 @@
 Thrift 的失败走异常，成功就是没有异常；再塞一个 `code` 字段会让每个方法都失去具体返回类型，调用点还得先拆信封。Kitex 另有 `bizstatuserr` 走协议头，我们没用——选了 `BaseResp`，因为它跨语言、跨协议都能读到，日志里也直接看得见码。
 
 **④ `optional` 在 Go 里是指针，这是有语义的。**
-`*string` 能区分 `nil`（没传）和 `&""`（传了空串）——这正是 `UpdateTaskRequest` 要的：**不传表示不修改，传空串表示清空。**
+`*string` 能区分 `nil`（没传）和 `&""`（传了空串）——这正是 `UpdateTaskReq` 要的：**不传表示不修改，传空串表示清空。**
 
 **⑤ `required` 的实际效果，别记错。**
 它**不会**把 Go 字段变成值类型，字段仍然是指针。它约束的是线协议：
@@ -46,12 +46,16 @@ Thrift 的失败走异常，成功就是没有异常；再塞一个 `code` 字�
 - **发送方没有保护**，`nil` 直接 panic。所以 gateway 那边要有统一的出口去填 `Base`。
 
 **⑥ 每个方法的请求都包成结构体。**
-一开始只有 `CreateTask` / `UpdateTask` 有请求结构体，另外 5 个直接传参。问题：那 5 个方法没地方放 `Base`，`logId` 传不进去，日志断链。改成七个 `XxxRequest` 后签名统一，调用上下文在每个方法上都有位置。
+一开始只有 `CreateTask` / `UpdateTask` 有请求结构体，另外 5 个直接传参。问题：那 5 个方法没地方放 `Base`，`logId` 传不进去，日志断链。改成七个 `XxxReq` 后签名统一，调用上下文在每个方法上都有位置。
 
 ### 3. 目录：三个 IDL 为什么放同一层
 
 ```
-api/thrift/v1/{base,task,identity}.thrift
+api/thrift/v1/
+├── base/base.thrift
+├── const/task_const.thrift
+├── model/task_model.thrift
+└── dailywork.thrift
 ```
 
 原本按服务分目录（`api/thrift/task/v1/`），但 `include "base.thrift"` 需要编译器带 `-i` 找路径。编辑器（CodeBuddy）的内置检查没有这个参数，报了一串 "Unknown type 'base.BaseResp'"。合并到同目录后，编辑器和 thriftgo 都能按相对目录直接找到。
@@ -86,7 +90,46 @@ oapi-codegen -config api/openapi/oapi-codegen.yaml api/openapi/v1/openapi.yaml
 | `go build` 突然报 `tmp/gen2` 找不到包 | 用 `/tmp/gen2` 做漂移对比时，kitex 按仓库内相对路径生成了 `tmp/gen2/` | 删除并重新生成 |
 | 编译少 `oapi-codegen/runtime` | 生成的代码依赖运行时包 | `go mod tidy` |
 
-### 6. 提交记录
+### 6. 契约修订：删冗余、对齐强度
+
+审计契约时发现三处冗余，改完重新生成、`go build` 通过：
+
+| 问题 | 处理 |
+|---|---|
+| `meta.version` 与 `data.version` 是同一个值 | 删掉 `meta.version`，`Meta` 只剩 `requestId` |
+| `meta` 声明为可选，但文档要求每个成功响应都带 | 三个信封改成 `required: [data, meta]` / `[error, meta]`；生成后 `Meta` 是值类型，漏填编不过 |
+| `tagIds` 生成成 `*[]UUID`（指向切片的指针） | 加 `x-go-type-skip-optional-pointer: true`，变成 `[]UUID` |
+
+同时把两层的契约强度对齐：Thrift 的 `status` / `priority` 从 `string` 改成
+`enum TaskStatus` / `enum TaskPriority`，和 OpenAPI 的枚举一致。原来是字符串，
+服务端返回一个 `done2`，没有任何一层会拦。
+
+`TodayGroup.count` / `estimateMinutes` 保留（将来 tasks 可能被截断，这两个是唯一来源），
+但在两个契约里都注明"以服务端为准，别拿 `len(tasks)` 代替"。
+
+IDL 按**种类**分目录：`base/` 公共结构、`const/<domain>_const.thrift` 枚举、
+`model/<domain>_model.thrift` 领域对象。**请求、响应和所有 service 都写在入口文件
+`dailywork.thrift` 里**——model 里不出现 Req / Resp，接口和数据分开。类型名统一用 `Req` / `Resp` 简写
+（`CreateTaskReq`、`CreateTaskResp`），OpenAPI 的 schema 也同名，不写全称。
+
+入口文件里只有一个 `DailyWorkService`，所有方法（Echo、七个任务方法、会话校验）都在里面，
+gateway 只连一个 RPC 进程。**这是相对 05 服务边界的简化**：identity 与 task 暂时跑在同一个
+进程里，数据库仍按 05 分开，等真正需要独立部署或扩容时再拆成两个 service。
+
+`Echo` 只把传入的 message 原样返回，用来确认 gateway ↔ 服务 的链路通不通，不做任何业务。
+
+`dailywork.thrift` 用 include 的文件名前缀引用类型，例如 `task_model.Task`、`base.Base`。
+include 写相对路径，从**源文件所在目录**算起：`model/task_model.thrift` 里写
+`include "../const/task_const.thrift"`，`dailywork.thrift` 里写 `include "model/task_model.thrift"`。
+thriftgo 不需要 `-I`。
+
+注意：目录分层后，编辑器的 include 解析更容易失效——它只按当前文件所在目录找，未必认 `../`。
+如果 CodeBuddy 报未知类型，那不是契约写错，以 `kitex` 跑通、`go build` 通过为准。
+
+**一条工作方式的变更：** 契约文件（`api/openapi/*.yaml`、`api/thrift/*.thrift`）是实现时的准，
+飞书同步过去。发现契约有问题就直接改，再回写文档——飞书不是不可改的。
+
+### 7. 提交记录
 
 | 提交 | 内容 |
 |---|---|
@@ -94,7 +137,7 @@ oapi-codegen -config api/openapi/oapi-codegen.yaml api/openapi/v1/openapi.yaml
 | `7240953` | 请求全部包成结构体、Base 改 required、按接口重排 |
 | 本次 | OpenAPI 契约 + 生成类型 + 开发日志 |
 
-### 7. 当前进度
+### 8. 当前进度
 
 - Gate 条件 3：对内（Thrift）✅、对外（OpenAPI）✅，生成均可复现
 - 未做：`make codegen` 固化、CI 漂移检查、开发环境（colima + MySQL/Redis/Kafka）、切片 1

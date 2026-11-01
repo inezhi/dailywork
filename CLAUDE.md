@@ -115,7 +115,7 @@ docs/           # 本地只放索引；正式文档在飞书
 
 ## Kitex + Thrift
 
-- Thrift IDL 统一放 `api/thrift/v1/`：按服务命名文件（`task.thrift`、`identity.thrift`），公共结构放同目录的 `base.thrift`。同目录是为了让 `include "base.thrift"` 在编辑器和编译器里都能直接解析，不需要 `-i`。用 `kitex` / `thriftgo` 生成 `kitex_gen`。
+- Thrift IDL 统一放 `api/thrift/v1/`：`base/`（公共结构）、`const/<domain>_const.thrift`（枚举）、`model/<domain>_model.thrift`（只放领域对象，不放请求与响应）；请求、响应和所有 service 都写在入口文件 `dailywork.thrift` 里。include 用相对路径，从源文件所在目录算起，不需要 `-I`。用 `kitex` / `thriftgo` 生成 `kitex_gen`。
 - 生成代码提交到仓库；CI 检查生成漂移；不要手改 `kitex_gen`。
 - gateway 用生成的 Kitex Client 调用业务服务；不要在 handler 里手写 RPC 编解码。
 - Kitex 客户端统一配置超时、重试和连接池；重试只用于幂等请求。

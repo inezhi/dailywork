@@ -114,8 +114,8 @@ func (e TaskStatus) Valid() bool {
 	}
 }
 
-// CreateTaskRequest defines model for CreateTaskRequest.
-type CreateTaskRequest struct {
+// CreateTaskReq defines model for CreateTaskReq.
+type CreateTaskReq struct {
 	DueDate         *openapi_types.Date `json:"dueDate,omitempty"`
 	EstimateMinutes *int                `json:"estimateMinutes,omitempty"`
 	Notes           *string             `json:"notes,omitempty"`
@@ -128,9 +128,9 @@ type CreateTaskRequest struct {
 	SpaceId       *openapi_types.UUID `json:"spaceId,omitempty"`
 
 	// Status 任务没有 archived 状态
-	Status *TaskStatus           `json:"status,omitempty"`
-	TagIds *[]openapi_types.UUID `json:"tagIds,omitempty"`
-	Title  string                `json:"title"`
+	Status *TaskStatus          `json:"status,omitempty"`
+	TagIds []openapi_types.UUID `json:"tagIds,omitempty"`
+	Title  string               `json:"title"`
 }
 
 // ErrorBody defines model for ErrorBody.
@@ -151,15 +151,15 @@ type ErrorCode string
 // ErrorEnvelope defines model for ErrorEnvelope.
 type ErrorEnvelope struct {
 	Error ErrorBody `json:"error"`
-	Meta  *Meta     `json:"meta,omitempty"`
+
+	// Meta 每次响应都带。requestId 与响应头 X-Request-Id 是同一个值。
+	Meta Meta `json:"meta"`
 }
 
-// Meta defines model for Meta.
+// Meta 每次响应都带。requestId 与响应头 X-Request-Id 是同一个值。
 type Meta struct {
+	// RequestId gateway 生成的 UUIDv7，用于串联日志
 	RequestId string `json:"requestId"`
-
-	// Version 只有单资源响应才有
-	Version *int `json:"version,omitempty"`
 }
 
 // Task defines model for Task.
@@ -180,17 +180,19 @@ type Task struct {
 	SpaceId       openapi_types.UUID  `json:"spaceId"`
 
 	// Status 任务没有 archived 状态
-	Status    TaskStatus            `json:"status"`
-	TagIds    *[]openapi_types.UUID `json:"tagIds,omitempty"`
-	Title     string                `json:"title"`
-	UpdatedAt time.Time             `json:"updatedAt"`
-	Version   int                   `json:"version"`
+	Status    TaskStatus           `json:"status"`
+	TagIds    []openapi_types.UUID `json:"tagIds,omitempty"`
+	Title     string               `json:"title"`
+	UpdatedAt time.Time            `json:"updatedAt"`
+	Version   int                  `json:"version"`
 }
 
 // TaskEnvelope defines model for TaskEnvelope.
 type TaskEnvelope struct {
-	Data Task  `json:"data"`
-	Meta *Meta `json:"meta,omitempty"`
+	Data Task `json:"data"`
+
+	// Meta 每次响应都带。requestId 与响应头 X-Request-Id 是同一个值。
+	Meta Meta `json:"meta"`
 }
 
 // TaskPriority 只影响排序与视觉，不参与今天分组
@@ -210,14 +212,17 @@ type Today struct {
 // TodayEnvelope defines model for TodayEnvelope.
 type TodayEnvelope struct {
 	Data Today `json:"data"`
-	Meta *Meta `json:"meta,omitempty"`
+
+	// Meta 每次响应都带。requestId 与响应头 X-Request-Id 是同一个值。
+	Meta Meta `json:"meta"`
 }
 
 // TodayGroup defines model for TodayGroup.
 type TodayGroup struct {
+	// Count 以服务端为准；tasks 将来可能被截断，别拿 tasks.length 代替
 	Count int `json:"count"`
 
-	// EstimateMinutes 只累加 estimateMinutes 非空的任务
+	// EstimateMinutes 只累加 estimateMinutes 非空的任务；同样以服务端为准
 	EstimateMinutes int    `json:"estimateMinutes"`
 	Tasks           []Task `json:"tasks"`
 }
@@ -261,7 +266,7 @@ type ListTodayParams struct {
 }
 
 // CreateTaskJSONRequestBody defines body for CreateTask for application/json ContentType.
-type CreateTaskJSONRequestBody = CreateTaskRequest
+type CreateTaskJSONRequestBody = CreateTaskReq
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
