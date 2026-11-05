@@ -22,7 +22,7 @@ v1 是一个 TypeScript 单体（Hono + SQLite + React/Electron），功能已�
 - 每个服务独立数据库，跨服务只走 API 或事件；
 - 同步查询与异步事件的边界、outbox、幂等与最终一致；
 - 用 Kitex + Thrift 练内部 RPC，用 Hertz 做 HTTP 网关；
-- 用 MySQL 8 + GORM 练 repository、事务、乐观锁和迁移；
+- 用 MySQL 8 + GORM 练 repository、事务、乐观锁和建表脚本；
 - 用 etcd 练服务注册与发现（M3），用 APISIX 练平台网关（M6）；
 - Redis 会话/缓存、Kafka 事件流（分区、消费组、offset、重平衡）；
 - 用 MongoDB 练文档型数据，用 Eino 练 Agent 编排与工具调用；
@@ -91,7 +91,7 @@ MVP 只实现 **gateway + identity + task**，跑通注册、登录、创建任�
 | 内部 RPC | **Kitex + Thrift** |
 | IDL / 代码生成 | Thrift + `kitex` / `thriftgo` |
 | 数据库 | MySQL 8（identity / task）+ MongoDB（docs / assistant） |
-| 数据访问 | MySQL：GORM + `golang-migrate`；MongoDB：`mongo-go-driver` |
+| 数据访问 | MySQL：GORM；MongoDB：`mongo-go-driver` |
 | 缓存/会话 | Redis + `go-redis` |
 | 事件 | **Kafka**（本地 KRaft 单节点；生产多 broker） |
 | 服务发现 | M1 直连，M3 接 etcd（`kitex-contrib/registry-etcd`） |

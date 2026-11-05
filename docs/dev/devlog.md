@@ -37,9 +37,12 @@
   `ON DELETE CASCADE` 要处理——之前 06 里"30 天后物理清理"的写法已经删掉
 - 删除父任务仍是一条 `UPDATE ... WHERE id = ? OR parent_id = ?`，父子写同一时间戳
 
-**`services/task/migrations/0001_init.up.sql`** 建 `spaces` / `projects` / `tasks` 三张表。
-在本地 MySQL 8.4 上实跑通过：三张表建成，`information_schema` 里 FOREIGN KEY 数量为 0，
-三条 CHECK 约束都在。
+**建表不走迁移工具。** 建表脚本放 `deploy/mysql/init/02-schema.sql`，MySQL 容器首次启动
+（数据卷为空）时自动执行，没有版本号、没有 up/down。改了脚本要 `make down-v` 重建数据卷
+才生效——本地开发，能重建就不需要迁移。
+
+**验证：** 空卷重建后三张表自动建好，`information_schema` 里 FOREIGN KEY 数量为 0，
+三条 CHECK 约束都在。ER 图见 [`docs/dev/er.md`](er.md)。
 
 ---
 
