@@ -16,8 +16,7 @@ erDiagram
         char36 id PK
         char36 user_id "来自 identity，只存 ID"
         varchar40 name
-        varchar7 color
-        datetime archived_at "非空即归档"
+        datetime deleted_at "非空即已删"
     }
 
     projects {

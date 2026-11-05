@@ -143,7 +143,8 @@
 **决议**：归档后不出现在今天。
 
 **飞书现状**：任务的六个状态是 `inbox / next / doing / waiting / blocked / done`，
-**没有 `archived`**。`archived_at` 只出现在 06 数据模型的 spaces / projects 上。
+**没有 `archived`**。`archived_at` 只出现在 06 数据模型的 projects 上；
+spaces 用 `deleted_at`——空间是删除，不是归档（2026-11-05 定）。
 
 所以原来的问法（"归档的任务还出现在今天吗"）在 v2.0 不成立——任务没有归档态。
 

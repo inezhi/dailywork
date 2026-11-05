@@ -37,6 +37,10 @@
   `ON DELETE CASCADE` 要处理——之前 06 里"30 天后物理清理"的写法已经删掉
 - 删除父任务仍是一条 `UPDATE ... WHERE id = ? OR parent_id = ?`，父子写同一时间戳
 
+**空间改成删除，不再是归档。** 空间去掉 `color`，`archived_at` 换成 `deleted_at`，
+生成列 `active_name` 也改为按 `deleted_at` 判断。删除空间时连同其下任务一起逻辑删除
+（二次确认，父子写同一时间戳），不做物理清理。归档只剩项目一个适用对象。
+
 **建表不走迁移工具。** 建表脚本放 `deploy/mysql/init/02-schema.sql`，MySQL 容器首次启动
 （数据卷为空）时自动执行，没有版本号、没有 up/down。改了脚本要 `make down-v` 重建数据卷
 才生效——本地开发，能重建就不需要迁移。

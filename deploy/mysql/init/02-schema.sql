@@ -7,19 +7,19 @@
 USE dailywork;
 
 -- 空间：任务的一级分组。每个用户至少有一个"个人"空间。
+-- 空间可以删除：deleted_at 非空即视为已删，所有查询都要过滤。
 CREATE TABLE spaces (
   id          CHAR(36) PRIMARY KEY,                    -- UUID，应用生成
   user_id     CHAR(36) NOT NULL,                       -- 归属用户；来自 identity 库，只存 ID 不建外键
   name        VARCHAR(40) NOT NULL,                    -- 空间名，用户可见
-  color       VARCHAR(7)  NOT NULL DEFAULT '#1677FF',  -- 展示色，形如 #RRGGBB
-  archived_at DATETIME(3) NULL,                        -- 归档时间；非空表示已归档，不进默认视图
+  deleted_at  DATETIME(3) NULL,                        -- 逻辑删除时间；非空即已删，不做物理清理
   created_at  DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at  DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
               ON UPDATE CURRENT_TIMESTAMP(3),
   active_name VARCHAR(40) GENERATED ALWAYS AS
-              (IF(archived_at IS NULL, LOWER(name), NULL)) STORED,
-              -- 生成列：未归档时等于名字小写，归档后为 NULL。
-              -- 配合下面的唯一索引，实现"活跃空间名唯一、归档后可重名"。
+              (IF(deleted_at IS NULL, LOWER(name), NULL)) STORED,
+              -- 生成列：未删除时等于名字小写，删除后为 NULL。
+              -- 配合下面的唯一索引，实现"活跃空间名唯一、已删空间可重名"。
   UNIQUE KEY spaces_active_name_uq (user_id, active_name)  -- 同一用户的活跃空间不能重名
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
