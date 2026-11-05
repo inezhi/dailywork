@@ -51,10 +51,10 @@ CREATE TABLE tasks (
   parent_id        CHAR(36) NULL,                      -- 父任务；只允许一层，父任务自身不能再有父任务
   title            VARCHAR(200) NOT NULL,              -- 标题，1–200 字符
   notes            MEDIUMTEXT NOT NULL,                -- 正文；空串表示没写。MEDIUMTEXT 是为了装下 2 万字符
-  status           VARCHAR(16) NOT NULL DEFAULT 'inbox',
-                   -- inbox|next|doing|waiting|blocked|done；没有 archived
-  priority         VARCHAR(16) NOT NULL DEFAULT 'none',
-                   -- none|low|medium|high|urgent；只影响排序与视觉
+  status           TINYINT NOT NULL DEFAULT 1,
+                   -- 1=inbox 2=next 3=doing 4=waiting 5=blocked 6=done；与 const/task_const.thrift 的编号一致
+  priority         TINYINT NOT NULL DEFAULT 1,
+                   -- 1=none 2=low 3=medium 4=high 5=urgent；只影响排序与视觉
   scheduled_date   DATE NULL,                          -- 计划哪天做；决定"今天计划"分组
   due_date         DATE NULL,                          -- 哪天必须交；早于今天且未完成即"逾期"
   estimate_minutes INT NULL,                           -- 预估耗时（分钟），0–10000；NULL 表示没估过
@@ -72,8 +72,8 @@ CREATE TABLE tasks (
   KEY tasks_parent_idx (parent_id),                                     -- 查子任务
   KEY tasks_space_idx (space_id, deleted_at),                           -- 按空间列任务
 
-  CONSTRAINT chk_tasks_status CHECK (status IN ('inbox','next','doing','waiting','blocked','done')),
-  CONSTRAINT chk_tasks_priority CHECK (priority IN ('none','low','medium','high','urgent')),
-  CONSTRAINT chk_tasks_done CHECK ((status = 'done') = (completed_at IS NOT NULL))
+  CONSTRAINT chk_tasks_status   CHECK (status BETWEEN 1 AND 6),
+  CONSTRAINT chk_tasks_priority CHECK (priority BETWEEN 1 AND 5),
+  CONSTRAINT chk_tasks_done     CHECK ((status = 6) = (completed_at IS NOT NULL))
     -- 完成状态与完成时间必须一致：不能出现 done 却没有 completed_at，反之亦然
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

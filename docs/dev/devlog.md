@@ -44,6 +44,11 @@
 **项目去掉起止日期。** `projects` 只保留名称、描述、颜色与归档时间；飞书 02 的范围表
 与 FR-P1 一并删掉"起止日期"，ER 图同步。02 里提到的项目"状态"在表里本来就没有，也一起去掉了。
 
+**状态与优先级存数字。** `tasks.status` / `tasks.priority` 从 VARCHAR 改成 TINYINT，
+编号与 `const/task_const.thrift` 一一对应：状态 1=inbox…6=done，优先级 1=none…5=urgent。
+CHECK 改成范围校验（1–6、1–5），`chk_tasks_done` 相应写成 `status = 6`。
+好处是数据库、Thrift、Go 常量共用一套编号，少一次字符串映射。
+
 **建表不走迁移工具。** 建表脚本放 `deploy/mysql/init/02-schema.sql`，MySQL 容器首次启动
 （数据卷为空）时自动执行，没有版本号、没有 up/down。改了脚本要 `make down-v` 重建数据卷
 才生效——本地开发，能重建就不需要迁移。

@@ -36,8 +36,8 @@ erDiagram
         char36 parent_id "可空，只一层"
         varchar200 title
         text notes
-        varchar16 status "inbox..done 六值"
-        varchar16 priority "none..urgent 五值"
+        tinyint status "1=inbox … 6=done"
+        tinyint priority "1=none … 5=urgent"
         date scheduled_date
         date due_date
         int estimate_minutes
