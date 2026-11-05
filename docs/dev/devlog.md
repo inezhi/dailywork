@@ -28,6 +28,21 @@
 
 ---
 
+## 阶段 2 · 切片 1（2026-11-05 起）
+
+**库表决定：不建外键，任务只做逻辑删除。**
+
+- 全库不建外键，跨表一致性由应用层保证；外键列该有的索引照建
+- 任务只做逻辑删除（写 `deleted_at`），**不做物理清理**，所以也没有
+  `ON DELETE CASCADE` 要处理——之前 06 里"30 天后物理清理"的写法已经删掉
+- 删除父任务仍是一条 `UPDATE ... WHERE id = ? OR parent_id = ?`，父子写同一时间戳
+
+**`services/task/migrations/0001_init.up.sql`** 建 `spaces` / `projects` / `tasks` 三张表。
+在本地 MySQL 8.4 上实跑通过：三张表建成，`information_schema` 里 FOREIGN KEY 数量为 0，
+三条 CHECK 约束都在。
+
+---
+
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）
 
 **目标：** 闭合 Gate 条件 3 —— 第一刀的契约能生成代码，重新生成后 `git diff` 为空。
