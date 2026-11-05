@@ -23,7 +23,7 @@ README.md     # 项目说明与文档入口
 1. **`old/` 是冻结参考。** 禁止修改、构建、import，或把旧 TypeScript 实现直接复制进新代码。可以阅读其 PRD、设计系统、数据模型、ops 契约与测试断言，作为新规格参考。
 2. **文档先行。** 产品范围、服务边界、API 契约、数据模型未在飞书文档中写清楚之前，不开始实现。实现与文档冲突时，先改文档再改代码。
 3. **`main` 只收 PR，也是唯一长期分支。** 新工作从 `main` 切 `feat/<scope>`，完成后向 `main` 提 PR 合并，合并后删掉功能分支。不要直接提交 `main`，也不要再建长期集成分支。原来的 `v2` 集成分支已停用：内容已全部并入 `main`，分支保留存档，不再往里合任何东西。
-4. **一个服务一个数据库。** `identity`/`task` 用 MySQL 8，`docs`/`assistant` 用 MongoDB；禁止跨服务读表/集合；跨服务只走 API 或事件。
+4. **只有一个数据库。** MySQL 8 的 `dailywork` 库存放全部关系数据，不按服务分库；`docs`/`assistant` 将来用 MongoDB 时同理。禁止跨服务读别人的表/集合，跨服务只走 API 或事件。
 5. **不要造分布式单体。** 强耦合的聚合放在同一个服务；只有确实需要独立生命周期、独立扩容或独立数据所有权时才拆服务。
 6. **有场景才用技术。** MongoDB 只用于文档型数据，Eino 只用于多步 Agent；简单 CRUD、单轮问答不要套框架。
 
@@ -66,8 +66,8 @@ README.md     # 项目说明与文档入口
 | 服务 | 职责 | 数据 |
 |---|---|---|
 | `gateway` | Hertz HTTP 入口、鉴权、限流、按需 BFF 聚合、SSE | 无业务数据库 |
-| `identity` | 账户、密码、会话、验证码、内部 JWT | MySQL `identity` + Redis |
-| `task` | 空间、项目、任务、标签、今天查询、outbox | MySQL `task` + Kafka |
+| `identity` | 账户、密码、会话、验证码、内部 JWT | MySQL `dailywork`（users / sessions / login_attempts）+ Redis |
+| `task` | 空间、项目、任务、标签、今天查询、outbox | MySQL `dailywork`（spaces / projects / tasks / tags / outbox）+ Kafka |
 | `docs`（M7） | 文档树、块正文、反向链接 | MongoDB `docs` + MinIO |
 | `assistant`（M8） | AI 对话、工具调用、流式输出 | MongoDB `assistant` |
 | `planning`（后续） | 日历、容量、专注 | MySQL `planning` |

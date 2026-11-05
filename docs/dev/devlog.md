@@ -20,8 +20,8 @@
 - **密码**：放 `deploy/.env`（gitignored），仓库里只有 `.env.example`
 - **命令**：`make up / down / down-v / ps`
 
-**与 05 的偏差：** 05/06 写的是 identity 与 task 各一个库。服务已经合并成一个
-`DailyWorkService`，本地先用单库 `dailywork`；等把服务拆回去时再分库。
+**单库是设计，不是临时妥协：** 从头到尾只有一个 MySQL 库 `dailywork`，不按服务分库。
+05/06 里"每个服务一个库"的旧写法已经改掉。
 
 **验证：** 三个容器都 healthy；MySQL 8.4.13，`dailywork` 账号能连；
 3306 / 6379 / 9092 宿主机可达；`redis-cli ping` 返回 PONG。
