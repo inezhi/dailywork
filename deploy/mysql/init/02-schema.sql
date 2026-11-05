@@ -31,8 +31,6 @@ CREATE TABLE projects (
   name        VARCHAR(80) NOT NULL,                    -- 项目名
   description MEDIUMTEXT NOT NULL,                     -- 项目说明；空串表示没写
   color       VARCHAR(7)  NOT NULL DEFAULT '#1677FF',
-  start_date  DATE NULL,                               -- 计划开始日；YYYY-MM-DD，不做时区转换
-  due_date    DATE NULL,                               -- 计划截止日
   archived_at DATETIME(3) NULL,                        -- 归档时间；归档项目下的任务不进"今天"
   created_at  DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at  DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)

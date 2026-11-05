@@ -25,8 +25,6 @@ erDiagram
         char36 space_id
         varchar80 name
         text description
-        date start_date
-        date due_date
         datetime archived_at
     }
 
