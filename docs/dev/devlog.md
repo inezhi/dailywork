@@ -49,6 +49,13 @@
 CHECK 改成范围校验（1–6、1–5），`chk_tasks_done` 相应写成 `status = 6`。
 好处是数据库、Thrift、Go 常量共用一套编号，少一次字符串映射。
 
+**切片 1 的代码（第一步）：** 领域层 `domain/task.go`（Task 聚合、Title/Status/Priority、
+NewTask、Reconstitute、Complete/Reopen）与应用层 `application/create_task.go`（三个接口 +
+CreateTask 用例）已写完，23 个测试通过，不依赖数据库。
+
+两个取舍记一下：仓储接口一度移到 domain 又移回 application——偏好"接口跟用例走"；
+Title 值对象与 Task 放在同一个文件——Go 不强制一文件一类型，按阅读方便来。
+
 **建表不走迁移工具。** 建表脚本放 `deploy/mysql/init/02-schema.sql`，MySQL 容器首次启动
 （数据卷为空）时自动执行，没有版本号、没有 up/down。改了脚本要 `make down-v` 重建数据卷
 才生效——本地开发，能重建就不需要迁移。

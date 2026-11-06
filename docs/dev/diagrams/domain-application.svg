@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1120" viewBox="0 0 1500 1120"
+     font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 z" fill="#475569"/>
+    </marker>
+    <marker id="ab" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 z" fill="#2563EB"/>
+    </marker>
+    <marker id="ao" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 z" fill="#C2410C"/>
+    </marker>
+    <marker id="ag" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 z" fill="#15803D"/>
+    </marker>
+  </defs>
+  <rect width="1500" height="1120" fill="#ffffff"/>
+
+  <!-- 文件容器 -->
+  <rect x="40" y="100" width="620" height="860" rx="16" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="2"/>
+  <text x="64" y="140" font-size="20" font-weight="700" fill="#1E3A8A">task.go · package domain</text>
+
+  <rect x="840" y="100" width="620" height="860" rx="16" fill="#FFF7ED" stroke="#FED7AA" stroke-width="2"/>
+  <text x="864" y="140" font-size="20" font-weight="700" fill="#9A3412">create_task.go · package application</text>
+
+  <line x1="838" y1="128" x2="666" y2="128" stroke="#C2410C" stroke-width="2" marker-end="url(#ao)"/>
+  <text x="676" y="118" font-size="14" fill="#C2410C">import domain</text>
+
+  <!-- ===== domain: 值对象 ===== -->
+  <rect x="64" y="165" width="170" height="64" rx="10" fill="#FEF9C3" stroke="#CA8A04" stroke-width="2"/>
+  <text x="84" y="192" font-size="16" font-weight="700" fill="#713F12">Title</text>
+  <text x="84" y="214" font-size="13" fill="#713F12">[值对象] string 子类型</text>
+
+  <rect x="250" y="165" width="150" height="64" rx="10" fill="#FEF9C3" stroke="#CA8A04" stroke-width="2"/>
+  <text x="270" y="192" font-size="16" font-weight="700" fill="#713F12">Status</text>
+  <text x="270" y="214" font-size="13" fill="#713F12">[值对象] 1–6</text>
+
+  <rect x="416" y="165" width="150" height="64" rx="10" fill="#FEF9C3" stroke="#CA8A04" stroke-width="2"/>
+  <text x="436" y="192" font-size="16" font-weight="700" fill="#713F12">Priority</text>
+  <text x="436" y="214" font-size="13" fill="#713F12">[值对象] 1–5</text>
+
+  <!-- ===== domain: Task ===== -->
+  <rect x="64" y="265" width="552" height="300" rx="12" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+  <text x="84" y="296" font-size="17" font-weight="700" fill="#1E3A8A">Task  [聚合根 / 结构体]</text>
+
+  <text x="84" y="328" font-size="14" fill="#334155" font-family="Menlo, monospace">id, userID, spaceID   string</text>
+  <text x="84" y="354" font-size="14" fill="#334155" font-family="Menlo, monospace">projectID, parentID   *string</text>
+  <text x="84" y="380" font-size="14" fill="#334155" font-family="Menlo, monospace">title Title · status Status · priority Priority</text>
+  <text x="84" y="406" font-size="14" fill="#334155" font-family="Menlo, monospace">version int · completedAt, deletedAt *time.Time</text>
+
+  <line x1="84" y1="428" x2="596" y2="428" stroke="#DBEAFE" stroke-width="2"/>
+  <text x="84" y="456" font-size="14" font-weight="700" fill="#BE185D">方法</text>
+  <text x="84" y="484" font-size="14" fill="#334155" font-family="Menlo, monospace">Complete(now) error</text>
+  <text x="330" y="484" font-size="14" fill="#334155" font-family="Menlo, monospace">Reopen(to, now) error</text>
+  <text x="84" y="512" font-size="14" fill="#334155" font-family="Menlo, monospace">ID() · Title() Title · Status() Status · Version() int …</text>
+  <text x="84" y="540" font-size="13" fill="#64748B">字段不导出，外部只能通过方法读、通过领域方法改</text>
+
+  <!-- ===== domain: 函数 ===== -->
+  <rect x="64" y="610" width="240" height="62" rx="10" fill="#F0FDF4" stroke="#15803D" stroke-width="2"/>
+  <text x="80" y="636" font-size="14" font-weight="700" fill="#14532D">NewTitle</text>
+  <text x="80" y="658" font-size="13" fill="#14532D" font-family="Menlo, monospace">(s string) (Title, error)</text>
+
+  <rect x="330" y="610" width="286" height="62" rx="10" fill="#F0FDF4" stroke="#15803D" stroke-width="2"/>
+  <text x="346" y="636" font-size="14" font-weight="700" fill="#14532D">NewTask  [工厂]</text>
+  <text x="346" y="658" font-size="13" fill="#14532D" font-family="Menlo, monospace">(NewTaskParams) (*Task, error)</text>
+
+  <rect x="64" y="710" width="552" height="62" rx="10" fill="#F0FDF4" stroke="#15803D" stroke-width="2"/>
+  <text x="80" y="736" font-size="14" font-weight="700" fill="#14532D">Reconstitute  [重建]</text>
+  <text x="80" y="758" font-size="13" fill="#14532D" font-family="Menlo, monospace">(...) *Task   —— 从数据库恢复，不重放创建校验</text>
+
+  <!-- domain 内部连线 -->
+  <line x1="150" y1="265" x2="150" y2="231" stroke="#2563EB" stroke-width="1.8" marker-end="url(#ab)"/>
+  <line x1="325" y1="265" x2="325" y2="231" stroke="#2563EB" stroke-width="1.8" marker-end="url(#ab)"/>
+  <line x1="490" y1="265" x2="490" y2="231" stroke="#2563EB" stroke-width="1.8" marker-end="url(#ab)"/>
+  <text x="500" y="252" font-size="12" fill="#2563EB">使用</text>
+
+  <line x1="473" y1="610" x2="473" y2="569" stroke="#15803D" stroke-width="1.8" marker-end="url(#ab)"/>
+  <text x="482" y="596" font-size="12" fill="#15803D">返回 *Task</text>
+
+  <polyline points="88,610 52,610 52,197 64,197" fill="none" stroke="#15803D" stroke-width="1.8" marker-end="url(#ag)"/>
+
+  <polyline points="320,710 320,569" fill="none" stroke="#15803D" stroke-width="1.8" marker-end="url(#ag)"/>
+
+  <!-- ===== application: 接口 ===== -->
+  <rect x="864" y="165" width="300" height="88" rx="10" fill="#F5F3FF" stroke="#7C3AED" stroke-width="2" stroke-dasharray="7 4"/>
+  <text x="882" y="190" font-size="15" font-weight="700" fill="#4C1D95">TaskRepository  [接口]</text>
+  <text x="882" y="214" font-size="13" fill="#4C1D95" font-family="Menlo, monospace">Save(ctx, t) error</text>
+  <text x="882" y="236" font-size="13" fill="#4C1D95" font-family="Menlo, monospace">FindByID(ctx, id) (*Task, error)</text>
+
+  <rect x="1180" y="165" width="130" height="88" rx="10" fill="#F5F3FF" stroke="#7C3AED" stroke-width="2" stroke-dasharray="7 4"/>
+  <text x="1196" y="196" font-size="14" font-weight="700" fill="#4C1D95">IDGenerator</text>
+  <text x="1196" y="222" font-size="13" fill="#4C1D95" font-family="Menlo, monospace">NewID() string</text>
+
+  <rect x="1326" y="165" width="120" height="88" rx="10" fill="#F5F3FF" stroke="#7C3AED" stroke-width="2" stroke-dasharray="7 4"/>
+  <text x="1342" y="196" font-size="14" font-weight="700" fill="#4C1D95">Clock</text>
+  <text x="1342" y="222" font-size="13" fill="#4C1D95" font-family="Menlo, monospace">Now()</text>
+
+  <!-- ===== application: 结构体 ===== -->
+  <rect x="864" y="300" width="582" height="150" rx="10" fill="#FFFFFF" stroke="#C2410C" stroke-width="2"/>
+  <text x="882" y="326" font-size="15" font-weight="700" fill="#9A3412">CreateTaskInput  [结构体]</text>
+  <text x="882" y="352" font-size="13" fill="#334155" font-family="Menlo, monospace">UserID, SpaceID string · ProjectID, ParentID *string</text>
+  <text x="882" y="376" font-size="13" fill="#334155" font-family="Menlo, monospace">Title, Notes string · Status, Priority domain 值</text>
+  <text x="882" y="400" font-size="13" fill="#334155" font-family="Menlo, monospace">ScheduledDate, DueDate *time.Time · EstimateMinutes *int</text>
+  <text x="882" y="428" font-size="12" fill="#64748B">协议层入参，多数可选，默认值由用例决定</text>
+
+  <rect x="864" y="500" width="290" height="112" rx="10" fill="#FFFFFF" stroke="#C2410C" stroke-width="2"/>
+  <text x="882" y="526" font-size="15" font-weight="700" fill="#9A3412">CreateTask  [结构体]</text>
+  <text x="882" y="552" font-size="13" fill="#334155" font-family="Menlo, monospace">repo  TaskRepository</text>
+  <text x="882" y="574" font-size="13" fill="#334155" font-family="Menlo, monospace">ids   IDGenerator</text>
+  <text x="882" y="596" font-size="13" fill="#334155" font-family="Menlo, monospace">clock Clock</text>
+
+  <rect x="1180" y="500" width="266" height="112" rx="10" fill="#F0FDF4" stroke="#15803D" stroke-width="2"/>
+  <text x="1198" y="526" font-size="14" font-weight="700" fill="#14532D">NewCreateTask  [函数]</text>
+  <text x="1198" y="552" font-size="12" fill="#14532D" font-family="Menlo, monospace">(repo, ids, clock)</text>
+  <text x="1198" y="574" font-size="12" fill="#14532D" font-family="Menlo, monospace">*CreateTask</text>
+
+  <!-- ===== application: Execute ===== -->
+  <rect x="864" y="680" width="582" height="140" rx="10" fill="#FDF2F8" stroke="#BE185D" stroke-width="2"/>
+  <text x="882" y="708" font-size="15" font-weight="700" fill="#831843">Execute  [方法，属于 CreateTask]</text>
+  <text x="882" y="734" font-size="13" fill="#831843" font-family="Menlo, monospace">(ctx, in CreateTaskInput) (*domain.Task, error)</text>
+  <text x="882" y="762" font-size="13" fill="#334155">① 有 parentID 就 FindByID 查父任务，继承空间与项目</text>
+  <text x="882" y="786" font-size="13" fill="#334155">② 调 domain.NewTask 校验并构造　③ repo.Save 落库</text>
+  <text x="882" y="810" font-size="12" fill="#64748B">顺序在 application，对错在 domain</text>
+
+  <!-- CreateTask -> Execute -->
+  <line x1="1009" y1="612" x2="1009" y2="676" stroke="#BE185D" stroke-width="1.8" marker-end="url(#a)"/>
+  <text x="1019" y="650" font-size="12" fill="#BE185D">方法</text>
+
+  <!-- Execute -> TaskRepository：走两条面板之间的空隙 -->
+  <polyline points="864,716 800,716 800,209 858,209" fill="none" stroke="#C2410C" stroke-width="1.8" marker-end="url(#ao)"/>
+  <text x="812" y="470" font-size="12" fill="#C2410C" transform="rotate(-90 812 470)">FindByID / Save</text>
+
+  <!-- Execute -> domain.NewTask -->
+  <polyline points="864,792 740,792 740,641 624,641" fill="none" stroke="#C2410C" stroke-width="2" marker-end="url(#ao)"/>
+  <text x="628" y="630" font-size="12" fill="#C2410C">调用 NewTask</text>
+
+  <!-- 图例 -->
+  <g font-size="13" fill="#334155">
+    <rect x="64" y="1000" width="16" height="16" rx="3" fill="#FEF9C3" stroke="#CA8A04" stroke-width="1.5"/>
+    <text x="88" y="1013">值对象</text>
+    <rect x="176" y="1000" width="16" height="16" rx="3" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.5"/>
+    <text x="200" y="1013">结构体</text>
+    <rect x="280" y="1000" width="16" height="16" rx="3" fill="#F5F3FF" stroke="#7C3AED" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <text x="304" y="1013">接口</text>
+    <rect x="376" y="1000" width="16" height="16" rx="3" fill="#F0FDF4" stroke="#15803D" stroke-width="1.5"/>
+    <text x="400" y="1013">函数</text>
+    <rect x="472" y="1000" width="16" height="16" rx="3" fill="#FDF2F8" stroke="#BE185D" stroke-width="1.5"/>
+    <text x="496" y="1013">方法</text>
+    <text x="600" y="1013" fill="#64748B">实线箭头 = 调用 / 返回</text>
+  </g>
+</svg>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620"
+     font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 z" fill="#555555"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 z" fill="#15803D"/>
+    </marker>
+  </defs>
+
+  <rect width="1100" height="620" fill="#ffffff"/>
+
+  <text x="40" y="52" font-size="26" font-weight="700" fill="#111111">interface 是什么：一张「会做什么」的清单</text>
+  <text x="40" y="84" font-size="16" fill="#666666">清单里只有方法名、参数、返回值，没有任何代码</text>
+
+  <!-- 使用方 -->
+  <rect x="40" y="120" width="280" height="180" rx="12" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="60" y="152" font-size="18" font-weight="700" fill="#C2410C">使用方</text>
+  <text x="60" y="182" font-size="16" fill="#333333">CreateTask.Execute</text>
+  <text x="60" y="212" font-size="14" fill="#333333" font-family="Menlo, monospace">uc.repo.Save(ctx, task)</text>
+  <text x="60" y="248" font-size="14" fill="#666666">它不想知道背后是谁</text>
+  <text x="60" y="272" font-size="14" fill="#666666">只知道「能调用 Save」</text>
+
+  <!-- 清单 -->
+  <rect x="400" y="120" width="300" height="180" rx="12" fill="#EFF6FF" stroke="#2F6FEB" stroke-width="2"/>
+  <text x="420" y="152" font-size="18" font-weight="700" fill="#2F6FEB">清单：TaskRepository</text>
+  <text x="420" y="186" font-size="14" fill="#333333" font-family="Menlo, monospace">Save(ctx, t) error</text>
+  <text x="420" y="212" font-size="14" fill="#333333" font-family="Menlo, monospace">FindByID(ctx, id) (*Task, error)</text>
+  <text x="420" y="250" font-size="14" fill="#666666">只有名字和参数</text>
+  <text x="420" y="274" font-size="14" fill="#666666">没有一行代码</text>
+
+  <!-- 实现一 -->
+  <rect x="760" y="100" width="300" height="92" rx="12" fill="#F0FDF4" stroke="#15803D" stroke-width="2"/>
+  <text x="780" y="130" font-size="17" font-weight="700" fill="#15803D">MySQLTaskRepo</text>
+  <text x="780" y="156" font-size="14" fill="#333333">Save → 写进 MySQL</text>
+  <text x="780" y="178" font-size="14" fill="#333333">FindByID → 从 MySQL 读</text>
+
+  <!-- 实现二 -->
+  <rect x="760" y="228" width="300" height="92" rx="12" fill="#F0FDF4" stroke="#15803D" stroke-width="2"/>
+  <text x="780" y="258" font-size="17" font-weight="700" fill="#15803D">fakeRepo（测试用）</text>
+  <text x="780" y="284" font-size="14" fill="#333333">Save → 塞进 map</text>
+  <text x="780" y="306" font-size="14" fill="#333333">FindByID → 从 map 取</text>
+
+  <!-- 箭头：使用方 -> 清单 -->
+  <line x1="320" y1="210" x2="392" y2="210" stroke="#555555" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="322" y="198" font-size="12" fill="#555555">只认清单</text>
+
+  <!-- 箭头：两个实现 -> 清单 -->
+  <line x1="760" y1="150" x2="702" y2="168" stroke="#15803D" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowGreen)"/>
+  <line x1="760" y1="274" x2="702" y2="254" stroke="#15803D" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowGreen)"/>
+  <text x="410" y="334" font-size="14" fill="#15803D">两个实现都满足这张清单，所以可以互相替换</text>
+
+  <!-- 底部结论 -->
+  <rect x="40" y="390" width="1020" height="160" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="60" y="426" font-size="18" font-weight="700" fill="#111111">所以同一段代码，两种跑法</text>
+  <text x="60" y="462" font-size="15" fill="#333333">生产：NewCreateTask(&amp;MySQLTaskRepo{...})  → 真的写数据库</text>
+  <text x="60" y="492" font-size="15" fill="#333333">测试：NewCreateTask(&amp;fakeRepo{...})      → 塞进内存 map，不连数据库</text>
+  <text x="60" y="526" font-size="15" fill="#333333">CreateTask 里的代码一行都不用改</text>
+</svg>
