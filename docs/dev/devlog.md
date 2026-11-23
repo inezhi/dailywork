@@ -63,6 +63,35 @@ Title 值对象与 Task 放在同一个文件——Go 不强制一文件一类�
 **验证：** 空卷重建后三张表自动建好，`information_schema` 里 FOREIGN KEY 数量为 0，
 三条 CHECK 约束都在。ER 图见 [`docs/dev/er.md`](er.md)。
 
+**契约收口。** IDL 和 OpenAPI 只保留 `Echo` 与 `CreateTask`，没实现的方法和没人用的
+struct 全部删掉，`api/gen` 跟着删掉七千多行。契约跟着实现走，不提前占位：占位的方法
+没有实现，生成的接口会逼着写一堆空壳。
+
+**`CreateTaskResp.task` 从 required 改成 optional。** 冒烟测试打出来的坑：业务出错时
+`task` 是 nil，required 字段序列化失败，客户端收到的是 nil 响应，看不到 `BaseResp`
+里的 400 和错误信息。改成 optional 后错误能正常带回。
+
+**适配层（MySQL）。** `taskRow` 对应 `tasks` 表；`TaskRepo` 实现 `application.TaskRepository`。
+`Save` 走乐观锁：`UPDATE ... WHERE id = ? AND version = ?`，`RowsAffected` 为 0 时再按
+id 数一次——数到是版本冲突，数不到是新任务，走 INSERT。`FindByID` 过滤
+`deleted_at IS NULL`，把 `gorm.ErrRecordNotFound` 翻成 `domain.ErrTaskNotFound`。
+集成测试用 `TEST_MYSQL_DSN` 门控，没设置就跳过。领域层因此补了
+`ErrTaskNotFound`、`ErrVersionConflict` 两个错误。
+
+**适配层（Kitex）。** handler 只做三件事：`CreateTaskReq` → `CreateTaskInput`、调用用例、
+结果或错误 → `CreateTaskResp`。业务错误走 `BaseResp.statusCode`：400 校验失败、
+404 找不到、409 版本冲突、500 其它。日期用 `YYYY-MM-DD` 字符串，枚举用 int32，
+指针字段用来区分"没传"和"零值"。
+
+**入口。** `cmd/task/main.go` 一条线：读配置 → 连库 → 设连接池 → ping → 装配
+仓储/用例/handler → 起 Kitex → 等信号 → 优雅停止。日志用 `slog` JSON 输出到 stdout。
+
+**冒烟结果。** 服务起在 `127.0.0.1:8888`：`Echo` 返回 0；`CreateTask` 返回 0 且
+`version=1`；空标题返回 400「标题不能为空」；MySQL 里能查到对应行。
+
+**验证：** `go build ./...`、`go vet ./...` 通过；domain / application / mysql 三个包
+测试全绿；`make codegen` 重复执行，`api/gen` 哈希不变。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）

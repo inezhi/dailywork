@@ -20,6 +20,8 @@ var (
 	ErrInvalidPriority = errors.New("domain: invalid priority")
 	ErrAlreadyDone     = errors.New("domain: task is already done")
 	ErrNotDone         = errors.New("domain: task is not done")
+	ErrTaskNotFound    = errors.New("domain: task not found")
+	ErrVersionConflict = errors.New("domain: version conflict")
 )
 
 // Status 是任务状态，值 1–6 与数据库、Thrift 枚举一致；领域内自定义，不复用生成代码。
@@ -34,6 +36,7 @@ const (
 	StatusDone    Status = 6
 )
 
+// String 返回状态名，用于日志和协议转换。
 func (s Status) String() string {
 	switch s {
 	case StatusInbox:
@@ -52,6 +55,7 @@ func (s Status) String() string {
 	return "unknown"
 }
 
+// valid 判断状态是否在合法范围内。
 func (s Status) valid() bool { return s >= StatusInbox && s <= StatusDone }
 
 // Priority 是任务优先级。1=none 2=low 3=medium 4=high 5=urgent。
@@ -65,6 +69,7 @@ const (
 	PriorityUrgent Priority = 5
 )
 
+// String 返回优先级名。
 func (p Priority) String() string {
 	switch p {
 	case PriorityNone:
@@ -81,6 +86,7 @@ func (p Priority) String() string {
 	return "unknown"
 }
 
+// valid 判断优先级是否在合法范围内。
 func (p Priority) valid() bool { return p >= PriorityNone && p <= PriorityUrgent }
 
 // Title 是任务标题，只能通过 NewTitle 构造，构造出来就是合法的。
@@ -98,6 +104,7 @@ func NewTitle(s string) (Title, error) {
 	return Title(s), nil
 }
 
+// String 返回裸字符串。
 func (t Title) String() string { return string(t) }
 
 // Task 是聚合根；字段不导出，不变量只能通过领域方法改变。

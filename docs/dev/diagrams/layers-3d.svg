@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="980" viewBox="0 0 1400 980"
+     font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="down" markerWidth="14" markerHeight="12" refX="13" refY="4" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0,1 L12,6 L0,11 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="1400" height="980" fill="#ffffff"/>
+
+  <text x="60" y="58" font-size="28" font-weight="700" fill="#111111">三层代码：外层依赖内层</text>
+  <text x="60" y="90" font-size="16" fill="#64748B">箭头只能从上往下，不能反过来</text>
+
+  <!-- ===== 第 1 层：adapters ===== -->
+
+
+  <!-- ===== 第 2 层：application ===== -->
+
+
+  <!-- ===== 第 3 层：domain ===== -->
+
+  <polygon points="260,200 380,140 1140,140 1020,200" fill="#FDBA74"/>
+  <polygon points="1020,200 1140,140 1140,250 1020,310" fill="#F97316"/>
+  <rect x="260" y="200" width="760" height="110" fill="#FFEDD5" stroke="#C2410C" stroke-width="2"/>
+  <text x="290" y="242" font-size="22" font-weight="700" fill="#9A3412">adapters　外层</text>
+  <text x="290" y="272" font-size="15" fill="#7C2D12">mysql/TaskRepo：Save / FindByID</text>
+  <text x="290" y="296" font-size="15" fill="#7C2D12">把「行」翻译成「领域对象」，也把领域对象写回行</text>
+  <polygon points="260,420 380,360 1140,360 1020,420" fill="#93C5FD"/>
+  <polygon points="1020,420 1140,360 1140,470 1020,530" fill="#3B82F6"/>
+  <rect x="260" y="420" width="760" height="110" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+  <text x="290" y="462" font-size="22" font-weight="700" fill="#1E3A8A">application　中间层</text>
+  <text x="290" y="492" font-size="15" fill="#1E40AF">CreateTask.Execute：查父任务 → 调领域工厂 → 保存</text>
+  <text x="290" y="516" font-size="15" fill="#1E40AF">只定义接口（TaskRepository / IDGenerator / Clock），不碰数据库</text>
+  <polygon points="260,640 380,580 1140,580 1020,640" fill="#86EFAC"/>
+  <polygon points="1020,640 1140,580 1140,690 1020,750" fill="#22C55E"/>
+  <rect x="260" y="640" width="760" height="110" fill="#F0FDF4" stroke="#15803D" stroke-width="2"/>
+  <text x="290" y="682" font-size="22" font-weight="700" fill="#14532D">domain　内层</text>
+  <text x="290" y="712" font-size="15" fill="#166534">Task 聚合根 · Title / Status / Priority · Complete / Reopen</text>
+  <text x="290" y="736" font-size="15" fill="#166534">业务规则和不变量都在这里，不认识数据库、HTTP、RPC</text>
+
+  <!-- 左侧方向说明 -->
+  <line x1="150" y1="200" x2="150" y2="720" stroke="#94A3B8" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#down)"/>
+  <text x="136" y="470" font-size="14" fill="#64748B" transform="rotate(-90 136 470)">依赖方向</text>
+
+  <!-- 层间箭头（最后绘制，保证在上层） -->
+  <line x1="640" y1="312" x2="640" y2="416" stroke="#475569" stroke-width="3" marker-end="url(#down)"/>
+  <text x="654" y="348" font-size="15" fill="#334155">依赖</text>
+  <line x1="640" y1="532" x2="640" y2="636" stroke="#475569" stroke-width="3" marker-end="url(#down)"/>
+  <text x="654" y="568" font-size="15" fill="#334155">依赖</text>
+
+  <!-- 右侧调用链 -->
+  <rect x="1180" y="180" width="180" height="560" rx="12" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5"/>
+  <text x="1200" y="214" font-size="16" font-weight="700" fill="#0F172A">一次创建</text>
+  <text x="1200" y="244" font-size="13" fill="#334155">Kitex handler</text>
+  <text x="1200" y="270" font-size="13" fill="#94A3B8">↓</text>
+  <text x="1200" y="296" font-size="13" fill="#334155">CreateTask.Execute</text>
+  <text x="1200" y="322" font-size="13" fill="#94A3B8">↓</text>
+  <text x="1200" y="348" font-size="13" fill="#334155">domain.NewTask</text>
+  <text x="1200" y="374" font-size="13" fill="#94A3B8">↓</text>
+  <text x="1200" y="400" font-size="13" fill="#334155">NewTitle 校验</text>
+  <text x="1200" y="426" font-size="13" fill="#94A3B8">↓</text>
+  <text x="1200" y="452" font-size="13" fill="#334155">repo.Save</text>
+  <text x="1200" y="478" font-size="13" fill="#94A3B8">↓</text>
+  <text x="1200" y="504" font-size="13" fill="#334155">MySQL INSERT</text>
+  <text x="1200" y="540" font-size="12" fill="#64748B">每一层只调</text>
+  <text x="1200" y="560" font-size="12" fill="#64748B">下一层的接口</text>
+
+  <!-- 图例 -->
+  <g font-size="14" fill="#334155">
+    <rect x="60" y="860" width="18" height="18" rx="4" fill="#FFEDD5" stroke="#C2410C" stroke-width="1.5"/>
+    <text x="88" y="875">adapters：和外界打交道，可以脏</text>
+    <rect x="420" y="860" width="18" height="18" rx="4" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.5"/>
+    <text x="448" y="875">application：编排步骤</text>
+    <rect x="700" y="860" width="18" height="18" rx="4" fill="#F0FDF4" stroke="#15803D" stroke-width="1.5"/>
+    <text x="728" y="875">domain：业务规则</text>
+    <text x="940" y="875" fill="#64748B">依赖只能外层 → 内层</text>
+  </g>
+</svg>

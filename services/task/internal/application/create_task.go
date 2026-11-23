@@ -26,9 +26,10 @@ type Clock interface {
 	Now() time.Time
 }
 
+// 父任务已经是子任务，不允许再嵌套。
 var ErrParentIsSubtask = errors.New("application: parent task is already a subtask")
 
-// CreateTaskInput 是用例入参，贴近协议；默认值由用例决定。
+// CreateTaskInput 是用例入参，贴近协议；由handle调用
 type CreateTaskInput struct {
 	UserID    string
 	SpaceID   string // 必填；省略时的"个人空间"由 gateway 从配置补上（切片 2 有了空间管理再改）
@@ -53,10 +54,12 @@ type CreateTask struct {
 	clock Clock
 }
 
+// NewCreateTask 注入依赖，返回用例实例。由main调用
 func NewCreateTask(repo TaskRepository, ids IDGenerator, clock Clock) *CreateTask {
 	return &CreateTask{repo: repo, ids: ids, clock: clock}
 }
 
+// Execute 按「查父任务 → 构造任务 → 保存」的顺序执行。由handle调用
 func (uc *CreateTask) Execute(ctx context.Context, in CreateTaskInput) (*domain.Task, error) {
 	// 1. 先按请求里的空间与项目来；如果带了父任务，下面会覆盖成父任务的。
 	spaceID, projectID := in.SpaceID, in.ProjectID

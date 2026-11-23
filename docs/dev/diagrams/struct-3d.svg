@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1100" height="900" viewBox="0 0 1100 900"
      font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
   <defs>
-    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <path d="M0,0 L9,3 L0,6 z" fill="#334155"/>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="3" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0,1 L8,4.5 L0,8 z" fill="#334155"/>
     </marker>
-    <marker id="ared" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <path d="M0,0 L9,3 L0,6 z" fill="#DC2626"/>
+    <marker id="ared" markerWidth="9" markerHeight="9" refX="8" refY="3" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0,1 L8,4.5 L0,8 z" fill="#DC2626"/>
     </marker>
   </defs>
   <rect width="1100" height="900" fill="#ffffff"/>
@@ -30,7 +30,7 @@
   <text x="120" y="424" font-size="15" fill="#475569">a</text>
 
   <!-- 复制箭头 -->
-  <line x1="430" y1="315" x2="516" y2="315" stroke="#334155" stroke-width="2.5" marker-end="url(#a)"/>
+  <line x1="430" y1="315" x2="556" y2="315" stroke="#334155" stroke-width="2.5" marker-end="url(#a)"/>
   <text x="432" y="296" font-size="15" fill="#334155">b := a</text>
 
   <!-- 盒子 B -->
@@ -67,13 +67,13 @@
   <rect x="150" y="790" width="150" height="52" rx="10" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
   <text x="168" y="822" font-size="16" fill="#92400E" font-family="Menlo, monospace">p</text>
   <text x="196" y="822" font-size="15" fill="#92400E">指向盒子的位置</text>
-  <line x1="225" y1="788" x2="225" y2="748" stroke="#DC2626" stroke-width="2.5" marker-end="url(#ared)"/>
+  <line x1="225" y1="788" x2="225" y2="742" stroke="#DC2626" stroke-width="2.5" marker-end="url(#ared)"/>
 
   <!-- 指针卡片 2 -->
   <rect x="340" y="790" width="150" height="52" rx="10" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
   <text x="358" y="822" font-size="16" fill="#92400E" font-family="Menlo, monospace">q</text>
   <text x="386" y="822" font-size="15" fill="#92400E">指向同一个位置</text>
-  <line x1="415" y1="788" x2="415" y2="748" stroke="#DC2626" stroke-width="2.5" marker-end="url(#ared)"/>
+  <line x1="415" y1="788" x2="415" y2="742" stroke="#DC2626" stroke-width="2.5" marker-end="url(#ared)"/>
 
   <text x="560" y="610" font-size="16" fill="#334155">p 和 q 里存的不是任务本身，</text>
   <text x="560" y="638" font-size="16" fill="#334155">而是「盒子在哪」。</text>

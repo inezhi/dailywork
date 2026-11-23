@@ -166,12 +166,37 @@ func (uc *CreateTask) Execute(ctx, in CreateTaskInput) (*domain.Task, error)
 
 ---
 
-## 5. 未完成
+## 5. 适配层（MySQL）
+
+**文件：** `services/task/internal/adapters/mysql/`
+
+- `task_row.go`：`taskRow` 对应 `tasks` 表，带 gorm tag，不做业务判断
+- `task_repo.go`：`TaskRepo` 实现 `application.TaskRepository`，领域模型与行之间靠 `toRow` / `toDomain` 转换
+
+**Save 的逻辑：**
+
+```
+UPDATE ... WHERE id = ? AND version = ?
+  改到了        → 成功（version + 1）
+  没改到
+    ├─ 行存在   → ErrVersionConflict
+    └─ 行不存在 → INSERT
+```
+
+**FindByID：** 过滤 `deleted_at IS NULL`；查不到返回 `domain.ErrTaskNotFound`。
+
+**测试：** 集成测试，设置 `TEST_MYSQL_DSN` 才跑，否则跳过。
+
+```bash
+TEST_MYSQL_DSN="dailywork:<pw>@tcp(127.0.0.1:3306)/dailywork?parseTime=true&loc=UTC" \
+  go test ./services/task/internal/adapters/mysql/
+```
+
+---
+
+## 6. 未完成
 
 | 缺什么 | 补在哪 |
 |---|---|
-| GORM 实现 `TaskRepository` | adapters |
-| `cmd/task/main.go`：连库、起 Kitex 服务 | 入口 |
-| Kitex handler：`CreateTaskReq` → `CreateTaskInput` | adapters |
 | gateway：Hertz 路由 + 调 RPC | gateway |
-| 用到的 UUID 生成器、系统时钟实现 | adapters |
+| 端到端验证：从 HTTP 一路打到 MySQL | gateway |

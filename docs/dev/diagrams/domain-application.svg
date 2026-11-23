@@ -1,17 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1120" viewBox="0 0 1500 1120"
      font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
   <defs>
-    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <path d="M0,0 L9,3 L0,6 z" fill="#475569"/>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="3" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0,1 L8,4.5 L0,8 z" fill="#475569"/>
     </marker>
-    <marker id="ab" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <path d="M0,0 L9,3 L0,6 z" fill="#2563EB"/>
+    <marker id="ab" markerWidth="9" markerHeight="9" refX="8" refY="3" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0,1 L8,4.5 L0,8 z" fill="#2563EB"/>
     </marker>
-    <marker id="ao" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <path d="M0,0 L9,3 L0,6 z" fill="#C2410C"/>
+    <marker id="ao" markerWidth="9" markerHeight="9" refX="8" refY="3" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0,1 L8,4.5 L0,8 z" fill="#C2410C"/>
     </marker>
-    <marker id="ag" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <path d="M0,0 L9,3 L0,6 z" fill="#15803D"/>
+    <marker id="ag" markerWidth="9" markerHeight="9" refX="8" refY="3" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0,1 L8,4.5 L0,8 z" fill="#15803D"/>
     </marker>
   </defs>
   <rect width="1500" height="1120" fill="#ffffff"/>

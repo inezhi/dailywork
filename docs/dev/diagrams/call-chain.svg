@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1120" viewBox="0 0 1600 1120"
+     font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="3" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0,1 L8,4.5 L0,8 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="1600" height="1120" fill="#ffffff"/>
+
+  <text x="60" y="48" font-size="26" font-weight="700" fill="#111111">现有代码的调用链</text>
+  <text x="60" y="76" font-size="14" fill="#64748B">services/ 下的非测试文件；箭头表示调用，缩进表示层级</text>
+
+  <!-- ================= 启动 ================= -->
+  <text x="60" y="122" font-size="18" font-weight="700" fill="#0F172A">启动装配（main.go）</text>
+
+  <!-- 第一行 -->
+  <rect x="60" y="140" width="200" height="52" rx="8" fill="#F1F5F9" stroke="#475569" stroke-width="2"/>
+  <text x="76" y="171" font-size="15" fill="#0F172A">main()</text>
+
+  <rect x="280" y="140" width="200" height="52" rx="8" fill="#F1F5F9" stroke="#475569" stroke-width="2"/>
+  <text x="296" y="171" font-size="15" fill="#0F172A">run()</text>
+
+  <rect x="500" y="140" width="200" height="52" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="516" y="171" font-size="15" fill="#7C2D12">loadConfig()</text>
+
+  <rect x="720" y="140" width="200" height="52" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="736" y="171" font-size="15" fill="#7C2D12">mysql.Open(dsn)</text>
+
+  <rect x="940" y="140" width="200" height="52" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="956" y="171" font-size="15" fill="#7C2D12">sqlDB.PingContext</text>
+
+  <rect x="1160" y="140" width="200" height="52" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="1176" y="171" font-size="15" fill="#7C2D12">mysql.New(db)</text>
+
+  <line x1="260" y1="166" x2="276" y2="166" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="480" y1="166" x2="496" y2="166" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="700" y1="166" x2="716" y2="166" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="920" y1="166" x2="936" y2="166" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="1140" y1="166" x2="1156" y2="166" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- 折回第二行 -->
+  <polyline points="1260,192 1260,222 160,222 160,248" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- 第二行 -->
+  <rect x="60" y="250" width="200" height="52" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+  <text x="76" y="281" font-size="15" fill="#1E3A8A">NewCreateTask(...)</text>
+
+  <rect x="280" y="250" width="200" height="52" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="296" y="281" font-size="15" fill="#7C2D12">kitex.New(usecase)</text>
+
+  <rect x="500" y="250" width="200" height="52" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="516" y="281" font-size="15" fill="#7C2D12">NewServer(handler)</text>
+
+  <rect x="720" y="250" width="200" height="52" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="736" y="281" font-size="15" fill="#7C2D12">svr.Run()（阻塞）</text>
+
+  <rect x="940" y="250" width="200" height="52" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="956" y="281" font-size="15" fill="#7C2D12">svr.Stop()</text>
+
+  <line x1="260" y1="276" x2="276" y2="276" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="480" y1="276" x2="496" y2="276" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="700" y1="276" x2="716" y2="276" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="920" y1="276" x2="936" y2="276" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <text x="800" y="316" font-size="12" fill="#64748B">收到 SIGINT / SIGTERM 后才调用 Stop</text>
+
+  <!-- ================= 请求 ================= -->
+  <text x="60" y="370" font-size="18" font-weight="700" fill="#0F172A">一次 CreateTask 请求（kitex → application → domain / mysql）</text>
+
+  <!-- L1 -->
+  <rect x="60" y="390" width="240" height="48" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="76" y="419" font-size="15" fill="#7C2D12">Handler.CreateTask</text>
+
+  <!-- L2 -->
+  <rect x="350" y="460" width="260" height="48" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="366" y="489" font-size="14" fill="#7C2D12">toCreateInput</text>
+
+  <rect x="350" y="530" width="260" height="48" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+  <text x="366" y="559" font-size="14" fill="#1E3A8A">CreateTask.Execute</text>
+
+  <!-- L3 -->
+  <rect x="660" y="600" width="240" height="48" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="676" y="629" font-size="13" fill="#7C2D12">TaskRepo.FindByID</text>
+  <text x="676" y="643" font-size="11" fill="#9A3412">仅当带 parentId</text>
+
+  <rect x="660" y="670" width="240" height="48" rx="8" fill="#F0FDF4" stroke="#15803D" stroke-width="2"/>
+  <text x="676" y="699" font-size="14" fill="#14532D">domain.NewTask</text>
+
+  <rect x="660" y="740" width="240" height="48" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="676" y="769" font-size="14" fill="#7C2D12">TaskRepo.Save</text>
+
+  <!-- L4 -->
+  <rect x="960" y="600" width="330" height="48" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="976" y="629" font-size="13" fill="#7C2D12">GORM 查询 → toDomain</text>
+  <text x="976" y="643" font-size="11" fill="#9A3412">→ domain.Reconstitute</text>
+
+  <rect x="960" y="670" width="330" height="48" rx="8" fill="#F0FDF4" stroke="#15803D" stroke-width="2"/>
+  <text x="976" y="699" font-size="14" fill="#14532D">NewTitle（校验标题）</text>
+
+  <rect x="960" y="740" width="330" height="48" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="976" y="769" font-size="14" fill="#7C2D12">GORM 更新 / 插入 → toRow</text>
+
+  <!-- L2 after execute -->
+  <rect x="350" y="820" width="260" height="48" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="366" y="849" font-size="14" fill="#7C2D12">toThriftTask</text>
+
+  <rect x="350" y="890" width="260" height="48" rx="8" fill="#F5F3FF" stroke="#7C3AED" stroke-width="2"/>
+  <text x="366" y="919" font-size="14" fill="#4C1D95">返回 CreateTaskResp</text>
+
+  <!-- 连线：Handler 主干 -->
+  <line x1="300" y1="414" x2="320" y2="414" stroke="#475569" stroke-width="2"/>
+  <line x1="320" y1="414" x2="320" y2="914" stroke="#475569" stroke-width="2"/>
+  <line x1="320" y1="484" x2="346" y2="484" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="320" y1="554" x2="346" y2="554" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="320" y1="844" x2="346" y2="844" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="320" y1="914" x2="346" y2="914" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- 连线：Execute 主干 -->
+  <line x1="610" y1="554" x2="630" y2="554" stroke="#475569" stroke-width="2"/>
+  <line x1="630" y1="554" x2="630" y2="764" stroke="#475569" stroke-width="2"/>
+  <line x1="630" y1="624" x2="656" y2="624" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="630" y1="694" x2="656" y2="694" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="630" y1="764" x2="656" y2="764" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- 连线：L3 到 L4 -->
+  <line x1="900" y1="624" x2="920" y2="624" stroke="#475569" stroke-width="2"/>
+  <line x1="920" y1="624" x2="920" y2="624" stroke="#475569" stroke-width="2"/>
+  <line x1="920" y1="624" x2="956" y2="624" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="900" y1="694" x2="956" y2="694" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="900" y1="764" x2="956" y2="764" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- 图例 -->
+  <g font-size="13" fill="#334155">
+    <rect x="60" y="980" width="16" height="16" rx="3" fill="#F1F5F9" stroke="#475569" stroke-width="1.5"/>
+    <text x="84" y="993">入口 / 流程</text>
+    <rect x="200" y="980" width="16" height="16" rx="3" fill="#FFF7ED" stroke="#C2410C" stroke-width="1.5"/>
+    <text x="224" y="993">adapters</text>
+    <rect x="330" y="980" width="16" height="16" rx="3" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.5"/>
+    <text x="354" y="993">application</text>
+    <rect x="470" y="980" width="16" height="16" rx="3" fill="#F0FDF4" stroke="#15803D" stroke-width="1.5"/>
+    <text x="494" y="993">domain</text>
+    <rect x="590" y="980" width="16" height="16" rx="3" fill="#F5F3FF" stroke="#7C3AED" stroke-width="1.5"/>
+    <text x="614" y="993">响应</text>
+    <text x="720" y="993" fill="#64748B">箭头 = 调用；缩进 = 被调用的那一层</text>
+  </g>
+  <text x="60" y="1040" font-size="13" fill="#64748B">未画出的两处调用：</text>
+  <text x="60" y="1064" font-size="13" fill="#64748B">① Execute 构造参数时调用 IDGenerator.NewID() 与 Clock.Now()，实现是 main.go 里的 uuidGen 与 systemClock</text>
+  <text x="60" y="1088" font-size="13" fill="#64748B">② Handler.Echo 只调用 okResp，把消息原样返回</text>
+</svg>
