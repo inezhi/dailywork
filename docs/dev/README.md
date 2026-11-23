@@ -20,6 +20,7 @@
 - [feishu-map.md](feishu-map.md) — 飞书 14 篇的 token、状态、是否阻塞 M1
 - [gate-checklist.md](gate-checklist.md) — 开代码 Gate 前的检查清单
 - [devlog.md](devlog.md) — 开发过程记录，每次提交前更新
+- [cli.md](cli.md) — 从命令行调用 RPC 接口的用法
 
 ## 当前状态
 

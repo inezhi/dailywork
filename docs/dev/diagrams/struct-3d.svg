@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="900" viewBox="0 0 1100 900"
+     font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="3" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0,1 L8,4.5 L0,8 z" fill="#334155"/>
+    </marker>
+    <marker id="ared" markerWidth="9" markerHeight="9" refX="8" refY="3" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0,1 L8,4.5 L0,8 z" fill="#DC2626"/>
+    </marker>
+  </defs>
+  <rect width="1100" height="900" fill="#ffffff"/>
+
+  <text x="48" y="52" font-size="26" font-weight="700" fill="#111111">struct 是一个盒子</text>
+  <text x="48" y="82" font-size="16" fill="#64748B">赋值 = 复制盒子；指针 = 指向盒子</text>
+
+  <!-- ============ 上半：值复制 ============ -->
+  <rect x="40" y="110" width="1020" height="330" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5"/>
+  <text x="68" y="148" font-size="19" font-weight="700" fill="#0F172A">赋值（不用指针）：复制一整个盒子</text>
+
+  <!-- 盒子 A -->
+  <polygon points="120,240 160,216 400,216 360,240" fill="#BFDBFE"/>
+  <polygon points="360,240 400,216 400,366 360,390" fill="#93C5FD"/>
+  <rect x="120" y="240" width="240" height="150" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="138" y="272" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">ID</text>
+  <text x="210" y="272" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">"t1"</text>
+  <text x="138" y="306" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">Title</text>
+  <text x="210" y="306" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">"写周报"</text>
+  <text x="138" y="340" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">Done</text>
+  <text x="210" y="340" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">false</text>
+  <text x="120" y="424" font-size="15" fill="#475569">a</text>
+
+  <!-- 复制箭头 -->
+  <line x1="430" y1="315" x2="556" y2="315" stroke="#334155" stroke-width="2.5" marker-end="url(#a)"/>
+  <text x="432" y="296" font-size="15" fill="#334155">b := a</text>
+
+  <!-- 盒子 B -->
+  <polygon points="560,240 600,216 840,216 800,240" fill="#BFDBFE"/>
+  <polygon points="800,240 840,216 840,366 800,390" fill="#93C5FD"/>
+  <rect x="560" y="240" width="240" height="150" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="578" y="272" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">ID</text>
+  <text x="650" y="272" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">"t1"</text>
+  <text x="578" y="306" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">Title</text>
+  <text x="650" y="306" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">"写周报"</text>
+  <text x="578" y="340" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">Done</text>
+  <text x="650" y="340" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">false</text>
+  <text x="560" y="424" font-size="15" fill="#475569">b（复制品）</text>
+
+  <text x="890" y="270" font-size="16" fill="#DC2626">改 b.Done = true</text>
+  <text x="890" y="298" font-size="16" fill="#DC2626">→ a.Done 还是 false</text>
+
+  <!-- ============ 下半：指针 ============ -->
+  <rect x="40" y="470" width="1020" height="390" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5"/>
+  <text x="68" y="508" font-size="19" font-weight="700" fill="#0F172A">指针：不复制盒子，只记住盒子的位置</text>
+
+  <!-- 盒子 -->
+  <polygon points="200,590 240,566 480,566 440,590" fill="#BFDBFE"/>
+  <polygon points="440,590 480,566 480,716 440,740" fill="#93C5FD"/>
+  <rect x="200" y="590" width="240" height="150" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="218" y="622" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">ID</text>
+  <text x="290" y="622" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">"t1"</text>
+  <text x="218" y="656" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">Title</text>
+  <text x="290" y="656" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">"写周报"</text>
+  <text x="218" y="690" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">Done</text>
+  <text x="290" y="690" font-size="16" fill="#1E3A8A" font-family="Menlo, monospace">false</text>
+
+  <!-- 指针卡片 1 -->
+  <rect x="150" y="790" width="150" height="52" rx="10" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+  <text x="168" y="822" font-size="16" fill="#92400E" font-family="Menlo, monospace">p</text>
+  <text x="196" y="822" font-size="15" fill="#92400E">指向盒子的位置</text>
+  <line x1="225" y1="788" x2="225" y2="742" stroke="#DC2626" stroke-width="2.5" marker-end="url(#ared)"/>
+
+  <!-- 指针卡片 2 -->
+  <rect x="340" y="790" width="150" height="52" rx="10" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+  <text x="358" y="822" font-size="16" fill="#92400E" font-family="Menlo, monospace">q</text>
+  <text x="386" y="822" font-size="15" fill="#92400E">指向同一个位置</text>
+  <line x1="415" y1="788" x2="415" y2="742" stroke="#DC2626" stroke-width="2.5" marker-end="url(#ared)"/>
+
+  <text x="560" y="610" font-size="16" fill="#334155">p 和 q 里存的不是任务本身，</text>
+  <text x="560" y="638" font-size="16" fill="#334155">而是「盒子在哪」。</text>
+  <text x="560" y="676" font-size="16" fill="#DC2626">通过 p 改内容，q 看到的也变了</text>
+  <text x="560" y="704" font-size="16" fill="#DC2626">——因为它们是同一个盒子。</text>
+
+  <text x="560" y="760" font-size="15" fill="#64748B">Go 里写 *Task，就是「一个能指向 Task 盒子的指针」；</text>
+  <text x="560" y="786" font-size="15" fill="#64748B">&amp;task 才是把盒子的位置取出来。</text>
+</svg>

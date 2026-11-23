@@ -4,12 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 当前状态
 
-**v2 文档阶段，业务代码尚未开始。** 在飞书 14 篇文档定稿前，不写服务、数据库、前端或部署代码。当前仓库可见内容：
+**切片 1 完成：`POST /api/v1/tasks` 已从 gateway 打通到 MySQL。** 下一步切片 2：identity 注册登录 + JWT 校验。本地调用方式见 `docs/dev/cli.md`。
 
 ```text
-old/          # v1 完整归档，只读参考
-CLAUDE.md     # 本文件
-README.md     # 项目说明与文档入口
+api/              # Thrift IDL、OpenAPI 契约、生成代码
+deploy/           # Docker Compose、MySQL 初始化脚本、task.example.yaml
+docs/             # 开发文档与学习日志
+services/task     # Kitex：任务服务
+services/gateway  # Hertz：HTTP 网关
+tools/            # 开发用命令行工具（RPC 客户端）
+old/              # v1 完整归档，只读参考
 ```
 
 ## 项目定位
@@ -22,8 +26,8 @@ README.md     # 项目说明与文档入口
 
 1. **`old/` 是冻结参考。** 禁止修改、构建、import，或把旧 TypeScript 实现直接复制进新代码。可以阅读其 PRD、设计系统、数据模型、ops 契约与测试断言，作为新规格参考。
 2. **文档先行。** 产品范围、服务边界、API 契约、数据模型未在飞书文档中写清楚之前，不开始实现。实现与文档冲突时，先改文档再改代码。
-3. **`main` 只收 PR，也是唯一长期分支。** 新工作从 `main` 切 `feat/<scope>`，完成后向 `main` 提 PR 合并，合并后删掉功能分支。不要直接提交 `main`，也不要再建长期集成分支。原来的 `v2` 集成分支已停用：内容已全部并入 `main`，分支保留存档，不再往里合任何东西。
-4. **一个服务一个数据库。** `identity`/`task` 用 MySQL 8，`docs`/`assistant` 用 MongoDB；禁止跨服务读表/集合；跨服务只走 API 或事件。
+3. **`main` 只收 PR，也是唯一长期分支。** 新工作从 `main` 切 `feat/<scope>`，完成后向 `main` 提 PR 合并。**开发过程中禁止删除任何分支**，合并后也保留功能分支。不要直接提交 `main`，也不要再建长期集成分支。原来的 `v2` 集成分支已停用：内容已全部并入 `main`，分支保留存档，不再往里合任何东西。
+4. **只有一个数据库。** MySQL 8 的 `dailywork` 库存放全部关系数据，不按服务分库；`docs`/`assistant` 将来用 MongoDB 时同理。禁止跨服务读别人的表/集合，跨服务只走 API 或事件。
 5. **不要造分布式单体。** 强耦合的聚合放在同一个服务；只有确实需要独立生命周期、独立扩容或独立数据所有权时才拆服务。
 6. **有场景才用技术。** MongoDB 只用于文档型数据，Eino 只用于多步 Agent；简单 CRUD、单轮问答不要套框架。
 
@@ -47,7 +51,7 @@ README.md     # 项目说明与文档入口
 | 平台网关 | APISIX（M6 可选：TLS、限流、灰度、API Key） |
 | 内部 RPC | Kitex + Thrift |
 | IDL / 代码生成 | Thrift + `kitex` / `thriftgo` |
-| 关系数据库 | MySQL 8 + GORM + `golang-migrate` |
+| 关系数据库 | MySQL 8 + GORM |
 | 文档数据库 | MongoDB + `mongo-go-driver`（docs / assistant） |
 | 缓存 / 会话 | Redis + `go-redis` |
 | 事件 | Kafka（KRaft；本地单节点，生产多 broker） |
@@ -66,8 +70,8 @@ README.md     # 项目说明与文档入口
 | 服务 | 职责 | 数据 |
 |---|---|---|
 | `gateway` | Hertz HTTP 入口、鉴权、限流、按需 BFF 聚合、SSE | 无业务数据库 |
-| `identity` | 账户、密码、会话、验证码、内部 JWT | MySQL `identity` + Redis |
-| `task` | 空间、项目、任务、标签、今天查询、outbox | MySQL `task` + Kafka |
+| `identity` | 账户、密码、会话、验证码、内部 JWT | MySQL `dailywork`（users / sessions / login_attempts）+ Redis |
+| `task` | 空间、项目、任务、标签、今天查询、outbox | MySQL `dailywork`（spaces / projects / tasks / tags / outbox）+ Kafka |
 | `docs`（M7） | 文档树、块正文、反向链接 | MongoDB `docs` + MinIO |
 | `assistant`（M8） | AI 对话、工具调用、流式输出 | MongoDB `assistant` |
 | `planning`（后续） | 日历、容量、专注 | MySQL `planning` |
@@ -91,6 +95,7 @@ api/
   events/       # 事件 JSON Schema
   gen/          # 生成代码（提交，CI 检查漂移）
 deploy/         # docker-compose, apisix, kafka, k8s, grafana, prometheus
+tools/          # 开发用命令行工具（如 RPC 客户端）
 web/            # React SPA；桌面端外壳放 web/src-tauri
 docs/           # 本地只放索引；正式文档在飞书
 ```
@@ -102,7 +107,7 @@ docs/           # 本地只放索引；正式文档在飞书
 - 错误用 `fmt.Errorf("...: %w", err)` 包装；HTTP 层统一映射为错误信封，不把内部错误直接返回给客户端。
 - 依赖通过构造函数注入；不要用全局数据库句柄或 init 里连库。
 - 优雅退出：监听 SIGINT/SIGTERM，先停止接收请求，再关闭连接池、消费者与订阅。
-- 配置从环境变量读取，启动时校验；密钥不写进仓库、不写日志。
+- 配置从 YAML 文件读取，启动时校验；含密码的 `deploy/task.yaml` 不进仓库，模板 `deploy/task.example.yaml` 进仓库。
 - 时间戳统一 UTC ISO-8601；业务日期用客户端传入的 `YYYY-MM-DD`，不要用服务端时区推导“今天”。
 
 ## Hertz / gateway
@@ -124,9 +129,9 @@ docs/           # 本地只放索引；正式文档在飞书
 
 ## MySQL + GORM
 
-- MySQL 8 + InnoDB；每个服务独立 database 与账号；迁移放 `services/<name>/migrations/`，用 `golang-migrate`。
+- MySQL 8 + InnoDB；本地由 `deploy/mysql/init/` 下的 SQL 建库建表，不引入迁移工具。改了表结构就改脚本，`make down-v` 重建数据卷后生效。
 - GORM 只负责 repository；领域模型与 GORM model 分开，不要把 GORM model 直接传到 handler。
-- **不用 AutoMigrate 管生产 schema。** 表结构由迁移 SQL 创建；GORM model 只做字段映射。
+- **不用 AutoMigrate。** 表结构由 SQL 脚本创建；GORM model 只做字段映射。
 - DSN：`parseTime=true&loc=UTC&charset=utf8mb4&collation=utf8mb4_0900_ai_ci`；时间戳统一 UTC。
 - 事务：`db.WithContext(ctx).Transaction(func(tx *gorm.DB) error { ... })`；业务表与 outbox 必须同一事务。
 - 乐观锁：`Where("id = ? AND version = ?", id, expected).Updates(...)`，检查 `RowsAffected` 是否为 0。
@@ -228,7 +233,7 @@ docs/           # 本地只放索引；正式文档在飞书
 - 提交遵循 Conventional Commits：`feat(scope):`、`fix(scope):`、`docs:`、`refactor:`、`test:`、`chore:`。
 - 每次提交前更新 `docs/dev/devlog.md`：记下这一步做了什么、为什么这么做、踩了什么坑。日志只记过程，规格仍以飞书为准。
 - 一个 PR 只做一件事；行为变化先改文档/契约，再改代码。
-- 发布前跑 lint、unit、integration、contract、e2e；生成代码无漂移；迁移在空库和旧库都能执行。
+- 发布前跑 lint、unit、integration、contract、e2e；生成代码无漂移；建表脚本在空库能执行。
 - v2 从 `2.0.0` 开始；MVP 完成后打第一个 tag。版本记录在飞书 14 文档的 CHANGELOG 小节维护。
 
 ## 开发节奏
@@ -252,7 +257,6 @@ make down-v         # 停掉并删数据卷（清库）
 
 make test           # go test ./... + 集成测试（待建）
 make lint           # golangci-lint（待建）
-make migrate        # 各服务迁移（待建）
 ```
 
 `make up` 前先 `cp deploy/.env.example deploy/.env` 并填密码；`deploy/.env` 不进仓库。

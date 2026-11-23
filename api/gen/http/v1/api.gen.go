@@ -6,7 +6,6 @@
 package apiv1
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -254,42 +253,6 @@ type TaskPriority string
 // TaskStatus 任务没有 archived 状态
 type TaskStatus string
 
-// Today defines model for Today.
-type Today struct {
-	Date openapi_types.Date `json:"date"`
-
-	// Groups 固定六个键，空组也要返回
-	Groups TodayGroups `json:"groups"`
-}
-
-// TodayEnvelope defines model for TodayEnvelope.
-type TodayEnvelope struct {
-	Data Today `json:"data"`
-
-	// Meta 每次响应都带。requestId 与响应头 X-Request-Id 是同一个值。
-	Meta Meta `json:"meta"`
-}
-
-// TodayGroup defines model for TodayGroup.
-type TodayGroup struct {
-	// Count 以服务端为准；tasks 将来可能被截断，别拿 tasks.length 代替
-	Count int `json:"count"`
-
-	// EstimateMinutes 只累加 estimateMinutes 非空的任务；同样以服务端为准
-	EstimateMinutes int    `json:"estimateMinutes"`
-	Tasks           []Task `json:"tasks"`
-}
-
-// TodayGroups 固定六个键，空组也要返回
-type TodayGroups struct {
-	Completed TodayGroup `json:"completed"`
-	Doing     TodayGroup `json:"doing"`
-	DueToday  TodayGroup `json:"dueToday"`
-	Next      TodayGroup `json:"next"`
-	Overdue   TodayGroup `json:"overdue"`
-	Planned   TodayGroup `json:"planned"`
-}
-
 // IdempotencyKey defines model for IdempotencyKey.
 type IdempotencyKey = string
 
@@ -298,6 +261,9 @@ type Conflict = ErrorEnvelope
 
 // Internal defines model for Internal.
 type Internal = ErrorEnvelope
+
+// NotFound defines model for NotFound.
+type NotFound = ErrorEnvelope
 
 // Unauthorized defines model for Unauthorized.
 type Unauthorized = ErrorEnvelope
@@ -310,12 +276,6 @@ type CreateTaskParams struct {
 	// IdempotencyKey 建议所有写请求都带。键长 16–128 字符，按用户隔离、保留 24 小时。
 	// 同一用户同一 key 同一请求体：返回首次响应；同一 key 不同请求体：返回 409。
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
-}
-
-// ListTodayParams defines parameters for ListToday.
-type ListTodayParams struct {
-	// Date 客户端本地日期，YYYY-MM-DD
-	Date openapi_types.Date `form:"date" json:"date"`
 }
 
 // EchoJSONRequestBody defines body for Echo for application/json ContentType.
@@ -332,9 +292,6 @@ type ServerInterface interface {
 	// CreateTask 创建任务
 	// (POST /api/v1/tasks)
 	CreateTask(w http.ResponseWriter, r *http.Request, params CreateTaskParams)
-	// ListToday 今天分组
-	// (GET /api/v1/today)
-	ListToday(w http.ResponseWriter, r *http.Request, params ListTodayParams)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -392,39 +349,6 @@ func (siw *ServerInterfaceWrapper) CreateTask(w http.ResponseWriter, r *http.Req
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CreateTask(w, r, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// ListToday operation middleware
-func (siw *ServerInterfaceWrapper) ListToday(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-	_ = err
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params ListTodayParams
-
-	// ------------- Required query parameter "date" -------------
-
-	err = runtime.BindQueryParameterWithOptions("form", true, true, "date", r.URL.Query(), &params.Date, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
-	if err != nil {
-		var requiredError *runtime.RequiredParameterError
-		if errors.As(err, &requiredError) {
-			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "date"})
-		} else {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "date", Err: err})
-		}
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ListToday(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -556,7 +480,6 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/echo", wrapper.Echo)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/tasks", wrapper.CreateTask)
-	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/api/v1/today", wrapper.ListToday)
 
 	return m
 }

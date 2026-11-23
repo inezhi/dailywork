@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1040" viewBox="0 0 1200 1040"
+     font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <rect width="1200" height="1040" fill="#ffffff"/>
+
+  <text x="48" y="52" font-size="26" font-weight="700" fill="#111111">Go 三行代码拆开看</text>
+  <text x="48" y="82" font-size="15" fill="#666666">同一种颜色 = 同一个意思。看颜色对上下。</text>
+
+  <!-- ===== 1. 接口 ===== -->
+  <rect x="48" y="110" width="1104" height="270" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5"/>
+  <text x="72" y="146" font-size="18" font-weight="700" fill="#111111">① 声明一个接口</text>
+
+  <text x="72" y="196" font-size="17" fill="#2F6FEB" font-family="Menlo, monospace">type</text>
+  <text x="126" y="196" font-size="17" fill="#15803D" font-family="Menlo, monospace">TaskRepository</text>
+  <text x="291" y="196" font-size="17" fill="#9333EA" font-family="Menlo, monospace">interface {</text>
+
+  <text x="126" y="230" font-size="17" fill="#C2410C" font-family="Menlo, monospace">Save(ctx context.Context, t *domain.Task) error</text>
+  <text x="72" y="264" font-size="17" fill="#333333" font-family="Menlo, monospace">}</text>
+
+  <rect x="72" y="292" width="14" height="14" rx="3" fill="#2F6FEB"/>
+  <text x="96" y="304" font-size="15" fill="#333333">关键字：我要声明一个新类型</text>
+
+  <rect x="352" y="292" width="14" height="14" rx="3" fill="#15803D"/>
+  <text x="376" y="304" font-size="15" fill="#333333">这个类型的名字</text>
+
+  <rect x="536" y="292" width="14" height="14" rx="3" fill="#9333EA"/>
+  <text x="560" y="304" font-size="15" fill="#333333">种类：一份「会什么」的清单</text>
+
+  <rect x="820" y="292" width="14" height="14" rx="3" fill="#C2410C"/>
+  <text x="844" y="304" font-size="15" fill="#333333">清单里的一行：方法名 + 参数 + 返回值，没有方法体</text>
+  <text x="844" y="330" font-size="14" fill="#666666">Save 收什么、还什么，写清楚；怎么做，不写</text>
+
+  <!-- ===== 2. 结构体 ===== -->
+  <rect x="48" y="404" width="1104" height="250" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5"/>
+  <text x="72" y="440" font-size="18" font-weight="700" fill="#111111">② 声明一个结构体</text>
+
+  <text x="72" y="490" font-size="17" fill="#2F6FEB" font-family="Menlo, monospace">type</text>
+  <text x="126" y="490" font-size="17" fill="#15803D" font-family="Menlo, monospace">Task</text>
+  <text x="174" y="490" font-size="17" fill="#9333EA" font-family="Menlo, monospace">struct {</text>
+
+  <text x="126" y="524" font-size="17" fill="#C2410C" font-family="Menlo, monospace">ID    string</text>
+  <text x="126" y="554" font-size="17" fill="#C2410C" font-family="Menlo, monospace">Title string</text>
+  <text x="72" y="588" font-size="17" fill="#333333" font-family="Menlo, monospace">}</text>
+
+  <rect x="72" y="612" width="14" height="14" rx="3" fill="#2F6FEB"/>
+  <text x="96" y="624" font-size="15" fill="#333333">关键字，和上面一样</text>
+
+  <rect x="300" y="612" width="14" height="14" rx="3" fill="#15803D"/>
+  <text x="324" y="624" font-size="15" fill="#333333">类型名</text>
+
+  <rect x="420" y="612" width="14" height="14" rx="3" fill="#9333EA"/>
+  <text x="444" y="624" font-size="15" fill="#333333">种类：一组有名字的格子</text>
+
+  <rect x="660" y="612" width="14" height="14" rx="3" fill="#C2410C"/>
+  <text x="684" y="624" font-size="15" fill="#333333">每个格子：字段名 + 类型</text>
+
+  <!-- ===== 3. 方法 ===== -->
+  <rect x="48" y="678" width="1104" height="300" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5"/>
+  <text x="72" y="714" font-size="18" font-weight="700" fill="#111111">③ 声明一个方法</text>
+
+  <text x="72" y="764" font-size="16" fill="#2F6FEB" font-family="Menlo, monospace">func</text>
+  <text x="123" y="764" font-size="16" fill="#9333EA" font-family="Menlo, monospace">(r *MySQLTaskRepo)</text>
+  <text x="283" y="764" font-size="16" fill="#15803D" font-family="Menlo, monospace">Save</text>
+  <text x="344" y="764" font-size="16" fill="#C2410C" font-family="Menlo, monospace">(ctx context.Context, t *domain.Task)</text>
+  <text x="686" y="764" font-size="16" fill="#0891B2" font-family="Menlo, monospace">error</text>
+
+  <text x="72" y="798" font-size="16" fill="#333333" font-family="Menlo, monospace">{</text>
+  <text x="123" y="798" font-size="16" fill="#555555" font-family="Menlo, monospace">return nil</text>
+  <text x="72" y="828" font-size="16" fill="#333333" font-family="Menlo, monospace">}</text>
+
+  <rect x="72" y="856" width="14" height="14" rx="3" fill="#2F6FEB"/>
+  <text x="96" y="868" font-size="15" fill="#333333">关键字：我要声明一个函数/方法</text>
+
+  <rect x="360" y="856" width="14" height="14" rx="3" fill="#9333EA"/>
+  <text x="384" y="868" font-size="15" fill="#333333">接收者：这个方法属于谁（类似 Java 的 this）</text>
+
+  <rect x="760" y="856" width="14" height="14" rx="3" fill="#15803D"/>
+  <text x="784" y="868" font-size="15" fill="#333333">方法名</text>
+
+  <rect x="72" y="892" width="14" height="14" rx="3" fill="#C2410C"/>
+  <text x="96" y="904" font-size="15" fill="#333333">参数列表：每项都是「名字 类型」</text>
+
+  <rect x="420" y="892" width="14" height="14" rx="3" fill="#0891B2"/>
+  <text x="444" y="904" font-size="15" fill="#333333">返回值类型</text>
+
+  <rect x="620" y="892" width="14" height="14" rx="3" fill="#555555"/>
+  <text x="644" y="904" font-size="15" fill="#333333">大括号里才是「怎么做」——接口里没有这一段，所以接口没有方法体</text>
+</svg>

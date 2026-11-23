@@ -20,11 +20,130 @@
 - **密码**：放 `deploy/.env`（gitignored），仓库里只有 `.env.example`
 - **命令**：`make up / down / down-v / ps`
 
-**与 05 的偏差：** 05/06 写的是 identity 与 task 各一个库。服务已经合并成一个
-`DailyWorkService`，本地先用单库 `dailywork`；等把服务拆回去时再分库。
+**单库是设计，不是临时妥协：** 从头到尾只有一个 MySQL 库 `dailywork`，不按服务分库。
+05/06 里"每个服务一个库"的旧写法已经改掉。
 
 **验证：** 三个容器都 healthy；MySQL 8.4.13，`dailywork` 账号能连；
 3306 / 6379 / 9092 宿主机可达；`redis-cli ping` 返回 PONG。
+
+---
+
+## 阶段 2 · 切片 1（2026-11-05 起）
+
+**库表决定：不建外键，任务只做逻辑删除。**
+
+- 全库不建外键，跨表一致性由应用层保证；外键列该有的索引照建
+- 任务只做逻辑删除（写 `deleted_at`），**不做物理清理**，所以也没有
+  `ON DELETE CASCADE` 要处理——之前 06 里"30 天后物理清理"的写法已经删掉
+- 删除父任务仍是一条 `UPDATE ... WHERE id = ? OR parent_id = ?`，父子写同一时间戳
+
+**空间改成删除，不再是归档。** 空间去掉 `color`，`archived_at` 换成 `deleted_at`，
+生成列 `active_name` 也改为按 `deleted_at` 判断。删除空间时连同其下任务一起逻辑删除
+（二次确认，父子写同一时间戳），不做物理清理。归档只剩项目一个适用对象。
+
+**项目去掉起止日期。** `projects` 只保留名称、描述、颜色与归档时间；飞书 02 的范围表
+与 FR-P1 一并删掉"起止日期"，ER 图同步。02 里提到的项目"状态"在表里本来就没有，也一起去掉了。
+
+**状态与优先级存数字。** `tasks.status` / `tasks.priority` 从 VARCHAR 改成 TINYINT，
+编号与 `const/task_const.thrift` 一一对应：状态 1=inbox…6=done，优先级 1=none…5=urgent。
+CHECK 改成范围校验（1–6、1–5），`chk_tasks_done` 相应写成 `status = 6`。
+好处是数据库、Thrift、Go 常量共用一套编号，少一次字符串映射。
+
+**切片 1 的代码（第一步）：** 领域层 `domain/task.go`（Task 聚合、Title/Status/Priority、
+NewTask、Reconstitute、Complete/Reopen）与应用层 `application/create_task.go`（三个接口 +
+CreateTask 用例）已写完，23 个测试通过，不依赖数据库。
+
+两个取舍记一下：仓储接口一度移到 domain 又移回 application——偏好"接口跟用例走"；
+Title 值对象与 Task 放在同一个文件——Go 不强制一文件一类型，按阅读方便来。
+
+**建表不走迁移工具。** 建表脚本放 `deploy/mysql/init/02-schema.sql`，MySQL 容器首次启动
+（数据卷为空）时自动执行，没有版本号、没有 up/down。改了脚本要 `make down-v` 重建数据卷
+才生效——本地开发，能重建就不需要迁移。
+
+**验证：** 空卷重建后三张表自动建好，`information_schema` 里 FOREIGN KEY 数量为 0，
+三条 CHECK 约束都在。ER 图见 [`docs/dev/er.md`](er.md)。
+
+**契约收口。** IDL 和 OpenAPI 只保留 `Echo` 与 `CreateTask`，没实现的方法和没人用的
+struct 全部删掉，`api/gen` 跟着删掉七千多行。契约跟着实现走，不提前占位：占位的方法
+没有实现，生成的接口会逼着写一堆空壳。
+
+**`CreateTaskResp.task` 从 required 改成 optional。** 冒烟测试打出来的坑：业务出错时
+`task` 是 nil，required 字段序列化失败，客户端收到的是 nil 响应，看不到 `BaseResp`
+里的 400 和错误信息。改成 optional 后错误能正常带回。
+
+**适配层（MySQL）。** `taskRow` 对应 `tasks` 表；`TaskRepo` 实现 `application.TaskRepository`。
+`Save` 走乐观锁：`UPDATE ... WHERE id = ? AND version = ?`，`RowsAffected` 为 0 时再按
+id 数一次——数到是版本冲突，数不到是新任务，走 INSERT。`FindByID` 过滤
+`deleted_at IS NULL`，把 `gorm.ErrRecordNotFound` 翻成 `domain.ErrTaskNotFound`。
+集成测试用 `TEST_MYSQL_DSN` 门控，没设置就跳过。领域层因此补了
+`ErrTaskNotFound`、`ErrVersionConflict` 两个错误。
+
+**适配层（Kitex）。** handler 只做三件事：`CreateTaskReq` → `CreateTaskInput`、调用用例、
+结果或错误 → `CreateTaskResp`。业务错误走 `BaseResp.statusCode`：400 校验失败、
+404 找不到、409 版本冲突、500 其它。日期用 `YYYY-MM-DD` 字符串，枚举用 int32，
+指针字段用来区分"没传"和"零值"。
+
+**入口。** `cmd/task/main.go` 一条线：读配置 → 连库 → 设连接池 → ping → 装配
+仓储/用例/handler → 起 Kitex → 等信号 → 优雅停止。日志用 `slog` JSON 输出到 stdout。
+
+**冒烟结果。** 服务起在 `127.0.0.1:8888`：`Echo` 返回 0；`CreateTask` 返回 0 且
+`version=1`；空标题返回 400「标题不能为空」；MySQL 里能查到对应行。
+
+**验证：** `go build ./...`、`go vet ./...` 通过；domain / application / mysql 三个包
+测试全绿；`make codegen` 重复执行，`api/gen` 哈希不变。
+
+**配置改成 YAML（2026-11-23）。** 服务的 `server.addr` 与 `mysql.dsn` 从环境变量搬进
+`deploy/task.yaml`，用 `-config` 指定路径，启动时校验两项都非空。模板
+`deploy/task.example.yaml` 进仓库，含密码的 `task.yaml` 走 gitignore——和 `.env` 同一套路子。
+`gopkg.in/yaml.v3` 原本是 thriftgo 带进来的间接依赖，提升为直接依赖，没有新增模块。
+
+**本地调用工具（2026-11-23）。** 新增 `tools/cli`：每个接口一个子命令，创建任务的参数用
+flag 传，Echo 只收一个位置参数。它用 `api/gen` 里的类型构造请求，不经过 gateway。
+Kitex 走 Thrift 二进制协议，没有 curl 的等价物，所以需要这个工具；gateway 写出来之后
+HTTP 才能调。用法见 [`cli.md`](cli.md)。实测 Echo 与 CreateTask 都返回 0，任务数据落库。
+
+**文档同步。** README 与 CLAUDE.md 的「当前状态」「仓库结构」改成实际进度；
+`docs/dev/README.md` 的索引加入 `cli.md`。
+
+**gateway 第 1 步（2026-11-23）。** 新建 `services/gateway/cmd/gateway/main.go` 与
+`deploy/gateway.yaml`：Hertz 监听 `127.0.0.1:8080`，只注册 `GET /healthz`
+（返回 `{"status":"ok"}`），配置结构与 task 服务一致（YAML + `-config`）。
+`gateway.yaml` 不含密码，直接提交；`task.yaml` 继续走 gitignore。
+引入 `hertz v0.10.6`，连带 `netpoll` 从 v0.7.2 升到 v0.7.5。
+
+**gateway 第 2 步（2026-11-23）。** `deploy/gateway.yaml` 增加 `task.addr`；启动时用 Kitex
+客户端调一次 `Echo` 验证链路，调用失败或 `statusCode` 非 0 都直接退出——和 task 服务启动时
+ping 数据库是同一个原则：下游不通就不对外服务。RPC 超时 3 秒。还没注册业务路由。
+
+**gateway 第 3 步（2026-11-23）。** 新增 `internal/adapters/hertz/echo.go`：`POST /api/v1/echo`
+的解析、契约校验（message 1–200 字符）、RPC 调用与 `{data, meta}` 响应。每个响应生成 UUIDv7
+作为 `requestId`，同时写 `X-Request-Id` 头，两者保持一致。错误先用 `ErrorEnvelope` 返回
+400/500，完整的 domain 错误映射留给第 5 步。
+
+**gateway 第 4 步（2026-11-23）。** 新增 `internal/adapters/hertz/create_task.go` 与
+`convert.go`：`POST /api/v1/tasks` 完成 HTTP ↔ Thrift 的字段映射（UUID、日期、时间、
+状态与优先级枚举）。gateway 做契约级校验：title 1–200、notes ≤ 20000、status 不能是 done、
+priority 只能五个值、estimate 0–10000。`userId` 暂时写死 `u-local`，RPC 错误暂时一律 500，
+分别在后面两步处理。
+
+**gateway 第 5 步（2026-11-23）。** 契约给 `POST /api/v1/tasks` 补了 404 响应——父任务不存在时
+服务端会返回 404，原契约没声明。新增 `errors.go`：把 task 服务的 `statusCode` 映射成 HTTP
+状态码与错误码，400/404/409 原样保留，其余按 500。网络层错误不经过 `statusCode`，仍返回 500。
+
+**gateway 第 6 步（2026-11-23）。** `ownerID` 从代码里写死改成配置 `auth.owner_id`，
+`CreateTask` 构造时注入；缺这个字段启动直接报错。用临时配置验证过数据库里的 `user_id`
+跟着配置变。切片 2 接入会话后删掉这段配置。
+
+**gateway 第 7–8 步（2026-11-23）。** 新增 `handler_test.go` 与 `convert_test.go`：用假的
+RPC 客户端和 Hertz 的 `ut.PerformRequest` 在内存里发请求，共 15 个用例，不依赖真实服务和
+数据库。curl 演示通过：Echo 回显正常，创建任务返回 200 并落库。
+
+**切片 1 收尾。** 八步全部完成：入口 → RPC 客户端 → Echo 路由 → CreateTask 路由 → 错误映射 →
+ownerID 配置 → 测试 → 提交。验收四项里「能演示」「有测试」「文档同步」满足。
+「有指标」**明确延期**：M1 四刀不包含可观测性建设，指标随 OpenTelemetry / Prometheus 一起在
+可观测性里程碑补上——这是决定，不是遗漏。
+
+另：**开发过程中禁止删除任何分支**，合并后也保留功能分支。这条已写进 CLAUDE.md 与 README。
 
 ---
 

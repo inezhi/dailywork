@@ -1,0 +1,6 @@
+# 复制成 deploy/task.yaml 后填上真实密码；task.yaml 不进仓库。
+server:
+  addr: "127.0.0.1:8888"
+
+mysql:
+  dsn: "dailywork:填密码@tcp(127.0.0.1:3306)/dailywork?parseTime=true&loc=UTC&charset=utf8mb4&collation=utf8mb4_0900_ai_ci"

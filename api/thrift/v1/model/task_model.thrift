@@ -24,19 +24,3 @@ struct Task {
   16: required string updatedAt       // UTC ISO-8601
   17: optional list<string> tagIds    // 挂着的标签；没有则为空
 }
-
-// 今天页的一个分组。
-struct TodayGroup {
-  1: required string key              // overdue|dueToday|planned|doing|next|completed，前端按 key 原样渲染
-  2: required i32 count               // 本组任务数。以服务端为准：tasks 将来可能被截断，别拿 len(tasks) 代替
-  3: required i32 estimateMinutes     // 本组预估合计，只累加 estimateMinutes 非空的任务。同样以服务端为准
-  4: required list<Task> tasks        // 本组任务，按优先级、截止日期排序
-}
-
-// 今天视图。不是任务状态，是按客户端传入的日期算出来的快照。
-// 一个任务只进优先级最高的那一组：逾期 → 今天到期 → 今天计划 → 进行中 → 下一步 → 今日完成。
-// 第 5 组 key 是 next，同时包含 status 为 next 与 inbox（收件箱）的任务。
-struct Today {
-  1: required string date             // 客户端传的 YYYY-MM-DD；服务端不用自己的时区推导"今天"
-  2: required list<TodayGroup> groups // 固定六组，即使为空也返回，前端不必判空
-}

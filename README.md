@@ -2,7 +2,7 @@
 
 个人任务 × 时间 × 知识工作台。v2 同时是一个 **Go 微服务学习项目**：用一个真实可用的产品，练习服务边界、数据所有权、事件驱动、可观测性与容器化。
 
-> 当前状态：**文档阶段**。代码尚未开始；仓库里只有 v1 归档与 v2 文档入口。
+> 当前状态：**切片 1 完成**。`POST /api/v1/tasks` 已从 gateway 打通到 MySQL；下一步切片 2：identity 注册登录。本地调用方式见 [docs/dev/cli.md](docs/dev/cli.md)。
 
 ## 为什么重做
 
@@ -22,7 +22,7 @@ v1 是一个 TypeScript 单体（Hono + SQLite + React/Electron），功能已�
 - 每个服务独立数据库，跨服务只走 API 或事件；
 - 同步查询与异步事件的边界、outbox、幂等与最终一致；
 - 用 Kitex + Thrift 练内部 RPC，用 Hertz 做 HTTP 网关；
-- 用 MySQL 8 + GORM 练 repository、事务、乐观锁和迁移；
+- 用 MySQL 8 + GORM 练 repository、事务、乐观锁和建表脚本；
 - 用 etcd 练服务注册与发现（M3），用 APISIX 练平台网关（M6）；
 - Redis 会话/缓存、Kafka 事件流（分区、消费组、offset、重平衡）；
 - 用 MongoDB 练文档型数据，用 Eino 练 Agent 编排与工具调用；
@@ -91,7 +91,7 @@ MVP 只实现 **gateway + identity + task**，跑通注册、登录、创建任�
 | 内部 RPC | **Kitex + Thrift** |
 | IDL / 代码生成 | Thrift + `kitex` / `thriftgo` |
 | 数据库 | MySQL 8（identity / task）+ MongoDB（docs / assistant） |
-| 数据访问 | MySQL：GORM + `golang-migrate`；MongoDB：`mongo-go-driver` |
+| 数据访问 | MySQL：GORM；MongoDB：`mongo-go-driver` |
 | 缓存/会话 | Redis + `go-redis` |
 | 事件 | **Kafka**（本地 KRaft 单节点；生产多 broker） |
 | 服务发现 | M1 直连，M3 接 etcd（`kitex-contrib/registry-etcd`） |
@@ -130,20 +130,23 @@ MVP 只实现 **gateway + identity + task**，跑通注册、登录、创建任�
 
 ```text
 dailywork/
+├── api/          # Thrift IDL、OpenAPI 契约、生成代码
+├── deploy/       # Docker Compose、MySQL 初始化脚本、task.example.yaml
+├── docs/         # 开发文档与学习日志
+├── services/     # task 服务：cmd + domain / application / adapters
+├── tools/        # 开发用命令行工具（RPC 客户端）
 ├── old/          # v1 完整归档，只读参考
 ├── CLAUDE.md     # 协作说明
 ├── README.md     # 本文件
-└── .gitignore
+└── Makefile
 ```
 
-代码阶段的规划目录：
+规划目录（后续加入）：
 
 ```text
-services/   gateway(Hertz/BFF), identity/task/...（Kitex）
-api/        OpenAPI / Thrift IDL / 生成代码
-deploy/     Docker Compose, APISIX, Kafka, K8s manifests
-web/        React SPA
-docs/       本地只放索引；正式文档在飞书
+services/gateway/   # Hertz：HTTP 入口、鉴权、BFF（下一步）
+services/identity/  # Kitex：账户、会话、验证码
+web/                # React SPA（后续）
 ```
 
 ## 文档
@@ -198,6 +201,26 @@ make up                              # MySQL 8 / Redis / Kafka(KRaft)
 make ps                              # 看容器状态
 ```
 
+**服务配置**（首次）：
+
+```bash
+cp deploy/task.example.yaml deploy/task.yaml   # 填 MySQL 密码；task.yaml 不进仓库
+```
+
+**启动 task 服务**：
+
+```bash
+go run ./services/task/cmd/task -config deploy/task.yaml
+```
+
+**启动 gateway**：
+
+```bash
+go run ./services/gateway/cmd/gateway -config deploy/gateway.yaml
+```
+
+**调用接口**：HTTP 走 gateway（curl 即可），RPC 直接用 [docs/dev/cli.md](docs/dev/cli.md) 里的命令行工具。
+
 **常用命令**：
 
 ```bash
@@ -214,7 +237,7 @@ make down-v          # 连数据卷一起删，下次 up 重新初始化
 ## 工作方式
 
 - `main` 只收 PR，不直接开发；也是唯一长期分支。
-- 功能从 `main` 切 `feat/<scope>`，PR 合回 `main`，合并后删掉功能分支。
+- 功能从 `main` 切 `feat/<scope>`，PR 合回 `main`；**开发过程中禁止删除任何分支**，合并后保留功能分支。
 - 原 `v2` 集成分支已停用（内容已并入 `main`），保留在远端作历史，不再合入。
 - 文档先行：产品与架构文档定稿后，再开始 M1 代码。
 - 提交遵循 Conventional Commits。

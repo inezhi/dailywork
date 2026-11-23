@@ -74,38 +74,10 @@ paths:
           $ref: '#/components/responses/ValidationFailed'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
-        '500':
-          $ref: '#/components/responses/Internal'
-
-  /api/v1/today:
-    get:
-      operationId: listToday
-      summary: 今天分组
-      description: |
-        按客户端传入的日期计算六个分组，一个任务只进优先级最高的那一组：
-        逾期 → 今天到期 → 今天计划 → 进行中 → 下一步 → 今日完成。
-        服务端不用自己的时区推导"今天"。归档项目下的任务不进任何分组。
-      parameters:
-        - name: date
-          in: query
-          required: true
-          description: 客户端本地日期，YYYY-MM-DD
-          schema:
-            type: string
-            format: date
-      responses:
-        '200':
-          description: 六个分组，固定返回，即使为空
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TodayEnvelope'
-        '400':
-          $ref: '#/components/responses/ValidationFailed'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/Internal'
 
@@ -149,6 +121,12 @@ components:
             $ref: '#/components/schemas/ErrorEnvelope'
     Conflict:
       description: 版本冲突、幂等键复用或唯一约束冲突
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    NotFound:
+      description: 目标资源不存在，例如父任务 id 查不到
       content:
         application/json:
           schema:
@@ -319,52 +297,6 @@ components:
       description: 只影响排序与视觉，不参与今天分组
       enum: [none, low, medium, high, urgent]
 
-    TodayGroup:
-      type: object
-      additionalProperties: false
-      required: [count, estimateMinutes, tasks]
-      properties:
-        count:
-          type: integer
-          description: 以服务端为准；tasks 将来可能被截断，别拿 tasks.length 代替
-        estimateMinutes:
-          type: integer
-          description: 只累加 estimateMinutes 非空的任务；同样以服务端为准
-        tasks:
-          type: array
-          items:
-            $ref: '#/components/schemas/Task'
-
-    TodayGroups:
-      type: object
-      additionalProperties: false
-      description: 固定六个键，空组也要返回
-      required: [overdue, dueToday, planned, doing, next, completed]
-      properties:
-        overdue:
-          $ref: '#/components/schemas/TodayGroup'
-        dueToday:
-          $ref: '#/components/schemas/TodayGroup'
-        planned:
-          $ref: '#/components/schemas/TodayGroup'
-        doing:
-          $ref: '#/components/schemas/TodayGroup'
-        next:
-          $ref: '#/components/schemas/TodayGroup'
-        completed:
-          $ref: '#/components/schemas/TodayGroup'
-
-    Today:
-      type: object
-      additionalProperties: false
-      required: [date, groups]
-      properties:
-        date:
-          type: string
-          format: date
-        groups:
-          $ref: '#/components/schemas/TodayGroups'
-
     Meta:
       type: object
       additionalProperties: false
@@ -382,16 +314,6 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/Task'
-        meta:
-          $ref: '#/components/schemas/Meta'
-
-    TodayEnvelope:
-      type: object
-      additionalProperties: false
-      required: [data, meta]
-      properties:
-        data:
-          $ref: '#/components/schemas/Today'
         meta:
           $ref: '#/components/schemas/Meta'
 
