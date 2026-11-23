@@ -168,14 +168,14 @@ func (h *CreateTask) callCreateTask(c *app.RequestContext, ctx context.Context, 
 		return nil, false
 	}
 
-	// 业务错误先一律 500，第 5 步做状态码映射
+	// 业务错误按 statusCode 映射
 	if resp.BaseResp.StatusCode != 0 {
 		slog.Error("task create failed",
 			"status", resp.BaseResp.StatusCode,
 			"message", resp.BaseResp.StatusMessage,
 			"requestId", requestID,
 		)
-		writeError(c, 500, api.INTERNAL, resp.BaseResp.StatusMessage, requestID)
+		writeRPCError(c, resp.BaseResp.StatusCode, resp.BaseResp.StatusMessage, requestID)
 		return nil, false
 	}
 

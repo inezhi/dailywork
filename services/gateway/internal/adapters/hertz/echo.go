@@ -104,14 +104,14 @@ func (h *Echo) callEcho(c *app.RequestContext, ctx context.Context, req api.Echo
 		return nil, false
 	}
 
-	// 非 0 是服务端返回的业务错误；完整映射放到第 5 步
+	// 非 0 是服务端返回的业务错误，按 statusCode 映射
 	if resp.BaseResp.StatusCode != 0 {
 		slog.Error("task echo failed",
 			"status", resp.BaseResp.StatusCode,
 			"message", resp.BaseResp.StatusMessage,
 			"requestId", requestID,
 		)
-		writeError(c, 500, api.INTERNAL, resp.BaseResp.StatusMessage, requestID)
+		writeRPCError(c, resp.BaseResp.StatusCode, resp.BaseResp.StatusMessage, requestID)
 		return nil, false
 	}
 
@@ -123,13 +123,5 @@ func writeEchoResponse(c *app.RequestContext, resp *rpc.EchoResp, requestID stri
 	c.JSON(200, api.EchoEnvelope{
 		Data: api.Echo{Message: resp.Message},
 		Meta: api.Meta{RequestId: requestID},
-	})
-}
-
-// 返回统一错误信封；完整的状态码映射在第 5 步补。
-func writeError(c *app.RequestContext, status int, code api.ErrorCode, message string, requestID string) {
-	c.JSON(status, api.ErrorEnvelope{
-		Error: api.ErrorBody{Code: code, Message: message},
-		Meta:  api.Meta{RequestId: requestID},
 	})
 }

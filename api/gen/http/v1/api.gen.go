@@ -262,6 +262,9 @@ type Conflict = ErrorEnvelope
 // Internal defines model for Internal.
 type Internal = ErrorEnvelope
 
+// NotFound defines model for NotFound.
+type NotFound = ErrorEnvelope
+
 // Unauthorized defines model for Unauthorized.
 type Unauthorized = ErrorEnvelope
 
