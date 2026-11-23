@@ -13,13 +13,6 @@ import (
 type Client interface {
 	Echo(ctx context.Context, req *rpc.EchoReq, callOptions ...callopt.Option) (r *rpc.EchoResp, err error)
 	CreateTask(ctx context.Context, req *rpc.CreateTaskReq, callOptions ...callopt.Option) (r *rpc.CreateTaskResp, err error)
-	GetTask(ctx context.Context, req *rpc.GetTaskReq, callOptions ...callopt.Option) (r *rpc.GetTaskResp, err error)
-	UpdateTask(ctx context.Context, req *rpc.UpdateTaskReq, callOptions ...callopt.Option) (r *rpc.UpdateTaskResp, err error)
-	CompleteTask(ctx context.Context, req *rpc.CompleteTaskReq, callOptions ...callopt.Option) (r *rpc.CompleteTaskResp, err error)
-	ReopenTask(ctx context.Context, req *rpc.ReopenTaskReq, callOptions ...callopt.Option) (r *rpc.ReopenTaskResp, err error)
-	DeleteTask(ctx context.Context, req *rpc.DeleteTaskReq, callOptions ...callopt.Option) (r *rpc.DeleteTaskResp, err error)
-	ListToday(ctx context.Context, req *rpc.ListTodayReq, callOptions ...callopt.Option) (r *rpc.ListTodayResp, err error)
-	ValidateSession(ctx context.Context, req *rpc.ValidateSessionReq, callOptions ...callopt.Option) (r *rpc.ValidateSessionResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -59,39 +52,4 @@ func (p *kDailyWorkServiceClient) Echo(ctx context.Context, req *rpc.EchoReq, ca
 func (p *kDailyWorkServiceClient) CreateTask(ctx context.Context, req *rpc.CreateTaskReq, callOptions ...callopt.Option) (r *rpc.CreateTaskResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.CreateTask(ctx, req)
-}
-
-func (p *kDailyWorkServiceClient) GetTask(ctx context.Context, req *rpc.GetTaskReq, callOptions ...callopt.Option) (r *rpc.GetTaskResp, err error) {
-	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.GetTask(ctx, req)
-}
-
-func (p *kDailyWorkServiceClient) UpdateTask(ctx context.Context, req *rpc.UpdateTaskReq, callOptions ...callopt.Option) (r *rpc.UpdateTaskResp, err error) {
-	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.UpdateTask(ctx, req)
-}
-
-func (p *kDailyWorkServiceClient) CompleteTask(ctx context.Context, req *rpc.CompleteTaskReq, callOptions ...callopt.Option) (r *rpc.CompleteTaskResp, err error) {
-	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.CompleteTask(ctx, req)
-}
-
-func (p *kDailyWorkServiceClient) ReopenTask(ctx context.Context, req *rpc.ReopenTaskReq, callOptions ...callopt.Option) (r *rpc.ReopenTaskResp, err error) {
-	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.ReopenTask(ctx, req)
-}
-
-func (p *kDailyWorkServiceClient) DeleteTask(ctx context.Context, req *rpc.DeleteTaskReq, callOptions ...callopt.Option) (r *rpc.DeleteTaskResp, err error) {
-	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.DeleteTask(ctx, req)
-}
-
-func (p *kDailyWorkServiceClient) ListToday(ctx context.Context, req *rpc.ListTodayReq, callOptions ...callopt.Option) (r *rpc.ListTodayResp, err error) {
-	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.ListToday(ctx, req)
-}
-
-func (p *kDailyWorkServiceClient) ValidateSession(ctx context.Context, req *rpc.ValidateSessionReq, callOptions ...callopt.Option) (r *rpc.ValidateSessionResp, err error) {
-	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.ValidateSession(ctx, req)
 }
