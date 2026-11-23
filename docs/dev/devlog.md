@@ -92,6 +92,19 @@ id 数一次——数到是版本冲突，数不到是新任务，走 INSERT。`
 **验证：** `go build ./...`、`go vet ./...` 通过；domain / application / mysql 三个包
 测试全绿；`make codegen` 重复执行，`api/gen` 哈希不变。
 
+**配置改成 YAML（2026-11-23）。** 服务的 `server.addr` 与 `mysql.dsn` 从环境变量搬进
+`deploy/task.yaml`，用 `-config` 指定路径，启动时校验两项都非空。模板
+`deploy/task.example.yaml` 进仓库，含密码的 `task.yaml` 走 gitignore——和 `.env` 同一套路子。
+`gopkg.in/yaml.v3` 原本是 thriftgo 带进来的间接依赖，提升为直接依赖，没有新增模块。
+
+**本地调用工具（2026-11-23）。** 新增 `tools/cli`：每个接口一个子命令，创建任务的参数用
+flag 传，Echo 只收一个位置参数。它用 `api/gen` 里的类型构造请求，不经过 gateway。
+Kitex 走 Thrift 二进制协议，没有 curl 的等价物，所以需要这个工具；gateway 写出来之后
+HTTP 才能调。用法见 [`cli.md`](cli.md)。实测 Echo 与 CreateTask 都返回 0，任务数据落库。
+
+**文档同步。** README 与 CLAUDE.md 的「当前状态」「仓库结构」改成实际进度；
+`docs/dev/README.md` 的索引加入 `cli.md`。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）

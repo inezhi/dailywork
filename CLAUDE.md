@@ -4,12 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 当前状态
 
-**v2 文档阶段，业务代码尚未开始。** 在飞书 14 篇文档定稿前，不写服务、数据库、前端或部署代码。当前仓库可见内容：
+**切片 1 进行中：task 服务端已完成，gateway 未开始。** 已落地契约（Thrift + OpenAPI）、建表脚本、domain、application、MySQL 仓储、Kitex handler 与服务入口；`POST /api/v1/tasks` 还差 Hertz 网关。本地调用方式见 `docs/dev/cli.md`。
 
 ```text
-old/          # v1 完整归档，只读参考
-CLAUDE.md     # 本文件
-README.md     # 项目说明与文档入口
+api/           # Thrift IDL、OpenAPI 契约、生成代码
+deploy/        # Docker Compose、MySQL 初始化脚本、task.example.yaml
+docs/          # 开发文档与学习日志
+services/task  # 当前唯一的服务
+tools/         # 开发用命令行工具（RPC 客户端）
+old/           # v1 完整归档，只读参考
 ```
 
 ## 项目定位
@@ -91,6 +94,7 @@ api/
   events/       # 事件 JSON Schema
   gen/          # 生成代码（提交，CI 检查漂移）
 deploy/         # docker-compose, apisix, kafka, k8s, grafana, prometheus
+tools/          # 开发用命令行工具（如 RPC 客户端）
 web/            # React SPA；桌面端外壳放 web/src-tauri
 docs/           # 本地只放索引；正式文档在飞书
 ```

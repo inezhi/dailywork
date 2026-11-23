@@ -2,7 +2,7 @@
 
 个人任务 × 时间 × 知识工作台。v2 同时是一个 **Go 微服务学习项目**：用一个真实可用的产品，练习服务边界、数据所有权、事件驱动、可观测性与容器化。
 
-> 当前状态：**文档阶段**。代码尚未开始；仓库里只有 v1 归档与 v2 文档入口。
+> 当前状态：**切片 1 进行中**。服务端已完成（契约、建表、领域层、应用层、MySQL 仓储、Kitex handler、服务入口），`POST /api/v1/tasks` 还差 gateway；本地调用方式见 [docs/dev/cli.md](docs/dev/cli.md)。
 
 ## 为什么重做
 
@@ -130,20 +130,23 @@ MVP 只实现 **gateway + identity + task**，跑通注册、登录、创建任�
 
 ```text
 dailywork/
+├── api/          # Thrift IDL、OpenAPI 契约、生成代码
+├── deploy/       # Docker Compose、MySQL 初始化脚本、task.example.yaml
+├── docs/         # 开发文档与学习日志
+├── services/     # task 服务：cmd + domain / application / adapters
+├── tools/        # 开发用命令行工具（RPC 客户端）
 ├── old/          # v1 完整归档，只读参考
 ├── CLAUDE.md     # 协作说明
 ├── README.md     # 本文件
-└── .gitignore
+└── Makefile
 ```
 
-代码阶段的规划目录：
+规划目录（后续加入）：
 
 ```text
-services/   gateway(Hertz/BFF), identity/task/...（Kitex）
-api/        OpenAPI / Thrift IDL / 生成代码
-deploy/     Docker Compose, APISIX, Kafka, K8s manifests
-web/        React SPA
-docs/       本地只放索引；正式文档在飞书
+services/gateway/   # Hertz：HTTP 入口、鉴权、BFF（下一步）
+services/identity/  # Kitex：账户、会话、验证码
+web/                # React SPA（后续）
 ```
 
 ## 文档
@@ -197,6 +200,20 @@ cp deploy/.env.example deploy/.env   # 首次：填密码；.env 不进仓库
 make up                              # MySQL 8 / Redis / Kafka(KRaft)
 make ps                              # 看容器状态
 ```
+
+**服务配置**（首次）：
+
+```bash
+cp deploy/task.example.yaml deploy/task.yaml   # 填 MySQL 密码；task.yaml 不进仓库
+```
+
+**启动 task 服务**：
+
+```bash
+go run ./services/task/cmd/task -config deploy/task.yaml
+```
+
+**调用接口**：见 [docs/dev/cli.md](docs/dev/cli.md)。Kitex 走 Thrift 协议，不能用 curl；gateway 写出来之后 HTTP 才能调。
 
 **常用命令**：
 
