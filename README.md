@@ -2,7 +2,7 @@
 
 个人任务 × 时间 × 知识工作台。v2 同时是一个 **Go 微服务学习项目**：用一个真实可用的产品，练习服务边界、数据所有权、事件驱动、可观测性与容器化。
 
-> 当前状态：**切片 1 进行中**。服务端已完成（契约、建表、领域层、应用层、MySQL 仓储、Kitex handler、服务入口），`POST /api/v1/tasks` 还差 gateway；本地调用方式见 [docs/dev/cli.md](docs/dev/cli.md)。
+> 当前状态：**切片 1 完成**。`POST /api/v1/tasks` 已从 gateway 打通到 MySQL；下一步切片 2：identity 注册登录。本地调用方式见 [docs/dev/cli.md](docs/dev/cli.md)。
 
 ## 为什么重做
 
@@ -213,7 +213,13 @@ cp deploy/task.example.yaml deploy/task.yaml   # 填 MySQL 密码；task.yaml �
 go run ./services/task/cmd/task -config deploy/task.yaml
 ```
 
-**调用接口**：见 [docs/dev/cli.md](docs/dev/cli.md)。Kitex 走 Thrift 协议，不能用 curl；gateway 写出来之后 HTTP 才能调。
+**启动 gateway**：
+
+```bash
+go run ./services/gateway/cmd/gateway -config deploy/gateway.yaml
+```
+
+**调用接口**：HTTP 走 gateway（curl 即可），RPC 直接用 [docs/dev/cli.md](docs/dev/cli.md) 里的命令行工具。
 
 **常用命令**：
 

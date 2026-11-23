@@ -4,15 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 当前状态
 
-**切片 1 进行中：task 服务端已完成，gateway 未开始。** 已落地契约（Thrift + OpenAPI）、建表脚本、domain、application、MySQL 仓储、Kitex handler 与服务入口；`POST /api/v1/tasks` 还差 Hertz 网关。本地调用方式见 `docs/dev/cli.md`。
+**切片 1 完成：`POST /api/v1/tasks` 已从 gateway 打通到 MySQL。** 下一步切片 2：identity 注册登录 + JWT 校验。本地调用方式见 `docs/dev/cli.md`。
 
 ```text
-api/           # Thrift IDL、OpenAPI 契约、生成代码
-deploy/        # Docker Compose、MySQL 初始化脚本、task.example.yaml
-docs/          # 开发文档与学习日志
-services/task  # 当前唯一的服务
-tools/         # 开发用命令行工具（RPC 客户端）
-old/           # v1 完整归档，只读参考
+api/              # Thrift IDL、OpenAPI 契约、生成代码
+deploy/           # Docker Compose、MySQL 初始化脚本、task.example.yaml
+docs/             # 开发文档与学习日志
+services/task     # Kitex：任务服务
+services/gateway  # Hertz：HTTP 网关
+tools/            # 开发用命令行工具（RPC 客户端）
+old/              # v1 完整归档，只读参考
 ```
 
 ## 项目定位
