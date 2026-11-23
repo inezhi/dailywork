@@ -121,6 +121,9 @@ func run(cfg config) error {
 	echoHandler := hertz.NewEcho(taskClient)
 	hertzServer.POST("/api/v1/echo", echoHandler.Handle)
 
+	createTaskHandler := hertz.NewCreateTask(taskClient)
+	hertzServer.POST("/api/v1/tasks", createTaskHandler.Handle)
+
 	slog.Info("gateway listening", "addr", cfg.Server.Addr)
 	// Spin 开始收请求，会一直阻塞，进程被杀才退出
 	hertzServer.Spin()

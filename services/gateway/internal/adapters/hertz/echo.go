@@ -16,12 +16,11 @@ import (
 	"github.com/inezhi/dailywork/api/gen/rpc/dailyworkservice"
 )
 
-// 处理 POST /api/v1/echo
+// 处理POST /api/v1/echo
 type Echo struct {
 	taskClient dailyworkservice.Client
 }
 
-// 注入 RPC 客户端。
 func NewEcho(taskClient dailyworkservice.Client) *Echo {
 	return &Echo{taskClient: taskClient}
 }
@@ -49,7 +48,7 @@ func (h *Echo) Handle(ctx context.Context, c *app.RequestContext) {
 	writeEchoResponse(c, resp, requestID)
 }
 
-// beginRequest 生成 requestId 并写进响应头；body 里的 meta.requestId 用同一个值。
+// 生成 requestId 并写进响应头；body 里的 meta.requestId 用同一个值。
 func beginRequest(c *app.RequestContext) (string, bool) {
 	// UUIDv7 和时间相关，方便按时间排序
 	id, err := uuid.NewV7()
@@ -66,7 +65,7 @@ func beginRequest(c *app.RequestContext) (string, bool) {
 	return requestID, true
 }
 
-// parseEchoRequest 解析请求体并做契约级校验。
+// 解析请求体并做契约级校验。
 func parseEchoRequest(c *app.RequestContext, requestID string) (api.EchoReq, bool) {
 	// Hertz 的 c.Body() 返回 (请求体字节, 错误)
 	body, err := c.Body()
@@ -92,7 +91,7 @@ func parseEchoRequest(c *app.RequestContext, requestID string) (api.EchoReq, boo
 	return req, true
 }
 
-// callEcho 调用下游 RPC；失败时直接写 500。
+// 调RPC；失败时直接写 500。
 func (h *Echo) callEcho(c *app.RequestContext, ctx context.Context, req api.EchoReq, requestID string) (*rpc.EchoResp, bool) {
 	resp, err := h.taskClient.Echo(ctx, &rpc.EchoReq{
 		Message: req.Message,
@@ -119,7 +118,7 @@ func (h *Echo) callEcho(c *app.RequestContext, ctx context.Context, req api.Echo
 	return resp, true
 }
 
-// writeEchoResponse 按契约把 RPC 结果包成 {data, meta}。
+// 把结果包成 {data, meta}。
 func writeEchoResponse(c *app.RequestContext, resp *rpc.EchoResp, requestID string) {
 	c.JSON(200, api.EchoEnvelope{
 		Data: api.Echo{Message: resp.Message},
@@ -127,7 +126,7 @@ func writeEchoResponse(c *app.RequestContext, resp *rpc.EchoResp, requestID stri
 	})
 }
 
-// writeError 返回统一错误信封；完整的状态码映射在第 5 步补。
+// 返回统一错误信封；完整的状态码映射在第 5 步补。
 func writeError(c *app.RequestContext, status int, code api.ErrorCode, message string, requestID string) {
 	c.JSON(status, api.ErrorEnvelope{
 		Error: api.ErrorBody{Code: code, Message: message},

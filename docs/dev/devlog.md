@@ -120,6 +120,12 @@ ping 数据库是同一个原则：下游不通就不对外服务。RPC 超时 3
 作为 `requestId`，同时写 `X-Request-Id` 头，两者保持一致。错误先用 `ErrorEnvelope` 返回
 400/500，完整的 domain 错误映射留给第 5 步。
 
+**gateway 第 4 步（2026-11-23）。** 新增 `internal/adapters/hertz/create_task.go` 与
+`convert.go`：`POST /api/v1/tasks` 完成 HTTP ↔ Thrift 的字段映射（UUID、日期、时间、
+状态与优先级枚举）。gateway 做契约级校验：title 1–200、notes ≤ 20000、status 不能是 done、
+priority 只能五个值、estimate 0–10000。`userId` 暂时写死 `u-local`，RPC 错误暂时一律 500，
+分别在后面两步处理。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）
