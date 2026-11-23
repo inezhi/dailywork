@@ -105,6 +105,12 @@ HTTP 才能调。用法见 [`cli.md`](cli.md)。实测 Echo 与 CreateTask 都�
 **文档同步。** README 与 CLAUDE.md 的「当前状态」「仓库结构」改成实际进度；
 `docs/dev/README.md` 的索引加入 `cli.md`。
 
+**gateway 第 1 步（2026-11-23）。** 新建 `services/gateway/cmd/gateway/main.go` 与
+`deploy/gateway.yaml`：Hertz 监听 `127.0.0.1:8080`，只注册 `GET /healthz`
+（返回 `{"status":"ok"}`），配置结构与 task 服务一致（YAML + `-config`）。
+`gateway.yaml` 不含密码，直接提交；`task.yaml` 继续走 gitignore。
+引入 `hertz v0.10.6`，连带 `netpoll` 从 v0.7.2 升到 v0.7.5。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）
