@@ -17,6 +17,8 @@ import (
 	"github.com/inezhi/dailywork/api/gen/base"                 // 每次 RPC 都要带的公共结构
 	"github.com/inezhi/dailywork/api/gen/rpc"                  // Thrift 生成的请求/响应结构
 	"github.com/inezhi/dailywork/api/gen/rpc/dailyworkservice" // Thrift 生成的客户端
+
+	"github.com/inezhi/dailywork/services/gateway/internal/adapters/hertz" // HTTP 适配器
 )
 
 // YAML顶层结构
@@ -114,6 +116,10 @@ func run(cfg config) error {
 	hertzServer := server.Default(server.WithHostPorts(cfg.Server.Addr))
 	// 把路径 /healthz 和处理函数绑起来
 	hertzServer.GET("/healthz", healthCheck)
+
+	// HTTP 路由：请求交给适配器，适配器再调 RPC
+	echoHandler := hertz.NewEcho(taskClient)
+	hertzServer.POST("/api/v1/echo", echoHandler.Handle)
 
 	slog.Info("gateway listening", "addr", cfg.Server.Addr)
 	// Spin 开始收请求，会一直阻塞，进程被杀才退出

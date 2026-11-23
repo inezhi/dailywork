@@ -115,6 +115,11 @@ HTTP 才能调。用法见 [`cli.md`](cli.md)。实测 Echo 与 CreateTask 都�
 客户端调一次 `Echo` 验证链路，调用失败或 `statusCode` 非 0 都直接退出——和 task 服务启动时
 ping 数据库是同一个原则：下游不通就不对外服务。RPC 超时 3 秒。还没注册业务路由。
 
+**gateway 第 3 步（2026-11-23）。** 新增 `internal/adapters/hertz/echo.go`：`POST /api/v1/echo`
+的解析、契约校验（message 1–200 字符）、RPC 调用与 `{data, meta}` 响应。每个响应生成 UUIDv7
+作为 `requestId`，同时写 `X-Request-Id` 头，两者保持一致。错误先用 `ErrorEnvelope` 返回
+400/500，完整的 domain 错误映射留给第 5 步。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）
