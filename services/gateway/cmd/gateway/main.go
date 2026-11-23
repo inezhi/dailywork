@@ -7,25 +7,36 @@ import (
 	"fmt"      // 拼错误信息
 	"log/slog" // 结构化日志，一行一条 JSON
 	"os"       // 读文件、退出进程
+	"time"     // 设置 RPC 超时
 
 	"github.com/cloudwego/hertz/pkg/app"        // Hertz 的请求/响应载体
 	"github.com/cloudwego/hertz/pkg/app/server" // Hertz 服务器
+	"github.com/cloudwego/kitex/client"         // Kitex 客户端选项
 	"gopkg.in/yaml.v3"                          // YAML 解析
+
+	"github.com/inezhi/dailywork/api/gen/base"                 // 每次 RPC 都要带的公共结构
+	"github.com/inezhi/dailywork/api/gen/rpc"                  // Thrift 生成的请求/响应结构
+	"github.com/inezhi/dailywork/api/gen/rpc/dailyworkservice" // Thrift 生成的客户端
 )
 
-// config 对应 YAML 的顶层结构。
+// YAML顶层结构
 type config struct {
-	Server serverConfig `yaml:"server"` // 反引号里是 tag，告诉 YAML 库这段叫 server
+	Server serverConfig `yaml:"server"`
+	Task   taskConfig   `yaml:"task"`
 }
 
-// serverConfig 是 Hertz 的监听配置。
+// Hertz配置
 type serverConfig struct {
 	Addr string `yaml:"addr"` // 监听地址，例如 127.0.0.1:8080
 }
 
-// loadConfig 读 YAML 文件，并校验必填项。
+// 下游 task 服务的地址
+type taskConfig struct {
+	Addr string `yaml:"addr"` // RPC 地址，例如 127.0.0.1:8888
+}
+
+// 读 YAML 文件，并校验必填项
 func loadConfig(path string) (config, error) {
-	// 整个文件读成字节，交给 YAML 库解析
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return config{}, fmt.Errorf("read config %s: %w", path, err)
@@ -38,9 +49,13 @@ func loadConfig(path string) (config, error) {
 		return config{}, fmt.Errorf("parse config %s: %w", path, err)
 	}
 
-	// 没有监听地址就起不来，直接报错
+	// 没有监听地址直接报错
 	if cfg.Server.Addr == "" {
 		return config{}, fmt.Errorf("config %s: server.addr is required", path)
+	}
+	// 没有下游地址直接报错
+	if cfg.Task.Addr == "" {
+		return config{}, fmt.Errorf("config %s: task.addr is required", path)
 	}
 
 	return cfg, nil
@@ -51,6 +66,59 @@ func loadConfig(path string) (config, error) {
 func healthCheck(ctx context.Context, c *app.RequestContext) {
 	// c.JSON 返回 200，并把 map 编码成 JSON 写回去
 	c.JSON(200, map[string]string{"status": "ok"})
+}
+
+// newTaskClient 创建调用 task 服务的 Kitex 客户端。
+// WithHostPorts 直连指定地址；WithRPCTimeout 限制单次调用最长 3 秒。
+func newTaskClient(addr string) (dailyworkservice.Client, error) {
+	return dailyworkservice.NewClient(
+		"DailyWorkService",
+		client.WithHostPorts(addr),
+		client.WithRPCTimeout(3*time.Second),
+	)
+}
+
+// 启动时调 Echo，确认 gateway 到 task 服务的链路是通的
+func checkTaskRPC(taskClient dailyworkservice.Client) error {
+	resp, err := taskClient.Echo(context.Background(), &rpc.EchoReq{
+		Message: "gateway-startup",
+		Base:    &base.Base{LogId: "gateway-startup", Caller: "gateway"},
+	})
+	if err != nil {
+		return fmt.Errorf("call task echo: %w", err)
+	}
+
+	// statusCode 为 0 才算成功；非 0 是服务端返回的业务错误
+	if resp.BaseResp.StatusCode != 0 {
+		return fmt.Errorf("task echo status=%d message=%s", resp.BaseResp.StatusCode, resp.BaseResp.StatusMessage)
+	}
+
+	slog.Info("task rpc ok", "message", resp.Message)
+	return nil
+}
+
+// run 建客户端、验证下游链路、起 HTTP 服务；返回错误表示启动失败。
+func run(cfg config) error {
+	taskClient, err := newTaskClient(cfg.Task.Addr)
+	if err != nil {
+		return fmt.Errorf("new task client: %w", err)
+	}
+
+	// 下游不通就不对外提供服务
+	err = checkTaskRPC(taskClient)
+	if err != nil {
+		return err
+	}
+
+	// server.Default 创建 Hertz 实例；WithHostPorts 指定监听地址
+	hertzServer := server.Default(server.WithHostPorts(cfg.Server.Addr))
+	// 把路径 /healthz 和处理函数绑起来
+	hertzServer.GET("/healthz", healthCheck)
+
+	slog.Info("gateway listening", "addr", cfg.Server.Addr)
+	// Spin 开始收请求，会一直阻塞，进程被杀才退出
+	hertzServer.Spin()
+	return nil
 }
 
 // main 读配置并启动 HTTP 服务。
@@ -68,12 +136,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	// server.Default 创建 Hertz 实例；WithHostPorts 指定监听地址
-	hertzServer := server.Default(server.WithHostPorts(cfg.Server.Addr))
-	// 把路径 /healthz 和处理函数绑起来
-	hertzServer.GET("/healthz", healthCheck)
-
-	slog.Info("gateway listening", "addr", cfg.Server.Addr)
-	// Spin 开始收请求，会一直阻塞，进程被杀才退出
-	hertzServer.Spin()
+	err = run(cfg)
+	if err != nil {
+		slog.Error("gateway exited", "err", err)
+		os.Exit(1)
+	}
 }

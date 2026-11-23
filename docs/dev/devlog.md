@@ -111,6 +111,10 @@ HTTP 才能调。用法见 [`cli.md`](cli.md)。实测 Echo 与 CreateTask 都�
 `gateway.yaml` 不含密码，直接提交；`task.yaml` 继续走 gitignore。
 引入 `hertz v0.10.6`，连带 `netpoll` 从 v0.7.2 升到 v0.7.5。
 
+**gateway 第 2 步（2026-11-23）。** `deploy/gateway.yaml` 增加 `task.addr`；启动时用 Kitex
+客户端调一次 `Echo` 验证链路，调用失败或 `statusCode` 非 0 都直接退出——和 task 服务启动时
+ping 数据库是同一个原则：下游不通就不对外服务。RPC 超时 3 秒。还没注册业务路由。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）
