@@ -145,6 +145,12 @@ ownerID 配置 → 测试 → 提交。验收四项里「能演示」「有测�
 
 另：**开发过程中禁止删除任何分支**，合并后也保留功能分支。这条已写进 CLAUDE.md 与 README。
 
+**切片 2 第 1 步：认证契约（2026-11-24）。** Thrift 增加 `SendCode` / `Register` / `Login` /
+`Logout` / `ValidateSession` 五个方法与对应请求响应；邮箱与手机号用两个独立字段、二选一，
+不靠格式猜类型。OpenAPI 增加四条认证路径（codes / register / login / logout），登录支持
+`X-Client: desktop` 换 Bearer token；所有 `description` 改为英文。生成代码后为了让服务继续
+编译，新增 `auth_stub.go` 五个返回 500 的临时桩，gateway 测试的假客户端补了对应空方法。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）

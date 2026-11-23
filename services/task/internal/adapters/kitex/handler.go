@@ -25,22 +25,19 @@ const (
 	codeInternal int32 = 500
 )
 
-// 类型声明，完成请求接口的任务需要谁就写谁
 type Handler struct {
 	createTask *application.CreateTask
 }
 
-// New 把创建任务的用例装进 Handler。
 func New(createTask *application.CreateTask) *Handler {
 	return &Handler{createTask: createTask}
 }
 
-// Echo 原样返回，用于检查链路。
+// rpc入口
 func (h *Handler) Echo(ctx context.Context, req *rpc.EchoReq) (*rpc.EchoResp, error) {
 	return &rpc.EchoResp{Message: req.Message, BaseResp: okResp()}, nil
 }
 
-// CreateTask 把 RPC 请求转成用例入参，执行后把结果转回 RPC 结构。
 func (h *Handler) CreateTask(ctx context.Context, req *rpc.CreateTaskReq) (*rpc.CreateTaskResp, error) {
 	in, err := toCreateInput(req)
 	if err != nil {

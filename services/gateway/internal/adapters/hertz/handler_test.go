@@ -40,6 +40,33 @@ func (f *fakeTaskClient) CreateTask(ctx context.Context, req *rpc.CreateTaskReq,
 	return f.createResp, f.createErr
 }
 
+// 以下认证方法在现有测试里用不到，返回零值即可。
+
+// SendCode 返回空响应。
+func (f *fakeTaskClient) SendCode(ctx context.Context, req *rpc.SendCodeReq, _ ...callopt.Option) (*rpc.SendCodeResp, error) {
+	return &rpc.SendCodeResp{}, nil
+}
+
+// Register 返回空响应。
+func (f *fakeTaskClient) Register(ctx context.Context, req *rpc.RegisterReq, _ ...callopt.Option) (*rpc.RegisterResp, error) {
+	return &rpc.RegisterResp{}, nil
+}
+
+// Login 返回空响应。
+func (f *fakeTaskClient) Login(ctx context.Context, req *rpc.LoginReq, _ ...callopt.Option) (*rpc.LoginResp, error) {
+	return &rpc.LoginResp{}, nil
+}
+
+// Logout 返回空响应。
+func (f *fakeTaskClient) Logout(ctx context.Context, req *rpc.LogoutReq, _ ...callopt.Option) (*rpc.LogoutResp, error) {
+	return &rpc.LogoutResp{}, nil
+}
+
+// ValidateSession 返回空响应。
+func (f *fakeTaskClient) ValidateSession(ctx context.Context, req *rpc.ValidateSessionReq, _ ...callopt.Option) (*rpc.ValidateSessionResp, error) {
+	return &rpc.ValidateSessionResp{}, nil
+}
+
 // performJSON 在内存里发一次 JSON 请求，返回状态码和响应体。
 func performJSON(t *testing.T, engine *server.Hertz, path string, body string) (int, string) {
 	t.Helper()
