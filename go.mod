@@ -7,6 +7,7 @@ require (
 	github.com/cloudwego/kitex v0.16.4
 	github.com/google/uuid v1.6.0
 	github.com/oapi-codegen/runtime v1.8.0
+	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.2
 )
@@ -52,5 +53,4 @@ require (
 	golang.org/x/text v0.32.0 // indirect
 	google.golang.org/genproto v0.0.0-20210513213006-bf773b8c8384 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
