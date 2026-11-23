@@ -25,6 +25,7 @@ import (
 type config struct {
 	Server serverConfig `yaml:"server"`
 	Task   taskConfig   `yaml:"task"`
+	Auth   authConfig   `yaml:"auth"`
 }
 
 // Hertz配置
@@ -35,6 +36,11 @@ type serverConfig struct {
 // 下游 task 服务的地址
 type taskConfig struct {
 	Addr string `yaml:"addr"` // RPC 地址，例如 127.0.0.1:8888
+}
+
+// 切片 1 的临时身份配置；切片 2 接入会话后删除
+type authConfig struct {
+	OwnerID string `yaml:"owner_id"`
 }
 
 // 读 YAML 文件，并校验必填项
@@ -58,6 +64,10 @@ func loadConfig(path string) (config, error) {
 	// 没有下游地址直接报错
 	if cfg.Task.Addr == "" {
 		return config{}, fmt.Errorf("config %s: task.addr is required", path)
+	}
+	// 没有用户身份就建不了任务
+	if cfg.Auth.OwnerID == "" {
+		return config{}, fmt.Errorf("config %s: auth.owner_id is required", path)
 	}
 
 	return cfg, nil
@@ -121,7 +131,7 @@ func run(cfg config) error {
 	echoHandler := hertz.NewEcho(taskClient)
 	hertzServer.POST("/api/v1/echo", echoHandler.Handle)
 
-	createTaskHandler := hertz.NewCreateTask(taskClient)
+	createTaskHandler := hertz.NewCreateTask(taskClient, cfg.Auth.OwnerID)
 	hertzServer.POST("/api/v1/tasks", createTaskHandler.Handle)
 
 	slog.Info("gateway listening", "addr", cfg.Server.Addr)

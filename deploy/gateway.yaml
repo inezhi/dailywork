@@ -3,3 +3,6 @@ server:
 
 task:
   addr: "127.0.0.1:8888"
+
+auth:
+  owner_id: "u-local"

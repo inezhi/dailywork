@@ -19,10 +19,11 @@ import (
 // 处理 /api/v1/tasks。
 type CreateTask struct {
 	taskClient dailyworkservice.Client
+	ownerID    string
 }
 
-func NewCreateTask(taskClient dailyworkservice.Client) *CreateTask {
-	return &CreateTask{taskClient: taskClient}
+func NewCreateTask(taskClient dailyworkservice.Client, ownerID string) *CreateTask {
+	return &CreateTask{taskClient: taskClient, ownerID: ownerID}
 }
 
 func (h *CreateTask) Handle(ctx context.Context, c *app.RequestContext) {
@@ -113,10 +114,10 @@ func validPriority(priority api.TaskPriority) bool {
 }
 
 // toRPCCreateTask 把 HTTP 请求转成 Thrift 请求；没传的可选字段保持 nil。
-func toRPCCreateTask(req api.CreateTaskReq, requestID string) *rpc.CreateTaskReq {
+func (h *CreateTask) toRPCCreateTask(req api.CreateTaskReq, requestID string) *rpc.CreateTaskReq {
 	rpcReq := &rpc.CreateTaskReq{
-		// 切片 1 还没有登录，用户 id 先写死；第 6 步挪进配置
-		UserId: "u-local",
+		// 切片 1 还没有登录，用户 id 从配置读；切片 2 换成从会话取
+		UserId: h.ownerID,
 		Title:  req.Title,
 		Base:   &base.Base{LogId: requestID, Caller: "gateway"},
 	}
@@ -159,7 +160,7 @@ func toRPCCreateTask(req api.CreateTaskReq, requestID string) *rpc.CreateTaskReq
 
 // callCreateTask 调用下游 RPC；失败时直接写 500。
 func (h *CreateTask) callCreateTask(c *app.RequestContext, ctx context.Context, req api.CreateTaskReq, requestID string) (*taskmodel.Task, bool) {
-	rpcReq := toRPCCreateTask(req, requestID)
+	rpcReq := h.toRPCCreateTask(req, requestID)
 
 	resp, err := h.taskClient.CreateTask(ctx, rpcReq)
 	if err != nil {
