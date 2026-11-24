@@ -156,6 +156,11 @@ users 的邮箱与手机号各自唯一、CHECK 保证至少有一个，另有�
 登录，带设备、IP、过期与吊销。对运行中的库手动执行了两条 `CREATE TABLE`，没有清数据；
 `make down-v` 从空卷重建时脚本也会建出这两张表。
 
+**切片 2 第 3a 步：identity 领域与应用层（2026-11-24）。** 新增 `services/identity/internal/domain`
+与 `application`：Email/Phone 值对象、User 聚合，SendCode 与 Register 两个用例，以及五个端口
+（UserRepository、VerificationCodeStore、PasswordHasher、IDGenerator、Clock）。验证码固定 2222、
+TTL 5 分钟；密码 8–72 字节。18 个测试全部用假实现，不依赖 MySQL/Redis；适配器与接线留给 3b。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）
