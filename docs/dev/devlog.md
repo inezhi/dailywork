@@ -151,6 +151,11 @@ ownerID 配置 → 测试 → 提交。验收四项里「能演示」「有测�
 `X-Client: desktop` 换 Bearer token；所有 `description` 改为英文。生成代码后为了让服务继续
 编译，新增 `auth_stub.go` 五个返回 500 的临时桩，gateway 测试的假客户端补了对应空方法。
 
+**切片 2 第 2 步：users / sessions 建表（2026-11-24）。** 两张表加进 `02-schema.sql`：
+users 的邮箱与手机号各自唯一、CHECK 保证至少有一个，另有头像与会员等级；sessions 一行一次
+登录，带设备、IP、过期与吊销。对运行中的库手动执行了两条 `CREATE TABLE`，没有清数据；
+`make down-v` 从空卷重建时脚本也会建出这两张表。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）
