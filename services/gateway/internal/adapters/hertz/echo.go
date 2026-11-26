@@ -8,7 +8,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/google/uuid"
 
 	"github.com/inezhi/dailywork/api/gen/base"
 	api "github.com/inezhi/dailywork/api/gen/http/v1"
@@ -27,11 +26,8 @@ func NewEcho(taskClient dailyworkservice.Client) *Echo {
 
 // Echo的处理过程 每次有请求打到这个路径，Hertz 就会调用一次 Handle
 func (h *Echo) Handle(ctx context.Context, c *app.RequestContext) {
-	// 生成一个 UUIDv7，并写入响应头 X-Request-Id
-	requestID, ok := beginRequest(c)
-	if !ok {
-		return
-	}
+	// requestId 由中间件生成并放进上下文
+	requestID := requestIDFrom(c)
 
 	// 读取请求体、反序列化为 EchoReq，并校验 message 长度
 	req, ok := parseEchoRequest(c, requestID) // 传入ID，用于错误时打印
@@ -46,23 +42,6 @@ func (h *Echo) Handle(ctx context.Context, c *app.RequestContext) {
 	}
 
 	writeEchoResponse(c, resp, requestID)
-}
-
-// 生成 requestId 并写进响应头；body 里的 meta.requestId 用同一个值。
-func beginRequest(c *app.RequestContext) (string, bool) {
-	// UUIDv7 和时间相关，方便按时间排序
-	id, err := uuid.NewV7()
-	if err != nil {
-		slog.Error("new request id", "err", err)
-		c.JSON(500, api.ErrorEnvelope{
-			Error: api.ErrorBody{Code: api.INTERNAL, Message: "生成请求 id 失败"},
-		})
-		return "", false
-	}
-
-	requestID := id.String()
-	c.Header("X-Request-Id", requestID)
-	return requestID, true
 }
 
 // 解析请求体并做契约级校验。

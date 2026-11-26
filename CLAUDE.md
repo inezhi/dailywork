@@ -4,12 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 当前状态
 
-**切片 1 完成：`POST /api/v1/tasks` 已从 gateway 打通到 MySQL。** 下一步切片 2：identity 注册登录 + JWT 校验。本地调用方式见 `docs/dev/cli.md`。
+**切片 2 完成：注册、登录、会话校验与登出已打通，`POST /api/v1/tasks` 需要登录。** 下一步切片 3：`GET /today`。本地调用方式见 `docs/dev/cli.md`。
 
 ```text
 api/              # Thrift IDL、OpenAPI 契约、生成代码
 deploy/           # Docker Compose、MySQL 初始化脚本、task.example.yaml
 docs/             # 开发文档与学习日志
+services/identity # 账户、会话、验证码（与 task 同进程）
 services/task     # Kitex：任务服务
 services/gateway  # Hertz：HTTP 网关
 tools/            # 开发用命令行工具（RPC 客户端）

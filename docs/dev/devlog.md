@@ -176,6 +176,20 @@ identity 的 `domain` / `application` / `adapters` 上移一层，脱离 `intern
 配置增加 `auth.jwt_secret`，启动时校验。实测登录拿到 token、错误密码 401、登出后校验 401，
 会话表记录了设备、IP、30 天过期与吊销时间；identity 测试 36 个通过。
 
+**切片 2 第 6 步：gateway 认证路由与中间件（2026-11-26）。** 新增 requestId 与登录态两个中间件：
+requestId 统一生成 UUIDv7 并写入响应头；鉴权从 Cookie `daily_session` 或
+`Authorization: Bearer` 取 token，调 `ValidateSession`，把 userId / sessionId 放进上下文。
+新增四条认证路由，`echo` 与 `tasks` 改为需要登录；`CreateTask` 的 userId 从上下文取，
+`auth.owner_id` 配置删除。网页登录写 HttpOnly Cookie，桌面端（`X-Client: desktop`）返回 token。
+
+**切片 2 第 7 步：网关测试与演示（2026-11-26）。** 新增 9 个网关测试，覆盖认证路由、Cookie 与
+Bearer 两种登录、登出清 Cookie、中间件 401；网关测试共 24 个，全仓库测试通过。端到端演示：
+注册 → 网页 Cookie 建任务 → 登出后 401 → 桌面 token 建任务。
+
+**切片 2 收尾。** 契约、建表、domain / application、MySQL / Redis / bcrypt / JWT 适配器、
+RPC 与网关全部完成。验收四项里「能演示」「有测试」「文档同步」满足；「有指标」继续延期，
+理由与切片 1 相同。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）
