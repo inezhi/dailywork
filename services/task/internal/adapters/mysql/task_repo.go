@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	gormmysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -72,6 +73,39 @@ func (r *TaskRepo) FindByID(ctx context.Context, id string) (*domain.Task, error
 		return nil, fmt.Errorf("find task: %w", err)
 	}
 	return toDomain(&row), nil
+}
+
+// ListForToday 列出今天页的候选任务：未删除、且不属于归档项目。
+func (r *TaskRepo) ListForToday(ctx context.Context, userID string, day time.Time) ([]*domain.Task, error) {
+	nextDay := day.AddDate(0, 0, 1)
+
+	var rows []taskRow
+	err := r.db.WithContext(ctx).
+		Raw(`SELECT t.* FROM tasks t
+			WHERE t.user_id = ?
+			  AND t.deleted_at IS NULL
+			  AND (
+			    t.due_date <= ?
+			    OR t.scheduled_date = ?
+			    OR t.status IN (1, 2, 3)
+			    OR (t.status = 6 AND t.completed_at >= ? AND t.completed_at < ?)
+			  )
+			  AND NOT EXISTS (
+			    SELECT 1 FROM projects p
+			    WHERE p.id = t.project_id AND p.archived_at IS NOT NULL
+			  )
+			ORDER BY t.created_at DESC`,
+			userID, day, day, day, nextDay).
+		Scan(&rows).Error
+	if err != nil {
+		return nil, fmt.Errorf("list today tasks: %w", err)
+	}
+
+	tasks := make([]*domain.Task, 0, len(rows))
+	for i := range rows {
+		tasks = append(tasks, toDomain(&rows[i]))
+	}
+	return tasks, nil
 }
 
 // toRow 把领域对象转成数据库行。

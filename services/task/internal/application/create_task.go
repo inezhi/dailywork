@@ -14,6 +14,8 @@ import (
 type TaskRepository interface {
 	Save(ctx context.Context, t *domain.Task) error
 	FindByID(ctx context.Context, id string) (*domain.Task, error)
+	// 今天页的候选任务：不含已删除、归档项目下的任务
+	ListForToday(ctx context.Context, userID string, day time.Time) ([]*domain.Task, error)
 }
 
 // IDGenerator 生成聚合根 ID。做成接口，测试时可以返回固定值。

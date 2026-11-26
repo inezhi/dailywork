@@ -29,6 +29,7 @@ const (
 
 type Handler struct {
 	createTask      *application.CreateTask
+	listToday       *application.ListToday
 	sendCode        *identityapp.SendCode
 	register        *identityapp.Register
 	login           *identityapp.Login
@@ -38,6 +39,7 @@ type Handler struct {
 
 func New(
 	createTask *application.CreateTask,
+	listToday *application.ListToday,
 	sendCode *identityapp.SendCode,
 	register *identityapp.Register,
 	login *identityapp.Login,
@@ -46,6 +48,7 @@ func New(
 ) *Handler {
 	return &Handler{
 		createTask:      createTask,
+		listToday:       listToday,
 		sendCode:        sendCode,
 		register:        register,
 		login:           login,

@@ -44,6 +44,10 @@ type fakeTaskClient struct {
 	lastRegisterReq *rpc.RegisterReq
 	lastLoginReq    *rpc.LoginReq
 	lastLogoutReq   *rpc.LogoutReq
+
+	listTodayResp    *rpc.ListTodayResp
+	listTodayErr     error
+	lastListTodayReq *rpc.ListTodayReq
 }
 
 // Echo 返回预设的 Echo 结果。
@@ -114,6 +118,18 @@ func (f *fakeTaskClient) ValidateSession(ctx context.Context, req *rpc.ValidateS
 		return &rpc.ValidateSessionResp{BaseResp: &base.BaseResp{}}, nil
 	}
 	return f.validateResp, nil
+}
+
+// ListToday 返回预设结果，并记下请求。
+func (f *fakeTaskClient) ListToday(ctx context.Context, req *rpc.ListTodayReq, _ ...callopt.Option) (*rpc.ListTodayResp, error) {
+	f.lastListTodayReq = req
+	if f.listTodayErr != nil {
+		return nil, f.listTodayErr
+	}
+	if f.listTodayResp == nil {
+		return &rpc.ListTodayResp{BaseResp: &base.BaseResp{}}, nil
+	}
+	return f.listTodayResp, nil
 }
 
 // 测试用中间件：补上 requestId 与 userId

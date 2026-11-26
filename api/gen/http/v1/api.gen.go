@@ -6,6 +6,7 @@
 package apiv1
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -152,6 +153,36 @@ func (e TaskStatus) Valid() bool {
 	case TaskStatusNext:
 		return true
 	case TaskStatusWaiting:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TodayGroupKind.
+const (
+	TodayGroupKindCompletedToday TodayGroupKind = "completed_today"
+	TodayGroupKindDoing          TodayGroupKind = "doing"
+	TodayGroupKindDueToday       TodayGroupKind = "due_today"
+	TodayGroupKindNext           TodayGroupKind = "next"
+	TodayGroupKindOverdue        TodayGroupKind = "overdue"
+	TodayGroupKindPlannedToday   TodayGroupKind = "planned_today"
+)
+
+// Valid indicates whether the value is a known member of the TodayGroupKind enum.
+func (e TodayGroupKind) Valid() bool {
+	switch e {
+	case TodayGroupKindCompletedToday:
+		return true
+	case TodayGroupKindDoing:
+		return true
+	case TodayGroupKindDueToday:
+		return true
+	case TodayGroupKindNext:
+		return true
+	case TodayGroupKindOverdue:
+		return true
+	case TodayGroupKindPlannedToday:
 		return true
 	default:
 		return false
@@ -368,6 +399,33 @@ type TaskPriority string
 // TaskStatus Tasks have no archived status
 type TaskStatus string
 
+// TodayData defines model for TodayData.
+type TodayData struct {
+	Date   openapi_types.Date `json:"date"`
+	Groups []TodayGroup       `json:"groups"`
+}
+
+// TodayEnvelope defines model for TodayEnvelope.
+type TodayEnvelope struct {
+	Data TodayData `json:"data"`
+
+	// Meta Included in every response. requestId matches the X-Request-Id response header.
+	Meta Meta `json:"meta"`
+}
+
+// TodayGroup defines model for TodayGroup.
+type TodayGroup struct {
+	Count           int `json:"count"`
+	EstimateMinutes int `json:"estimateMinutes"`
+
+	// Kind Group priority follows the enum order
+	Kind  TodayGroupKind `json:"kind"`
+	Tasks []Task         `json:"tasks"`
+}
+
+// TodayGroupKind Group priority follows the enum order
+type TodayGroupKind string
+
 // IdempotencyKey defines model for IdempotencyKey.
 type IdempotencyKey = string
 
@@ -401,6 +459,12 @@ type CreateTaskParams struct {
 	// kept for 24 hours. Same user, same key, same body: the first response is
 	// replayed. Same key with a different body: 409.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// ListTodayParams defines parameters for ListToday.
+type ListTodayParams struct {
+	// Date Client local date in YYYY-MM-DD
+	Date openapi_types.Date `form:"date" json:"date"`
 }
 
 // SendCodeJSONRequestBody defines body for SendCode for application/json ContentType.
@@ -438,6 +502,9 @@ type ServerInterface interface {
 	// CreateTask 创建任务
 	// (POST /api/v1/tasks)
 	CreateTask(w http.ResponseWriter, r *http.Request, params CreateTaskParams)
+	// ListToday 今天页
+	// (GET /api/v1/today)
+	ListToday(w http.ResponseWriter, r *http.Request, params ListTodayParams)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -587,6 +654,39 @@ func (siw *ServerInterfaceWrapper) CreateTask(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
+// ListToday operation middleware
+func (siw *ServerInterfaceWrapper) ListToday(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListTodayParams
+
+	// ------------- Required query parameter "date" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "date", r.URL.Query(), &params.Date, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "date"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "date", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListToday(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 type UnescapedCookieParamError struct {
 	ParamName string
 	Err       error
@@ -713,6 +813,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/auth/register", wrapper.Register)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/auth/login", wrapper.Login)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/auth/logout", wrapper.Logout)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/api/v1/today", wrapper.ListToday)
 
 	return m
 }
