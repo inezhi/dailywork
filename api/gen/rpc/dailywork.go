@@ -1195,9 +1195,10 @@ var fieldIDToName_CompleteTaskResp = map[int16]string{
 }
 
 type ListTodayReq struct {
-	UserId string     `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
-	Date   string     `thrift:"date,2,required" frugal:"2,required,string" json:"date"`
-	Base   *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
+	UserId   string     `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
+	Date     string     `thrift:"date,2,required" frugal:"2,required,string" json:"date"`
+	Timezone *string    `thrift:"timezone,3,optional" frugal:"3,optional,string" json:"timezone,omitempty"`
+	Base     *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
 }
 
 func NewListTodayReq() *ListTodayReq {
@@ -1215,6 +1216,15 @@ func (p *ListTodayReq) GetDate() (v string) {
 	return p.Date
 }
 
+var ListTodayReq_Timezone_DEFAULT string
+
+func (p *ListTodayReq) GetTimezone() (v string) {
+	if !p.IsSetTimezone() {
+		return ListTodayReq_Timezone_DEFAULT
+	}
+	return *p.Timezone
+}
+
 var ListTodayReq_Base_DEFAULT *base.Base
 
 func (p *ListTodayReq) GetBase() (v *base.Base) {
@@ -1229,8 +1239,15 @@ func (p *ListTodayReq) SetUserId(val string) {
 func (p *ListTodayReq) SetDate(val string) {
 	p.Date = val
 }
+func (p *ListTodayReq) SetTimezone(val *string) {
+	p.Timezone = val
+}
 func (p *ListTodayReq) SetBase(val *base.Base) {
 	p.Base = val
+}
+
+func (p *ListTodayReq) IsSetTimezone() bool {
+	return p.Timezone != nil
 }
 
 func (p *ListTodayReq) IsSetBase() bool {
@@ -1247,6 +1264,7 @@ func (p *ListTodayReq) String() string {
 var fieldIDToName_ListTodayReq = map[int16]string{
 	1:   "userId",
 	2:   "date",
+	3:   "timezone",
 	255: "Base",
 }
 

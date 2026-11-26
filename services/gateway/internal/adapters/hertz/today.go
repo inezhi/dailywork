@@ -45,10 +45,17 @@ func (h *Today) Handle(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	// 时区可选；空值由服务端按 UTC 处理
+	var timezone *string
+	if tzValue := c.Query("tz"); tzValue != "" {
+		timezone = &tzValue
+	}
+
 	resp, err := h.taskClient.ListToday(ctx, &rpc.ListTodayReq{
-		UserId: userIDFrom(c),
-		Date:   dateValue,
-		Base:   &base.Base{LogId: requestID, Caller: "gateway"},
+		UserId:   userIDFrom(c),
+		Date:     dateValue,
+		Timezone: timezone,
+		Base:     &base.Base{LogId: requestID, Caller: "gateway"},
 	})
 	if err != nil {
 		slog.Error("call task list today", "err", err, "requestId", requestID)

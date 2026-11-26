@@ -45,8 +45,10 @@ func NewListToday(tasks TaskRepository) *ListToday {
 }
 
 // 按优先级分六组，一个任务只进最高优先级的一组
-func (uc *ListToday) Execute(ctx context.Context, userID string, date time.Time) (*TodayResult, error) {
-	tasks, err := uc.tasks.ListForToday(ctx, userID, date)
+func (uc *ListToday) Execute(ctx context.Context, userID string, date time.Time, loc *time.Location) (*TodayResult, error) {
+	completedFrom, completedTo := completedRange(date, loc)
+
+	tasks, err := uc.tasks.ListForToday(ctx, userID, date, completedFrom, completedTo)
 	if err != nil {
 		return nil, fmt.Errorf("list today tasks: %w", err)
 	}
@@ -55,7 +57,7 @@ func (uc *ListToday) Execute(ctx context.Context, userID string, date time.Time)
 	index := groupIndex()
 
 	for _, task := range tasks {
-		kind, ok := groupFor(task, date)
+		kind, ok := groupFor(task, date, completedFrom, completedTo)
 		if !ok {
 			continue
 		}
@@ -67,6 +69,13 @@ func (uc *ListToday) Execute(ctx context.Context, userID string, date time.Time)
 	}
 
 	return &TodayResult{Date: date, Groups: groups}, nil
+}
+
+// 按客户端时区算出当天的 UTC 区间；用 AddDate 而不是加 24 小时，夏令时也正确
+func completedRange(date time.Time, loc *time.Location) (time.Time, time.Time) {
+	startLocal := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, loc)
+	endLocal := startLocal.AddDate(0, 0, 1)
+	return startLocal.UTC(), endLocal.UTC()
 }
 
 // 六个空分组，顺序固定
@@ -104,7 +113,7 @@ func groupIndex() map[TodayGroupKind]int {
 }
 
 // 判定任务属于哪一组；不属于任何组返回 false
-func groupFor(task *domain.Task, today time.Time) (TodayGroupKind, bool) {
+func groupFor(task *domain.Task, today time.Time, completedFrom time.Time, completedTo time.Time) (TodayGroupKind, bool) {
 	done := task.Status() == domain.StatusDone
 
 	if !done && task.DueDate() != nil {
@@ -127,7 +136,10 @@ func groupFor(task *domain.Task, today time.Time) (TodayGroupKind, bool) {
 	case domain.StatusNext, domain.StatusInbox:
 		return TodayNext, true
 	case domain.StatusDone:
-		if task.CompletedAt() != nil && sameDay(*task.CompletedAt(), today) {
+		// 完成时间是 UTC 时间戳，按客户端时区换算好的区间判断
+		if task.CompletedAt() != nil &&
+			!task.CompletedAt().Before(completedFrom) &&
+			task.CompletedAt().Before(completedTo) {
 			return TodayCompletedToday, true
 		}
 	}

@@ -41,7 +41,13 @@ func (f *fakeRepo) FindByID(_ context.Context, id string) (*domain.Task, error) 
 }
 
 // 返回预设的今天候选任务
-func (f *fakeRepo) ListForToday(_ context.Context, userID string, day time.Time) ([]*domain.Task, error) {
+func (f *fakeRepo) ListForToday(
+	_ context.Context,
+	userID string,
+	day time.Time,
+	completedFrom time.Time,
+	completedTo time.Time,
+) ([]*domain.Task, error) {
 	if f.listErr != nil {
 		return nil, f.listErr
 	}

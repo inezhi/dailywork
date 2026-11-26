@@ -470,6 +470,11 @@ type CreateTaskParams struct {
 type ListTodayParams struct {
 	// Date Client local date in YYYY-MM-DD
 	Date openapi_types.Date `form:"date" json:"date"`
+
+	// Tz IANA timezone such as Asia/Shanghai, used to decide which completed
+	// tasks count as "today". Defaults to UTC when omitted; unknown zones
+	// return 400.
+	Tz *string `form:"tz,omitempty" json:"tz,omitempty"`
 }
 
 // SendCodeJSONRequestBody defines body for SendCode for application/json ContentType.
@@ -709,6 +714,19 @@ func (siw *ServerInterfaceWrapper) ListToday(w http.ResponseWriter, r *http.Requ
 			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "date"})
 		} else {
 			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "date", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "tz" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "tz", r.URL.Query(), &params.Tz, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "tz"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tz", Err: err})
 		}
 		return
 	}

@@ -249,6 +249,15 @@ paths:
           schema:
             type: string
             format: date
+        - name: tz
+          in: query
+          required: false
+          description: |
+            IANA timezone such as Asia/Shanghai, used to decide which completed
+            tasks count as "today". Defaults to UTC when omitted; unknown zones
+            return 400.
+          schema:
+            type: string
       responses:
         '200':
           description: Today groups

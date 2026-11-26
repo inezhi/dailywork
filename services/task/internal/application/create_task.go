@@ -15,7 +15,7 @@ type TaskRepository interface {
 	Save(ctx context.Context, t *domain.Task) error
 	FindByID(ctx context.Context, id string) (*domain.Task, error)
 	// 今天页的候选任务：不含已删除、归档项目下的任务
-	ListForToday(ctx context.Context, userID string, day time.Time) ([]*domain.Task, error)
+	ListForToday(ctx context.Context, userID string, day time.Time, completedFrom time.Time, completedTo time.Time) ([]*domain.Task, error)
 	// 完成任务：状态更新与 outbox 记录必须同一事务
 	SaveWithEvent(ctx context.Context, t *domain.Task, event domain.TaskCompleted) error
 }

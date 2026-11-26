@@ -157,6 +157,7 @@ struct CompleteTaskResp {
 struct ListTodayReq {
   1: required string userId
   2: required string date          // YYYY-MM-DD
+  3: optional string timezone      // IANA 名称，如 Asia/Shanghai；空值按 UTC
 
   255: required base.Base Base
 }

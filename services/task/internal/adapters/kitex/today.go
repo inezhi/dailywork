@@ -25,7 +25,18 @@ func (h *Handler) ListToday(ctx context.Context, req *rpc.ListTodayReq) (*rpc.Li
 		}, nil
 	}
 
-	result, err := h.listToday.Execute(ctx, req.UserId, date)
+	loc := time.UTC
+	if req.Timezone != nil && *req.Timezone != "" {
+		parsed, err := time.LoadLocation(*req.Timezone)
+		if err != nil {
+			return &rpc.ListTodayResp{
+				BaseResp: &base.BaseResp{StatusCode: codeInvalid, StatusMessage: "时区不合法"},
+			}, nil
+		}
+		loc = parsed
+	}
+
+	result, err := h.listToday.Execute(ctx, req.UserId, date, loc)
 	if err != nil {
 		return &rpc.ListTodayResp{BaseResp: errResp(err)}, nil
 	}
