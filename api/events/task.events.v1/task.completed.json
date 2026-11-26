@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inezhi/dailywork/api/events/task.events.v1/task.completed.json",
+  "title": "task.completed",
+  "description": "Emitted when a task is completed. Delivered at-least-once; consumers deduplicate by eventId.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "eventType", "occurredAt", "aggregateId", "payload"],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique id of this event, used for consumer deduplication"
+    },
+    "eventType": {
+      "const": "task.completed"
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp when the event happened"
+    },
+    "aggregateId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Task id"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["taskId", "userId", "spaceId", "title", "completedAt"],
+      "properties": {
+        "taskId": { "type": "string", "format": "uuid" },
+        "userId": { "type": "string", "format": "uuid" },
+        "spaceId": { "type": "string", "format": "uuid" },
+        "title": { "type": "string" },
+        "completedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

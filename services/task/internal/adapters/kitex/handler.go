@@ -29,6 +29,7 @@ const (
 
 type Handler struct {
 	createTask      *application.CreateTask
+	completeTask    *application.CompleteTask
 	listToday       *application.ListToday
 	sendCode        *identityapp.SendCode
 	register        *identityapp.Register
@@ -39,6 +40,7 @@ type Handler struct {
 
 func New(
 	createTask *application.CreateTask,
+	completeTask *application.CompleteTask,
 	listToday *application.ListToday,
 	sendCode *identityapp.SendCode,
 	register *identityapp.Register,
@@ -48,6 +50,7 @@ func New(
 ) *Handler {
 	return &Handler{
 		createTask:      createTask,
+		completeTask:    completeTask,
 		listToday:       listToday,
 		sendCode:        sendCode,
 		register:        register,
@@ -233,6 +236,8 @@ func classify(err error) (int32, string) {
 		return codeConflict, "父任务本身是子任务，只允许一层"
 	case errors.Is(err, domain.ErrVersionConflict):
 		return codeConflict, "任务已被修改，请刷新后重试"
+	case errors.Is(err, domain.ErrAlreadyDone):
+		return codeConflict, "任务已完成"
 	default:
 		return codeInternal, "服务暂时不可用"
 	}

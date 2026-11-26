@@ -19,6 +19,7 @@ type fakeRepo struct {
 	saveErr    error
 	todayTasks []*domain.Task
 	listErr    error
+	savedEvent *domain.TaskCompleted
 }
 
 func newFakeRepo() *fakeRepo { return &fakeRepo{tasks: map[string]*domain.Task{}} }
@@ -45,6 +46,16 @@ func (f *fakeRepo) ListForToday(_ context.Context, userID string, day time.Time)
 		return nil, f.listErr
 	}
 	return f.todayTasks, nil
+}
+
+// 保存任务并记录事件
+func (f *fakeRepo) SaveWithEvent(_ context.Context, t *domain.Task, event domain.TaskCompleted) error {
+	if f.saveErr != nil {
+		return f.saveErr
+	}
+	f.tasks[t.ID()] = t
+	f.savedEvent = &event
+	return nil
 }
 
 // fakeIDs 每次返回递增的 ID，测试里可以预期。

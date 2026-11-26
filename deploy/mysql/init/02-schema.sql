@@ -91,8 +91,7 @@ CREATE TABLE users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- 会话：一行一次登录，JWT 里带的就是 id；设备列表 = 该用户未过期的行。
-CREATE TABLE sessions (
-  id           CHAR(36) PRIMARY KEY,                   -- JWT 里的 session id
+CREATE TABLE sessions (  id           CHAR(36) PRIMARY KEY,                   -- JWT 里的 session id
   user_id      CHAR(36) NOT NULL,                      -- 归属用户；不建外键
   client       VARCHAR(20) NOT NULL,                   -- web 或 desktop
   device       VARCHAR(100) NULL,                      -- 设备描述，如 "MacBook Pro / Chrome"
@@ -104,4 +103,20 @@ CREATE TABLE sessions (
 
   KEY sessions_user_idx (user_id, expires_at),         -- 列某人的会话
   KEY sessions_expires_idx (expires_at)                -- 清理过期会话
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 待发布事件：与业务写入同一事务，由 relay 异步投递到 Kafka。
+-- 投递语义是至少一次，消费者按事件 id 去重。
+CREATE TABLE outbox (
+  id             CHAR(36) PRIMARY KEY,                 -- 事件 id，消费者按它去重
+  aggregate_type VARCHAR(50)  NOT NULL,                -- 聚合类型，如 task
+  aggregate_id   CHAR(36)     NOT NULL,                -- 聚合 id，也是 Kafka 消息 key
+  event_type     VARCHAR(100) NOT NULL,                -- 如 task.completed
+  payload        JSON         NOT NULL,                -- 完整事件信封
+  attempts       INT          NOT NULL DEFAULT 0,      -- 投递尝试次数
+  published_at   DATETIME(3)  NULL,                    -- 非空即已发布
+  created_at     DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+  KEY outbox_unpublished_idx (published_at, created_at),  -- relay 取未发布
+  KEY outbox_aggregate_idx (aggregate_id)                 -- 按聚合查事件
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

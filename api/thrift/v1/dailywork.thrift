@@ -132,6 +132,24 @@ struct ValidateSessionResp {
   255: required base.BaseResp BaseResp
 }
 
+// ===== 完成任务 =====
+
+// HTTP 的 POST /api/v1/tasks/{id}/complete 映射到这里。
+// expectedVersion 必填：版本对不上返回冲突，避免两个页面同时改。
+struct CompleteTaskReq {
+  1: required string userId
+  2: required string taskId
+  3: required i32 expectedVersion
+
+  255: required base.Base Base
+}
+
+struct CompleteTaskResp {
+  1: optional task_model.Task task   // 成功时非空；业务错误时为空
+
+  255: required base.BaseResp BaseResp
+}
+
 // ===== 今天 =====
 
 // HTTP 的 GET /api/v1/today?date=YYYY-MM-DD 映射到这里。
@@ -166,6 +184,9 @@ service DailyWorkService {
 
   // 创建任务。同一 userId + idempotencyKey 重复调用返回首次结果，不会建出两条。
   CreateTaskResp CreateTask(1: CreateTaskReq req)
+
+  // 完成任务；状态与完成时间同时更新，并产生 task.completed 事件。
+  CompleteTaskResp CompleteTask(1: CompleteTaskReq req)
 
   // 发送验证码；开发环境固定 2222。
   SendCodeResp SendCode(1: SendCodeReq req)

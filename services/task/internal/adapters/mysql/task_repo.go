@@ -3,15 +3,20 @@ package mysql
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	gormmysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
 	"github.com/inezhi/dailywork/services/task/internal/domain"
 )
+
+// 任务完成事件的类型名
+const completedEventType = "task.completed"
 
 // TaskRepo 实现 domain.TaskRepository。
 type TaskRepo struct {
@@ -106,6 +111,55 @@ func (r *TaskRepo) ListForToday(ctx context.Context, userID string, day time.Tim
 		tasks = append(tasks, toDomain(&rows[i]))
 	}
 	return tasks, nil
+}
+
+// SaveWithEvent 在同一事务里更新任务并写入 outbox。
+func (r *TaskRepo) SaveWithEvent(ctx context.Context, t *domain.Task, event domain.TaskCompleted) error {
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		result := tx.Model(&taskRow{}).
+			Where("id = ? AND version = ?", t.ID(), t.Version()).
+			Updates(mutableColumns(t))
+		if result.Error != nil {
+			return fmt.Errorf("update task: %w", result.Error)
+		}
+		if result.RowsAffected == 0 {
+			return domain.ErrVersionConflict
+		}
+		return insertOutbox(tx, event)
+	})
+	if err != nil {
+		return err
+	}
+
+	// 事务提交后再同步领域对象的版本号
+	t.SyncVersion(t.Version() + 1)
+	return nil
+}
+
+// insertOutbox 写入一条待发布事件
+func insertOutbox(tx *gorm.DB, event domain.TaskCompleted) error {
+	eventID := uuid.NewString()
+	envelope := map[string]any{
+		"eventId":     eventID,
+		"eventType":   completedEventType,
+		"occurredAt":  event.CompletedAt.UTC().Format(time.RFC3339),
+		"aggregateId": event.TaskID,
+		"payload":     event,
+	}
+
+	payload, err := json.Marshal(envelope)
+	if err != nil {
+		return fmt.Errorf("marshal event: %w", err)
+	}
+
+	err = tx.Exec(
+		`INSERT INTO outbox (id, aggregate_type, aggregate_id, event_type, payload) VALUES (?, ?, ?, ?, ?)`,
+		eventID, "task", event.TaskID, completedEventType, payload,
+	).Error
+	if err != nil {
+		return fmt.Errorf("insert outbox: %w", err)
+	}
+	return nil
 }
 
 // toRow 把领域对象转成数据库行。
