@@ -23,3 +23,12 @@ func (h *Hasher) Hash(password string) (string, error) {
 	}
 	return string(hash), nil
 }
+
+// 校验密码与哈希是否匹配
+func (h *Hasher) Verify(password string, hash string) error {
+	err := xbcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err != nil {
+		return fmt.Errorf("bcrypt compare: %w", err)
+	}
+	return nil
+}

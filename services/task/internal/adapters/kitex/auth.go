@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"time"
 
 	"github.com/inezhi/dailywork/api/gen/base"
 	"github.com/inezhi/dailywork/api/gen/rpc"
@@ -39,6 +40,52 @@ func (h *Handler) Register(ctx context.Context, req *rpc.RegisterReq) (*rpc.Regi
 	return &rpc.RegisterResp{UserId: user.ID(), BaseResp: okResp()}, nil
 }
 
+// 登录
+func (h *Handler) Login(ctx context.Context, req *rpc.LoginReq) (*rpc.LoginResp, error) {
+	result, err := h.login.Execute(ctx, identityapp.LoginInput{
+		Email:    req.Email,
+		Phone:    req.Phone,
+		Password: req.Password,
+		Client:   deref(req.Client),
+		Device:   deref(req.Device),
+		IP:       deref(req.Ip),
+	})
+	if err != nil {
+		slog.Warn("login failed", "err", err, "requestId", logID(req.Base))
+		return &rpc.LoginResp{BaseResp: identityErrResp(err)}, nil
+	}
+	return &rpc.LoginResp{
+		Token:     result.Token,
+		UserId:    result.UserID,
+		ExpiresAt: result.ExpiresAt.Format(time.RFC3339),
+		BaseResp:  okResp(),
+	}, nil
+}
+
+// 校验会话
+func (h *Handler) ValidateSession(ctx context.Context, req *rpc.ValidateSessionReq) (*rpc.ValidateSessionResp, error) {
+	identity, err := h.validateSession.Execute(ctx, req.Token)
+	if err != nil {
+		return &rpc.ValidateSessionResp{BaseResp: identityErrResp(err)}, nil
+	}
+	return &rpc.ValidateSessionResp{
+		UserId:    identity.UserID,
+		SessionId: identity.SessionID,
+		ExpiresAt: identity.ExpiresAt.Format(time.RFC3339),
+		BaseResp:  okResp(),
+	}, nil
+}
+
+// 登出
+func (h *Handler) Logout(ctx context.Context, req *rpc.LogoutReq) (*rpc.LogoutResp, error) {
+	err := h.logout.Execute(ctx, req.SessionId)
+	if err != nil {
+		slog.Warn("logout failed", "err", err, "requestId", logID(req.Base))
+		return &rpc.LogoutResp{BaseResp: identityErrResp(err)}, nil
+	}
+	return &rpc.LogoutResp{BaseResp: okResp()}, nil
+}
+
 // 把 identity 的错误翻译成状态码和提示
 func identityErrResp(err error) *base.BaseResp {
 	code, message := classifyIdentity(err)
@@ -48,6 +95,14 @@ func identityErrResp(err error) *base.BaseResp {
 // identity 错误的分类表
 func classifyIdentity(err error) (int32, string) {
 	switch {
+	case errors.Is(err, identityapp.ErrInvalidCredentials):
+		return codeUnauthorized, "邮箱、手机号或密码不对"
+	case errors.Is(err, identityapp.ErrTokenInvalid):
+		return codeUnauthorized, "登录已失效"
+	case errors.Is(err, identityapp.ErrSessionNotFound):
+		return codeNotFound, "会话不存在"
+	case errors.Is(err, identityapp.ErrUserNotFound):
+		return codeNotFound, "用户不存在"
 	case errors.Is(err, identityapp.ErrEmailTaken),
 		errors.Is(err, identityapp.ErrPhoneTaken):
 		return codeConflict, "邮箱或手机号已注册"

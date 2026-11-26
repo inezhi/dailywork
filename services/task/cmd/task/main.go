@@ -18,6 +18,7 @@ import (
 
 	"github.com/inezhi/dailywork/api/gen/rpc/dailyworkservice"
 	identitybcrypt "github.com/inezhi/dailywork/services/identity/adapters/bcrypt"
+	identityjwt "github.com/inezhi/dailywork/services/identity/adapters/jwt"
 	identitymysql "github.com/inezhi/dailywork/services/identity/adapters/mysql"
 	identityredis "github.com/inezhi/dailywork/services/identity/adapters/redis"
 	identityapp "github.com/inezhi/dailywork/services/identity/application"
@@ -30,6 +31,7 @@ type config struct {
 	Server serverConfig `yaml:"server"`
 	MySQL  mysqlConfig  `yaml:"mysql"`
 	Redis  redisConfig  `yaml:"redis"`
+	Auth   authConfig   `yaml:"auth"`
 }
 
 // serverConfig 是 Kitex 服务的监听配置。
@@ -46,6 +48,11 @@ type mysqlConfig struct {
 type redisConfig struct {
 	Addr     string `yaml:"addr"`
 	Password string `yaml:"password"`
+}
+
+// authConfig 是 JWT 相关配置。
+type authConfig struct {
+	JWTSecret string `yaml:"jwt_secret"`
 }
 
 // loadConfig 读 YAML 文件，并校验必填项。
@@ -71,6 +78,10 @@ func loadConfig(path string) (config, error) {
 	// 没有 Redis 地址就没法存验证码
 	if cfg.Redis.Addr == "" {
 		return config{}, fmt.Errorf("config %s: redis.addr is required", path)
+	}
+	// 没有 JWT 密钥就签不了 token
+	if cfg.Auth.JWTSecret == "" {
+		return config{}, fmt.Errorf("config %s: auth.jwt_secret is required", path)
 	}
 
 	return cfg, nil
@@ -156,7 +167,13 @@ func run(configPath string) error {
 	sendCode := identityapp.NewSendCode(codeStore)
 	register := identityapp.NewRegister(userRepo, codeStore, identityHasher, uuidGen{}, systemClock{})
 
-	handler := kitex.New(createTask, sendCode, register)
+	sessionRepo := identitymysql.NewSessionRepo(db)
+	tokenManager := identityjwt.New(cfg.Auth.JWTSecret)
+	login := identityapp.NewLogin(userRepo, sessionRepo, identityHasher, tokenManager, uuidGen{}, systemClock{})
+	validateSession := identityapp.NewValidateSession(sessionRepo, tokenManager, systemClock{})
+	logout := identityapp.NewLogout(sessionRepo, systemClock{})
+
+	handler := kitex.New(createTask, sendCode, register, login, validateSession, logout)
 
 	addr, err := net.ResolveTCPAddr("tcp", cfg.Server.Addr)
 	if err != nil {

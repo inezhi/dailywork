@@ -91,6 +91,9 @@ struct LoginReq {
   1: optional string email
   2: optional string phone
   3: required string password
+  4: optional string client        // web 或 desktop；空值按 web 处理
+  5: optional string device        // 设备描述，gateway 从 User-Agent 取
+  6: optional string ip            // 客户端 IP
 
   255: required base.Base Base
 }

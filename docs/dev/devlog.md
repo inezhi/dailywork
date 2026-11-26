@@ -170,6 +170,12 @@ bcrypt 哈希器；RPC 的 `SendCode` / `Register` 换成真实实现，`Login` 
 **目录调整。** Go 的 `internal` 规则禁止 `services/task` import `services/identity/internal`，
 identity 的 `domain` / `application` / `adapters` 上移一层，脱离 `internal`；task 的内部代码不变。
 
+**切片 2 第 4 步：登录、JWT 与会话（2026-11-26）。** 契约给 `LoginReq` 增加 `client` / `device` / `ip`；
+新增 `Session` 聚合与 `Login` / `ValidateSession` / `Logout` 三个用例；MySQL 会话仓储、用户按邮箱/
+手机号查询、JWT（HS256）与 bcrypt `Verify`；RPC 三个方法换成真实实现，`auth_stub.go` 删除。
+配置增加 `auth.jwt_secret`，启动时校验。实测登录拿到 token、错误密码 401、登出后校验 401，
+会话表记录了设备、IP、30 天过期与吊销时间；identity 测试 36 个通过。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）

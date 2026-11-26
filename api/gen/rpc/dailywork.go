@@ -678,6 +678,9 @@ type LoginReq struct {
 	Email    *string    `thrift:"email,1,optional" frugal:"1,optional,string" json:"email,omitempty"`
 	Phone    *string    `thrift:"phone,2,optional" frugal:"2,optional,string" json:"phone,omitempty"`
 	Password string     `thrift:"password,3,required" frugal:"3,required,string" json:"password"`
+	Client   *string    `thrift:"client,4,optional" frugal:"4,optional,string" json:"client,omitempty"`
+	Device   *string    `thrift:"device,5,optional" frugal:"5,optional,string" json:"device,omitempty"`
+	Ip       *string    `thrift:"ip,6,optional" frugal:"6,optional,string" json:"ip,omitempty"`
 	Base     *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
 }
 
@@ -710,6 +713,33 @@ func (p *LoginReq) GetPassword() (v string) {
 	return p.Password
 }
 
+var LoginReq_Client_DEFAULT string
+
+func (p *LoginReq) GetClient() (v string) {
+	if !p.IsSetClient() {
+		return LoginReq_Client_DEFAULT
+	}
+	return *p.Client
+}
+
+var LoginReq_Device_DEFAULT string
+
+func (p *LoginReq) GetDevice() (v string) {
+	if !p.IsSetDevice() {
+		return LoginReq_Device_DEFAULT
+	}
+	return *p.Device
+}
+
+var LoginReq_Ip_DEFAULT string
+
+func (p *LoginReq) GetIp() (v string) {
+	if !p.IsSetIp() {
+		return LoginReq_Ip_DEFAULT
+	}
+	return *p.Ip
+}
+
 var LoginReq_Base_DEFAULT *base.Base
 
 func (p *LoginReq) GetBase() (v *base.Base) {
@@ -727,6 +757,15 @@ func (p *LoginReq) SetPhone(val *string) {
 func (p *LoginReq) SetPassword(val string) {
 	p.Password = val
 }
+func (p *LoginReq) SetClient(val *string) {
+	p.Client = val
+}
+func (p *LoginReq) SetDevice(val *string) {
+	p.Device = val
+}
+func (p *LoginReq) SetIp(val *string) {
+	p.Ip = val
+}
 func (p *LoginReq) SetBase(val *base.Base) {
 	p.Base = val
 }
@@ -737,6 +776,18 @@ func (p *LoginReq) IsSetEmail() bool {
 
 func (p *LoginReq) IsSetPhone() bool {
 	return p.Phone != nil
+}
+
+func (p *LoginReq) IsSetClient() bool {
+	return p.Client != nil
+}
+
+func (p *LoginReq) IsSetDevice() bool {
+	return p.Device != nil
+}
+
+func (p *LoginReq) IsSetIp() bool {
+	return p.Ip != nil
 }
 
 func (p *LoginReq) IsSetBase() bool {
@@ -754,6 +805,9 @@ var fieldIDToName_LoginReq = map[int16]string{
 	1:   "email",
 	2:   "phone",
 	3:   "password",
+	4:   "client",
+	5:   "device",
+	6:   "ip",
 	255: "Base",
 }
 

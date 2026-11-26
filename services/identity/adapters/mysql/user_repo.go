@@ -57,6 +57,32 @@ func (r *UserRepo) ExistsByPhone(ctx context.Context, phone string) (bool, error
 	return count > 0, nil
 }
 
+// 按邮箱查用户
+func (r *UserRepo) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
+	var row userRow
+	err := r.db.WithContext(ctx).Where("email = ?", email).Take(&row).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, identityapp.ErrUserNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("find user by email: %w", err)
+	}
+	return toUserDomain(&row)
+}
+
+// 按手机号查用户
+func (r *UserRepo) FindByPhone(ctx context.Context, phone string) (*domain.User, error) {
+	var row userRow
+	err := r.db.WithContext(ctx).Where("phone = ?", phone).Take(&row).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, identityapp.ErrUserNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("find user by phone: %w", err)
+	}
+	return toUserDomain(&row)
+}
+
 // 把 MySQL 1062 唯一键冲突翻译成业务错误
 func translateDuplicate(err error) error {
 	var mysqlErr *mysqlDriver.MySQLError
@@ -98,4 +124,41 @@ func toUserRow(user *domain.User) *userRow {
 	}
 
 	return row
+}
+
+// 把数据库行还原成领域对象
+func toUserDomain(row *userRow) (*domain.User, error) {
+	var email *domain.Email
+	if row.Email != nil {
+		parsed, err := domain.NewEmail(*row.Email)
+		if err != nil {
+			return nil, fmt.Errorf("parse stored email: %w", err)
+		}
+		email = &parsed
+	}
+
+	var phone *domain.Phone
+	if row.Phone != nil {
+		parsed, err := domain.NewPhone(*row.Phone)
+		if err != nil {
+			return nil, fmt.Errorf("parse stored phone: %w", err)
+		}
+		phone = &parsed
+	}
+
+	avatarURL := ""
+	if row.AvatarURL != nil {
+		avatarURL = *row.AvatarURL
+	}
+
+	return domain.Reconstitute(
+		row.ID,
+		email,
+		phone,
+		row.PasswordHash,
+		avatarURL,
+		row.MembershipLevel,
+		row.CreatedAt,
+		row.UpdatedAt,
+	), nil
 }

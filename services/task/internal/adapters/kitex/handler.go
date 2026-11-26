@@ -19,21 +19,39 @@ import (
 
 // 业务状态码：0 成功，其余沿用 HTTP 大类的数字，gateway 直接映射。
 const (
-	codeOK       int32 = 0
-	codeInvalid  int32 = 400
-	codeNotFound int32 = 404
-	codeConflict int32 = 409
-	codeInternal int32 = 500
+	codeOK           int32 = 0
+	codeInvalid      int32 = 400
+	codeUnauthorized int32 = 401
+	codeNotFound     int32 = 404
+	codeConflict     int32 = 409
+	codeInternal     int32 = 500
 )
 
 type Handler struct {
-	createTask *application.CreateTask
-	sendCode   *identityapp.SendCode
-	register   *identityapp.Register
+	createTask      *application.CreateTask
+	sendCode        *identityapp.SendCode
+	register        *identityapp.Register
+	login           *identityapp.Login
+	validateSession *identityapp.ValidateSession
+	logout          *identityapp.Logout
 }
 
-func New(createTask *application.CreateTask, sendCode *identityapp.SendCode, register *identityapp.Register) *Handler {
-	return &Handler{createTask: createTask, sendCode: sendCode, register: register}
+func New(
+	createTask *application.CreateTask,
+	sendCode *identityapp.SendCode,
+	register *identityapp.Register,
+	login *identityapp.Login,
+	validateSession *identityapp.ValidateSession,
+	logout *identityapp.Logout,
+) *Handler {
+	return &Handler{
+		createTask:      createTask,
+		sendCode:        sendCode,
+		register:        register,
+		login:           login,
+		validateSession: validateSession,
+		logout:          logout,
+	}
 }
 
 // rpc入口

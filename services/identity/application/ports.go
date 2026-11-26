@@ -24,6 +24,14 @@ var (
 	ErrPasswordTooShort = errors.New("application: password must be at least 8 characters")
 	// 密码超过 bcrypt 的 72 字节上限
 	ErrPasswordTooLong = errors.New("application: password must be at most 72 bytes")
+	// 用户不存在
+	ErrUserNotFound = errors.New("application: user not found")
+	// 会话不存在
+	ErrSessionNotFound = errors.New("application: session not found")
+	// 邮箱、手机号或密码不对
+	ErrInvalidCredentials = errors.New("application: invalid credentials")
+	// token 无效、过期或对应会话已失效
+	ErrTokenInvalid = errors.New("application: invalid token")
 )
 
 // 用户持久化
@@ -33,6 +41,30 @@ type UserRepository interface {
 	// 注册前查重
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
 	ExistsByPhone(ctx context.Context, phone string) (bool, error)
+
+	// 登录时按标识查用户
+	FindByEmail(ctx context.Context, email string) (*domain.User, error)
+	FindByPhone(ctx context.Context, phone string) (*domain.User, error)
+}
+
+// 会话持久化
+type SessionRepository interface {
+	Save(ctx context.Context, session *domain.Session) error // 登录时新建会话
+	FindByID(ctx context.Context, id string) (*domain.Session, error)
+	Revoke(ctx context.Context, id string, now time.Time) error // 登出时吊销
+}
+
+// 签发与校验 JWT
+type TokenManager interface {
+	Sign(userID string, sessionID string, expiresAt time.Time) (string, error)
+	Verify(token string) (TokenClaims, error)
+}
+
+// token 里携带的信息
+type TokenClaims struct {
+	UserID    string
+	SessionID string
+	ExpiresAt time.Time
 }
 
 // 存验证码；Take 取出后立即删除
@@ -44,6 +76,8 @@ type VerificationCodeStore interface {
 // 生成密码哈希
 type PasswordHasher interface {
 	Hash(password string) (string, error)
+	// 校验密码与哈希是否匹配
+	Verify(password string, hash string) error
 }
 
 // 生成用户id
