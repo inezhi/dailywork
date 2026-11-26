@@ -5,7 +5,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/inezhi/dailywork/services/identity/internal/domain"
+	"github.com/inezhi/dailywork/services/identity/domain"
 )
 
 // 内存用户仓储

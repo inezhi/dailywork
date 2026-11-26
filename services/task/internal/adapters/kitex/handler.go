@@ -12,6 +12,7 @@ import (
 	"github.com/inezhi/dailywork/api/gen/rpc"
 	"github.com/inezhi/dailywork/api/gen/taskconst"
 	"github.com/inezhi/dailywork/api/gen/taskmodel"
+	identityapp "github.com/inezhi/dailywork/services/identity/application"
 	"github.com/inezhi/dailywork/services/task/internal/application"
 	"github.com/inezhi/dailywork/services/task/internal/domain"
 )
@@ -27,10 +28,12 @@ const (
 
 type Handler struct {
 	createTask *application.CreateTask
+	sendCode   *identityapp.SendCode
+	register   *identityapp.Register
 }
 
-func New(createTask *application.CreateTask) *Handler {
-	return &Handler{createTask: createTask}
+func New(createTask *application.CreateTask, sendCode *identityapp.SendCode, register *identityapp.Register) *Handler {
+	return &Handler{createTask: createTask, sendCode: sendCode, register: register}
 }
 
 // rpc入口

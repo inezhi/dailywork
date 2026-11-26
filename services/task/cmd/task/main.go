@@ -17,6 +17,10 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/inezhi/dailywork/api/gen/rpc/dailyworkservice"
+	identitybcrypt "github.com/inezhi/dailywork/services/identity/adapters/bcrypt"
+	identitymysql "github.com/inezhi/dailywork/services/identity/adapters/mysql"
+	identityredis "github.com/inezhi/dailywork/services/identity/adapters/redis"
+	identityapp "github.com/inezhi/dailywork/services/identity/application"
 	"github.com/inezhi/dailywork/services/task/internal/adapters/kitex"
 	"github.com/inezhi/dailywork/services/task/internal/adapters/mysql"
 	"github.com/inezhi/dailywork/services/task/internal/application"
@@ -25,6 +29,7 @@ import (
 type config struct {
 	Server serverConfig `yaml:"server"`
 	MySQL  mysqlConfig  `yaml:"mysql"`
+	Redis  redisConfig  `yaml:"redis"`
 }
 
 // serverConfig 是 Kitex 服务的监听配置。
@@ -35,6 +40,12 @@ type serverConfig struct {
 // mysqlConfig 是数据库连接配置。
 type mysqlConfig struct {
 	DSN string `yaml:"dsn"`
+}
+
+// redisConfig 是 Redis 连接配置。
+type redisConfig struct {
+	Addr     string `yaml:"addr"`
+	Password string `yaml:"password"`
 }
 
 // loadConfig 读 YAML 文件，并校验必填项。
@@ -53,8 +64,13 @@ func loadConfig(path string) (config, error) {
 	if cfg.Server.Addr == "" {
 		return config{}, fmt.Errorf("config %s: server.addr is required", path)
 	}
+	// 没有数据库连接串就起不来
 	if cfg.MySQL.DSN == "" {
 		return config{}, fmt.Errorf("config %s: mysql.dsn is required", path)
+	}
+	// 没有 Redis 地址就没法存验证码
+	if cfg.Redis.Addr == "" {
+		return config{}, fmt.Errorf("config %s: redis.addr is required", path)
 	}
 
 	return cfg, nil
@@ -122,10 +138,25 @@ func run(configPath string) error {
 		return fmt.Errorf("ping mysql: %w", err)
 	}
 
-	// 3. 装配：仓储 → 用例 → handler
-	repo := mysql.New(db)
-	createTask := application.NewCreateTask(repo, uuidGen{}, systemClock{}) // 这里就是那三个组装起来的接口struct
-	handler := kitex.New(createTask)
+	// 3. 连 Redis；验证码存在这里
+	redisClient := identityredis.Open(cfg.Redis.Addr, cfg.Redis.Password)
+	defer redisClient.Close()
+
+	if err := redisClient.Ping(pingCtx).Err(); err != nil {
+		return fmt.Errorf("ping redis: %w", err)
+	}
+
+	// 4. 装配：仓储 → 用例 → handler
+	taskRepo := mysql.New(db)
+	createTask := application.NewCreateTask(taskRepo, uuidGen{}, systemClock{}) // 这里就是那三个组装起来的接口struct
+
+	userRepo := identitymysql.NewUserRepo(db)
+	codeStore := identityredis.NewCodeStore(redisClient)
+	identityHasher := identitybcrypt.New()
+	sendCode := identityapp.NewSendCode(codeStore)
+	register := identityapp.NewRegister(userRepo, codeStore, identityHasher, uuidGen{}, systemClock{})
+
+	handler := kitex.New(createTask, sendCode, register)
 
 	addr, err := net.ResolveTCPAddr("tcp", cfg.Server.Addr)
 	if err != nil {

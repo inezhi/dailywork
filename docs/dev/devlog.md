@@ -161,6 +161,15 @@ users 的邮箱与手机号各自唯一、CHECK 保证至少有一个，另有�
 （UserRepository、VerificationCodeStore、PasswordHasher、IDGenerator、Clock）。验证码固定 2222、
 TTL 5 分钟；密码 8–72 字节。18 个测试全部用假实现，不依赖 MySQL/Redis；适配器与接线留给 3b。
 
+**切片 2 第 3b 步：identity 适配器与接线（2026-11-24）。** 新增 MySQL 用户仓储（唯一键冲突按
+索引名翻译成邮箱/手机号已注册）、Redis 验证码存储（`SET EX` / `GETDEL`，前缀 `auth:code:`）、
+bcrypt 哈希器；RPC 的 `SendCode` / `Register` 换成真实实现，`Login` / `Logout` / `ValidateSession`
+仍为桩。`task.yaml` 增加 `redis` 段，启动时连 Redis 并 ping。实测注册成功并落库、重复注册 409、
+错误验证码 400，Redis 里的验证码 TTL 为 300 秒。
+
+**目录调整。** Go 的 `internal` 规则禁止 `services/task` import `services/identity/internal`，
+identity 的 `domain` / `application` / `adapters` 上移一层，脱离 `internal`；task 的内部代码不变。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）

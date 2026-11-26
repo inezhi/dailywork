@@ -14,16 +14,6 @@ func notImplemented() *base.BaseResp {
 }
 
 // 尚未实现
-func (h *Handler) SendCode(ctx context.Context, req *rpc.SendCodeReq) (*rpc.SendCodeResp, error) {
-	return &rpc.SendCodeResp{BaseResp: notImplemented()}, nil
-}
-
-// 尚未实现
-func (h *Handler) Register(ctx context.Context, req *rpc.RegisterReq) (*rpc.RegisterResp, error) {
-	return &rpc.RegisterResp{BaseResp: notImplemented()}, nil
-}
-
-// 尚未实现
 func (h *Handler) Login(ctx context.Context, req *rpc.LoginReq) (*rpc.LoginResp, error) {
 	return &rpc.LoginResp{BaseResp: notImplemented()}, nil
 }

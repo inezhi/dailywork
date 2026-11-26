@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/inezhi/dailywork/services/identity/internal/domain"
+	"github.com/inezhi/dailywork/services/identity/domain"
 )
 
 func TestSendCodeEmail(t *testing.T) {

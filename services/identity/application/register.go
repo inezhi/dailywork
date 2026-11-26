@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/inezhi/dailywork/services/identity/internal/domain"
+	"github.com/inezhi/dailywork/services/identity/domain"
 )
 
 // 密码长度边界，上限来自 bcrypt

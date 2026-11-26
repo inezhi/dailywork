@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/inezhi/dailywork/services/identity/internal/domain"
+	"github.com/inezhi/dailywork/services/identity/domain"
 )
 
 var (

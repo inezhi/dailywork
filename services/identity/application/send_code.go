@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/inezhi/dailywork/services/identity/internal/domain"
+	"github.com/inezhi/dailywork/services/identity/domain"
 )
 
 // 验证码有效期
