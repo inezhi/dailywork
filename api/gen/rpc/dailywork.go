@@ -1073,6 +1073,165 @@ var fieldIDToName_ValidateSessionResp = map[int16]string{
 	255: "BaseResp",
 }
 
+type ListTodayReq struct {
+	UserId string     `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
+	Date   string     `thrift:"date,2,required" frugal:"2,required,string" json:"date"`
+	Base   *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
+}
+
+func NewListTodayReq() *ListTodayReq {
+	return &ListTodayReq{}
+}
+
+func (p *ListTodayReq) InitDefault() {
+}
+
+func (p *ListTodayReq) GetUserId() (v string) {
+	return p.UserId
+}
+
+func (p *ListTodayReq) GetDate() (v string) {
+	return p.Date
+}
+
+var ListTodayReq_Base_DEFAULT *base.Base
+
+func (p *ListTodayReq) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return ListTodayReq_Base_DEFAULT
+	}
+	return p.Base
+}
+func (p *ListTodayReq) SetUserId(val string) {
+	p.UserId = val
+}
+func (p *ListTodayReq) SetDate(val string) {
+	p.Date = val
+}
+func (p *ListTodayReq) SetBase(val *base.Base) {
+	p.Base = val
+}
+
+func (p *ListTodayReq) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *ListTodayReq) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ListTodayReq(%+v)", *p)
+}
+
+var fieldIDToName_ListTodayReq = map[int16]string{
+	1:   "userId",
+	2:   "date",
+	255: "Base",
+}
+
+type TodayGroup struct {
+	Kind            taskconst.TodayGroupKind `thrift:"kind,1,required" frugal:"1,required,TodayGroupKind" json:"kind"`
+	Tasks           []*taskmodel.Task        `thrift:"tasks,2,required" frugal:"2,required,list<taskmodel.Task>" json:"tasks"`
+	Count           int32                    `thrift:"count,3,required" frugal:"3,required,i32" json:"count"`
+	EstimateMinutes int32                    `thrift:"estimateMinutes,4,required" frugal:"4,required,i32" json:"estimateMinutes"`
+}
+
+func NewTodayGroup() *TodayGroup {
+	return &TodayGroup{}
+}
+
+func (p *TodayGroup) InitDefault() {
+}
+
+func (p *TodayGroup) GetKind() (v taskconst.TodayGroupKind) {
+	return p.Kind
+}
+
+func (p *TodayGroup) GetTasks() (v []*taskmodel.Task) {
+	return p.Tasks
+}
+
+func (p *TodayGroup) GetCount() (v int32) {
+	return p.Count
+}
+
+func (p *TodayGroup) GetEstimateMinutes() (v int32) {
+	return p.EstimateMinutes
+}
+func (p *TodayGroup) SetKind(val taskconst.TodayGroupKind) {
+	p.Kind = val
+}
+func (p *TodayGroup) SetTasks(val []*taskmodel.Task) {
+	p.Tasks = val
+}
+func (p *TodayGroup) SetCount(val int32) {
+	p.Count = val
+}
+func (p *TodayGroup) SetEstimateMinutes(val int32) {
+	p.EstimateMinutes = val
+}
+
+func (p *TodayGroup) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("TodayGroup(%+v)", *p)
+}
+
+var fieldIDToName_TodayGroup = map[int16]string{
+	1: "kind",
+	2: "tasks",
+	3: "count",
+	4: "estimateMinutes",
+}
+
+type ListTodayResp struct {
+	Groups   []*TodayGroup  `thrift:"groups,1,required" frugal:"1,required,list<TodayGroup>" json:"groups"`
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewListTodayResp() *ListTodayResp {
+	return &ListTodayResp{}
+}
+
+func (p *ListTodayResp) InitDefault() {
+}
+
+func (p *ListTodayResp) GetGroups() (v []*TodayGroup) {
+	return p.Groups
+}
+
+var ListTodayResp_BaseResp_DEFAULT *base.BaseResp
+
+func (p *ListTodayResp) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return ListTodayResp_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *ListTodayResp) SetGroups(val []*TodayGroup) {
+	p.Groups = val
+}
+func (p *ListTodayResp) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *ListTodayResp) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *ListTodayResp) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ListTodayResp(%+v)", *p)
+}
+
+var fieldIDToName_ListTodayResp = map[int16]string{
+	1:   "groups",
+	255: "BaseResp",
+}
+
 type DailyWorkService interface {
 	Echo(ctx context.Context, req *EchoReq) (r *EchoResp, err error)
 
@@ -1087,6 +1246,8 @@ type DailyWorkService interface {
 	Logout(ctx context.Context, req *LogoutReq) (r *LogoutResp, err error)
 
 	ValidateSession(ctx context.Context, req *ValidateSessionReq) (r *ValidateSessionResp, err error)
+
+	ListToday(ctx context.Context, req *ListTodayReq) (r *ListTodayResp, err error)
 }
 
 type DailyWorkServiceEchoArgs struct {
@@ -1618,5 +1779,81 @@ func (p *DailyWorkServiceValidateSessionResult) String() string {
 }
 
 var fieldIDToName_DailyWorkServiceValidateSessionResult = map[int16]string{
+	0: "success",
+}
+
+type DailyWorkServiceListTodayArgs struct {
+	Req *ListTodayReq `thrift:"req,1" frugal:"1,default,ListTodayReq" json:"req"`
+}
+
+func NewDailyWorkServiceListTodayArgs() *DailyWorkServiceListTodayArgs {
+	return &DailyWorkServiceListTodayArgs{}
+}
+
+func (p *DailyWorkServiceListTodayArgs) InitDefault() {
+}
+
+var DailyWorkServiceListTodayArgs_Req_DEFAULT *ListTodayReq
+
+func (p *DailyWorkServiceListTodayArgs) GetReq() (v *ListTodayReq) {
+	if !p.IsSetReq() {
+		return DailyWorkServiceListTodayArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+func (p *DailyWorkServiceListTodayArgs) SetReq(val *ListTodayReq) {
+	p.Req = val
+}
+
+func (p *DailyWorkServiceListTodayArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DailyWorkServiceListTodayArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceListTodayArgs(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceListTodayArgs = map[int16]string{
+	1: "req",
+}
+
+type DailyWorkServiceListTodayResult struct {
+	Success *ListTodayResp `thrift:"success,0,optional" frugal:"0,optional,ListTodayResp" json:"success,omitempty"`
+}
+
+func NewDailyWorkServiceListTodayResult() *DailyWorkServiceListTodayResult {
+	return &DailyWorkServiceListTodayResult{}
+}
+
+func (p *DailyWorkServiceListTodayResult) InitDefault() {
+}
+
+var DailyWorkServiceListTodayResult_Success_DEFAULT *ListTodayResp
+
+func (p *DailyWorkServiceListTodayResult) GetSuccess() (v *ListTodayResp) {
+	if !p.IsSetSuccess() {
+		return DailyWorkServiceListTodayResult_Success_DEFAULT
+	}
+	return p.Success
+}
+func (p *DailyWorkServiceListTodayResult) SetSuccess(x interface{}) {
+	p.Success = x.(*ListTodayResp)
+}
+
+func (p *DailyWorkServiceListTodayResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DailyWorkServiceListTodayResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceListTodayResult(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceListTodayResult = map[int16]string{
 	0: "success",
 }

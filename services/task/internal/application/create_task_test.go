@@ -15,8 +15,10 @@ var testNow = time.Date(2026, 11, 6, 9, 0, 0, 0, time.UTC)
 // fakeRepo 是 TaskRepository 的内存实现，测试用。
 // 一个 map 就够了——不需要数据库。
 type fakeRepo struct {
-	tasks   map[string]*domain.Task
-	saveErr error
+	tasks      map[string]*domain.Task
+	saveErr    error
+	todayTasks []*domain.Task
+	listErr    error
 }
 
 func newFakeRepo() *fakeRepo { return &fakeRepo{tasks: map[string]*domain.Task{}} }
@@ -35,6 +37,14 @@ func (f *fakeRepo) FindByID(_ context.Context, id string) (*domain.Task, error) 
 		return nil, fmt.Errorf("task %s not found", id)
 	}
 	return t, nil
+}
+
+// 返回预设的今天候选任务
+func (f *fakeRepo) ListForToday(_ context.Context, userID string, day time.Time) ([]*domain.Task, error) {
+	if f.listErr != nil {
+		return nil, f.listErr
+	}
+	return f.todayTasks, nil
 }
 
 // fakeIDs 每次返回递增的 ID，测试里可以预期。

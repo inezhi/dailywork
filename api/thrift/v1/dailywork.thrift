@@ -132,6 +132,31 @@ struct ValidateSessionResp {
   255: required base.BaseResp BaseResp
 }
 
+// ===== 今天 =====
+
+// HTTP 的 GET /api/v1/today?date=YYYY-MM-DD 映射到这里。
+// 日期由客户端传，服务端不用自己的时区推导"今天"。
+struct ListTodayReq {
+  1: required string userId
+  2: required string date          // YYYY-MM-DD
+
+  255: required base.Base Base
+}
+
+// 一个分组；组内任务按创建时间倒序。
+struct TodayGroup {
+  1: required task_const.TodayGroupKind kind
+  2: required list<task_model.Task> tasks
+  3: required i32 count            // 任务数，以服务端为准
+  4: required i32 estimateMinutes  // 组内预估合计，以服务端为准
+}
+
+struct ListTodayResp {
+  1: required list<TodayGroup> groups   // 固定六组，按优先级排序
+
+  255: required base.BaseResp BaseResp
+}
+
 // ===== 服务 =====
 
 // 只有一个 RPC 服务：gateway 通过它访问全部能力。
@@ -156,4 +181,7 @@ service DailyWorkService {
 
   // 校验 JWT 与会话状态。
   ValidateSessionResp ValidateSession(1: ValidateSessionReq req)
+
+  // 今天页：按客户端传来的日期分六组返回。
+  ListTodayResp ListToday(1: ListTodayReq req)
 }

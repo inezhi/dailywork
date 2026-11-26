@@ -20,3 +20,13 @@ enum TaskPriority {
   HIGH   = 4
   URGENT = 5
 }
+
+// 今天页的分组。编号即展示优先级：一个任务只进最高优先级的那一组。
+enum TodayGroupKind {
+  OVERDUE         = 1   // 截止日期早于今天且未完成
+  DUE_TODAY       = 2   // 截止日期就是今天且未完成
+  PLANNED_TODAY   = 3   // 计划日期是今天且未完成
+  DOING           = 4   // 状态进行中，前面三组都没捞到
+  NEXT            = 5   // 状态 next 或 inbox，前面四组都没捞到
+  COMPLETED_TODAY = 6   // 今天完成的
+}

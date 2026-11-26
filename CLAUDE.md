@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 当前状态
 
-**切片 2 完成：注册、登录、会话校验与登出已打通，`POST /api/v1/tasks` 需要登录。** 下一步切片 3：`GET /today`。本地调用方式见 `docs/dev/cli.md`。
+**切片 3 完成：`GET /api/v1/today` 已打通，按客户端日期分六组。** 下一步切片 4：完成任务 + outbox + Kafka。本地调用方式见 `docs/dev/cli.md`。
 
 ```text
 api/              # Thrift IDL、OpenAPI 契约、生成代码

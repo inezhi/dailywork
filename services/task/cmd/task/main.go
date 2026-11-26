@@ -160,6 +160,7 @@ func run(configPath string) error {
 	// 4. 装配：仓储 → 用例 → handler
 	taskRepo := mysql.New(db)
 	createTask := application.NewCreateTask(taskRepo, uuidGen{}, systemClock{}) // 这里就是那三个组装起来的接口struct
+	listToday := application.NewListToday(taskRepo)
 
 	userRepo := identitymysql.NewUserRepo(db)
 	codeStore := identityredis.NewCodeStore(redisClient)
@@ -173,7 +174,7 @@ func run(configPath string) error {
 	validateSession := identityapp.NewValidateSession(sessionRepo, tokenManager, systemClock{})
 	logout := identityapp.NewLogout(sessionRepo, systemClock{})
 
-	handler := kitex.New(createTask, sendCode, register, login, validateSession, logout)
+	handler := kitex.New(createTask, listToday, sendCode, register, login, validateSession, logout)
 
 	addr, err := net.ResolveTCPAddr("tcp", cfg.Server.Addr)
 	if err != nil {

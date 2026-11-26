@@ -62,6 +62,13 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"ListToday": kitex.NewMethodInfo(
+		listTodayHandler,
+		newDailyWorkServiceListTodayArgs,
+		newDailyWorkServiceListTodayResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -254,6 +261,24 @@ func newDailyWorkServiceValidateSessionResult() interface{} {
 	return rpc.NewDailyWorkServiceValidateSessionResult()
 }
 
+func listTodayHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*rpc.DailyWorkServiceListTodayArgs)
+	realResult := result.(*rpc.DailyWorkServiceListTodayResult)
+	success, err := handler.(rpc.DailyWorkService).ListToday(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newDailyWorkServiceListTodayArgs() interface{} {
+	return rpc.NewDailyWorkServiceListTodayArgs()
+}
+
+func newDailyWorkServiceListTodayResult() interface{} {
+	return rpc.NewDailyWorkServiceListTodayResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -329,6 +354,16 @@ func (p *kClient) ValidateSession(ctx context.Context, req *rpc.ValidateSessionR
 	_args.Req = req
 	var _result rpc.DailyWorkServiceValidateSessionResult
 	if err = p.c.Call(ctx, "ValidateSession", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) ListToday(ctx context.Context, req *rpc.ListTodayReq) (r *rpc.ListTodayResp, err error) {
+	var _args rpc.DailyWorkServiceListTodayArgs
+	_args.Req = req
+	var _result rpc.DailyWorkServiceListTodayResult
+	if err = p.c.Call(ctx, "ListToday", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

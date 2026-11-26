@@ -126,3 +126,65 @@ func (p *TaskPriority) Value() (driver.Value, error) {
 	}
 	return int64(*p), nil
 }
+
+type TodayGroupKind int64
+
+const (
+	TodayGroupKind_OVERDUE         TodayGroupKind = 1
+	TodayGroupKind_DUE_TODAY       TodayGroupKind = 2
+	TodayGroupKind_PLANNED_TODAY   TodayGroupKind = 3
+	TodayGroupKind_DOING           TodayGroupKind = 4
+	TodayGroupKind_NEXT            TodayGroupKind = 5
+	TodayGroupKind_COMPLETED_TODAY TodayGroupKind = 6
+)
+
+func (p TodayGroupKind) String() string {
+	switch p {
+	case TodayGroupKind_OVERDUE:
+		return "OVERDUE"
+	case TodayGroupKind_DUE_TODAY:
+		return "DUE_TODAY"
+	case TodayGroupKind_PLANNED_TODAY:
+		return "PLANNED_TODAY"
+	case TodayGroupKind_DOING:
+		return "DOING"
+	case TodayGroupKind_NEXT:
+		return "NEXT"
+	case TodayGroupKind_COMPLETED_TODAY:
+		return "COMPLETED_TODAY"
+	}
+	return "<UNSET>"
+}
+
+func TodayGroupKindFromString(s string) (TodayGroupKind, error) {
+	switch s {
+	case "OVERDUE":
+		return TodayGroupKind_OVERDUE, nil
+	case "DUE_TODAY":
+		return TodayGroupKind_DUE_TODAY, nil
+	case "PLANNED_TODAY":
+		return TodayGroupKind_PLANNED_TODAY, nil
+	case "DOING":
+		return TodayGroupKind_DOING, nil
+	case "NEXT":
+		return TodayGroupKind_NEXT, nil
+	case "COMPLETED_TODAY":
+		return TodayGroupKind_COMPLETED_TODAY, nil
+	}
+	return TodayGroupKind(0), fmt.Errorf("not a valid TodayGroupKind string")
+}
+
+func TodayGroupKindPtr(v TodayGroupKind) *TodayGroupKind { return &v }
+func (p *TodayGroupKind) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = TodayGroupKind(result.Int64)
+	return
+}
+
+func (p *TodayGroupKind) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}

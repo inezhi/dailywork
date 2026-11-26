@@ -192,6 +192,37 @@ paths:
         '500':
           $ref: '#/components/responses/Internal'
 
+  /api/v1/today:
+    get:
+      operationId: listToday
+      summary: 今天页
+      description: |
+        Returns six fixed groups ordered by priority: overdue, due today,
+        planned today, doing, next, completed today. Each task appears in at
+        most one group. The date is supplied by the client (YYYY-MM-DD); the
+        server never derives "today" from its own timezone.
+      parameters:
+        - name: date
+          in: query
+          required: true
+          description: Client local date in YYYY-MM-DD
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Today groups
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodayEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/Internal'
+
 components:
   securitySchemes:
     sessionCookie:
@@ -556,6 +587,52 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/OkData'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    TodayGroupKind:
+      type: string
+      description: Group priority follows the enum order
+      enum: [overdue, due_today, planned_today, doing, next, completed_today]
+
+    TodayGroup:
+      type: object
+      additionalProperties: false
+      required: [kind, tasks, count, estimateMinutes]
+      properties:
+        kind:
+          $ref: '#/components/schemas/TodayGroupKind'
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+        count:
+          type: integer
+          minimum: 0
+        estimateMinutes:
+          type: integer
+          minimum: 0
+
+    TodayData:
+      type: object
+      additionalProperties: false
+      required: [date, groups]
+      properties:
+        date:
+          type: string
+          format: date
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/TodayGroup'
+
+    TodayEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/TodayData'
         meta:
           $ref: '#/components/schemas/Meta'
 

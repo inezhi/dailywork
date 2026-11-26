@@ -18,6 +18,7 @@ type Client interface {
 	Login(ctx context.Context, req *rpc.LoginReq, callOptions ...callopt.Option) (r *rpc.LoginResp, err error)
 	Logout(ctx context.Context, req *rpc.LogoutReq, callOptions ...callopt.Option) (r *rpc.LogoutResp, err error)
 	ValidateSession(ctx context.Context, req *rpc.ValidateSessionReq, callOptions ...callopt.Option) (r *rpc.ValidateSessionResp, err error)
+	ListToday(ctx context.Context, req *rpc.ListTodayReq, callOptions ...callopt.Option) (r *rpc.ListTodayResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -82,4 +83,9 @@ func (p *kDailyWorkServiceClient) Logout(ctx context.Context, req *rpc.LogoutReq
 func (p *kDailyWorkServiceClient) ValidateSession(ctx context.Context, req *rpc.ValidateSessionReq, callOptions ...callopt.Option) (r *rpc.ValidateSessionResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.ValidateSession(ctx, req)
+}
+
+func (p *kDailyWorkServiceClient) ListToday(ctx context.Context, req *rpc.ListTodayReq, callOptions ...callopt.Option) (r *rpc.ListTodayResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.ListToday(ctx, req)
 }
