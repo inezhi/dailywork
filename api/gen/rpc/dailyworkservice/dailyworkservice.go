@@ -27,6 +27,41 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"SendCode": kitex.NewMethodInfo(
+		sendCodeHandler,
+		newDailyWorkServiceSendCodeArgs,
+		newDailyWorkServiceSendCodeResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"Register": kitex.NewMethodInfo(
+		registerHandler,
+		newDailyWorkServiceRegisterArgs,
+		newDailyWorkServiceRegisterResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"Login": kitex.NewMethodInfo(
+		loginHandler,
+		newDailyWorkServiceLoginArgs,
+		newDailyWorkServiceLoginResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"Logout": kitex.NewMethodInfo(
+		logoutHandler,
+		newDailyWorkServiceLogoutArgs,
+		newDailyWorkServiceLogoutResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"ValidateSession": kitex.NewMethodInfo(
+		validateSessionHandler,
+		newDailyWorkServiceValidateSessionArgs,
+		newDailyWorkServiceValidateSessionResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -129,6 +164,96 @@ func newDailyWorkServiceCreateTaskResult() interface{} {
 	return rpc.NewDailyWorkServiceCreateTaskResult()
 }
 
+func sendCodeHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*rpc.DailyWorkServiceSendCodeArgs)
+	realResult := result.(*rpc.DailyWorkServiceSendCodeResult)
+	success, err := handler.(rpc.DailyWorkService).SendCode(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newDailyWorkServiceSendCodeArgs() interface{} {
+	return rpc.NewDailyWorkServiceSendCodeArgs()
+}
+
+func newDailyWorkServiceSendCodeResult() interface{} {
+	return rpc.NewDailyWorkServiceSendCodeResult()
+}
+
+func registerHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*rpc.DailyWorkServiceRegisterArgs)
+	realResult := result.(*rpc.DailyWorkServiceRegisterResult)
+	success, err := handler.(rpc.DailyWorkService).Register(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newDailyWorkServiceRegisterArgs() interface{} {
+	return rpc.NewDailyWorkServiceRegisterArgs()
+}
+
+func newDailyWorkServiceRegisterResult() interface{} {
+	return rpc.NewDailyWorkServiceRegisterResult()
+}
+
+func loginHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*rpc.DailyWorkServiceLoginArgs)
+	realResult := result.(*rpc.DailyWorkServiceLoginResult)
+	success, err := handler.(rpc.DailyWorkService).Login(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newDailyWorkServiceLoginArgs() interface{} {
+	return rpc.NewDailyWorkServiceLoginArgs()
+}
+
+func newDailyWorkServiceLoginResult() interface{} {
+	return rpc.NewDailyWorkServiceLoginResult()
+}
+
+func logoutHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*rpc.DailyWorkServiceLogoutArgs)
+	realResult := result.(*rpc.DailyWorkServiceLogoutResult)
+	success, err := handler.(rpc.DailyWorkService).Logout(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newDailyWorkServiceLogoutArgs() interface{} {
+	return rpc.NewDailyWorkServiceLogoutArgs()
+}
+
+func newDailyWorkServiceLogoutResult() interface{} {
+	return rpc.NewDailyWorkServiceLogoutResult()
+}
+
+func validateSessionHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*rpc.DailyWorkServiceValidateSessionArgs)
+	realResult := result.(*rpc.DailyWorkServiceValidateSessionResult)
+	success, err := handler.(rpc.DailyWorkService).ValidateSession(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newDailyWorkServiceValidateSessionArgs() interface{} {
+	return rpc.NewDailyWorkServiceValidateSessionArgs()
+}
+
+func newDailyWorkServiceValidateSessionResult() interface{} {
+	return rpc.NewDailyWorkServiceValidateSessionResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -154,6 +279,56 @@ func (p *kClient) CreateTask(ctx context.Context, req *rpc.CreateTaskReq) (r *rp
 	_args.Req = req
 	var _result rpc.DailyWorkServiceCreateTaskResult
 	if err = p.c.Call(ctx, "CreateTask", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) SendCode(ctx context.Context, req *rpc.SendCodeReq) (r *rpc.SendCodeResp, err error) {
+	var _args rpc.DailyWorkServiceSendCodeArgs
+	_args.Req = req
+	var _result rpc.DailyWorkServiceSendCodeResult
+	if err = p.c.Call(ctx, "SendCode", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) Register(ctx context.Context, req *rpc.RegisterReq) (r *rpc.RegisterResp, err error) {
+	var _args rpc.DailyWorkServiceRegisterArgs
+	_args.Req = req
+	var _result rpc.DailyWorkServiceRegisterResult
+	if err = p.c.Call(ctx, "Register", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) Login(ctx context.Context, req *rpc.LoginReq) (r *rpc.LoginResp, err error) {
+	var _args rpc.DailyWorkServiceLoginArgs
+	_args.Req = req
+	var _result rpc.DailyWorkServiceLoginResult
+	if err = p.c.Call(ctx, "Login", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) Logout(ctx context.Context, req *rpc.LogoutReq) (r *rpc.LogoutResp, err error) {
+	var _args rpc.DailyWorkServiceLogoutArgs
+	_args.Req = req
+	var _result rpc.DailyWorkServiceLogoutResult
+	if err = p.c.Call(ctx, "Logout", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) ValidateSession(ctx context.Context, req *rpc.ValidateSessionReq) (r *rpc.ValidateSessionResp, err error) {
+	var _args rpc.DailyWorkServiceValidateSessionArgs
+	_args.Req = req
+	var _result rpc.DailyWorkServiceValidateSessionResult
+	if err = p.c.Call(ctx, "ValidateSession", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

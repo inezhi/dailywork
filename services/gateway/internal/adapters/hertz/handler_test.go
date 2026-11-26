@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/cloudwego/kitex/client/callopt"
@@ -27,6 +28,22 @@ type fakeTaskClient struct {
 
 	// lastCreateReq 记录最近一次创建请求，用来断言 gateway 传了什么
 	lastCreateReq *rpc.CreateTaskReq
+
+	sendCodeResp *rpc.SendCodeResp
+	sendCodeErr  error
+	registerResp *rpc.RegisterResp
+	registerErr  error
+	loginResp    *rpc.LoginResp
+	loginErr     error
+	logoutResp   *rpc.LogoutResp
+	logoutErr    error
+	validateResp *rpc.ValidateSessionResp
+	validateErr  error
+
+	lastSendCodeReq *rpc.SendCodeReq
+	lastRegisterReq *rpc.RegisterReq
+	lastLoginReq    *rpc.LoginReq
+	lastLogoutReq   *rpc.LogoutReq
 }
 
 // Echo 返回预设的 Echo 结果。
@@ -38,6 +55,75 @@ func (f *fakeTaskClient) Echo(ctx context.Context, req *rpc.EchoReq, _ ...callop
 func (f *fakeTaskClient) CreateTask(ctx context.Context, req *rpc.CreateTaskReq, _ ...callopt.Option) (*rpc.CreateTaskResp, error) {
 	f.lastCreateReq = req
 	return f.createResp, f.createErr
+}
+
+// SendCode 返回预设结果，并记下请求。
+func (f *fakeTaskClient) SendCode(ctx context.Context, req *rpc.SendCodeReq, _ ...callopt.Option) (*rpc.SendCodeResp, error) {
+	f.lastSendCodeReq = req
+	if f.sendCodeErr != nil {
+		return nil, f.sendCodeErr
+	}
+	if f.sendCodeResp == nil {
+		return &rpc.SendCodeResp{BaseResp: &base.BaseResp{}}, nil
+	}
+	return f.sendCodeResp, nil
+}
+
+// Register 返回预设结果，并记下请求。
+func (f *fakeTaskClient) Register(ctx context.Context, req *rpc.RegisterReq, _ ...callopt.Option) (*rpc.RegisterResp, error) {
+	f.lastRegisterReq = req
+	if f.registerErr != nil {
+		return nil, f.registerErr
+	}
+	if f.registerResp == nil {
+		return &rpc.RegisterResp{BaseResp: &base.BaseResp{}}, nil
+	}
+	return f.registerResp, nil
+}
+
+// Login 返回预设结果，并记下请求。
+func (f *fakeTaskClient) Login(ctx context.Context, req *rpc.LoginReq, _ ...callopt.Option) (*rpc.LoginResp, error) {
+	f.lastLoginReq = req
+	if f.loginErr != nil {
+		return nil, f.loginErr
+	}
+	if f.loginResp == nil {
+		return &rpc.LoginResp{BaseResp: &base.BaseResp{}}, nil
+	}
+	return f.loginResp, nil
+}
+
+// Logout 返回预设结果，并记下请求。
+func (f *fakeTaskClient) Logout(ctx context.Context, req *rpc.LogoutReq, _ ...callopt.Option) (*rpc.LogoutResp, error) {
+	f.lastLogoutReq = req
+	if f.logoutErr != nil {
+		return nil, f.logoutErr
+	}
+	if f.logoutResp == nil {
+		return &rpc.LogoutResp{BaseResp: &base.BaseResp{}}, nil
+	}
+	return f.logoutResp, nil
+}
+
+// ValidateSession 返回预设结果。
+func (f *fakeTaskClient) ValidateSession(ctx context.Context, req *rpc.ValidateSessionReq, _ ...callopt.Option) (*rpc.ValidateSessionResp, error) {
+	if f.validateErr != nil {
+		return nil, f.validateErr
+	}
+	if f.validateResp == nil {
+		return &rpc.ValidateSessionResp{BaseResp: &base.BaseResp{}}, nil
+	}
+	return f.validateResp, nil
+}
+
+// 测试用中间件：补上 requestId 与 userId
+func testContext(requestID string, userID string) app.HandlerFunc {
+	return func(ctx context.Context, c *app.RequestContext) {
+		c.Set(contextRequestID, requestID)
+		c.Set(contextUserID, userID)
+		c.Set(contextSessionID, "sess-test")
+		c.Next(ctx)
+	}
 }
 
 // performJSON 在内存里发一次 JSON 请求，返回状态码和响应体。
@@ -61,7 +147,7 @@ func TestEchoSuccess(t *testing.T) {
 		},
 	}
 	engine := server.New()
-	engine.POST("/api/v1/echo", NewEcho(fake).Handle)
+	engine.POST("/api/v1/echo", testContext("req-test", "u-test"), NewEcho(fake).Handle)
 
 	status, body := performJSON(t, engine, "/api/v1/echo", `{"message":"hi"}`)
 	if status != 200 {
@@ -74,7 +160,7 @@ func TestEchoSuccess(t *testing.T) {
 
 func TestEchoEmptyMessage(t *testing.T) {
 	engine := server.New()
-	engine.POST("/api/v1/echo", NewEcho(&fakeTaskClient{}).Handle)
+	engine.POST("/api/v1/echo", testContext("req-test", "u-test"), NewEcho(&fakeTaskClient{}).Handle)
 
 	status, body := performJSON(t, engine, "/api/v1/echo", `{"message":""}`)
 	if status != 400 {
@@ -92,7 +178,7 @@ func TestEchoRPCErrorMapped(t *testing.T) {
 		},
 	}
 	engine := server.New()
-	engine.POST("/api/v1/echo", NewEcho(fake).Handle)
+	engine.POST("/api/v1/echo", testContext("req-test", "u-test"), NewEcho(fake).Handle)
 
 	status, body := performJSON(t, engine, "/api/v1/echo", `{"message":"hi"}`)
 	if status != 400 {
@@ -106,7 +192,7 @@ func TestEchoRPCErrorMapped(t *testing.T) {
 func TestEchoTransportError(t *testing.T) {
 	fake := &fakeTaskClient{echoErr: errors.New("connection refused")}
 	engine := server.New()
-	engine.POST("/api/v1/echo", NewEcho(fake).Handle)
+	engine.POST("/api/v1/echo", testContext("req-test", "u-test"), NewEcho(fake).Handle)
 
 	status, body := performJSON(t, engine, "/api/v1/echo", `{"message":"hi"}`)
 	if status != 500 {
@@ -135,7 +221,7 @@ func TestCreateTaskSuccess(t *testing.T) {
 		},
 	}
 	engine := server.New()
-	engine.POST("/api/v1/tasks", NewCreateTask(fake, "u-test").Handle)
+	engine.POST("/api/v1/tasks", testContext("req-test", "u-test"), NewCreateTask(fake).Handle)
 
 	status, body := performJSON(t, engine, "/api/v1/tasks",
 		`{"title":"测试任务","spaceId":"22222222-2222-2222-2222-222222222222"}`)
@@ -153,7 +239,7 @@ func TestCreateTaskSuccess(t *testing.T) {
 
 func TestCreateTaskMissingTitle(t *testing.T) {
 	engine := server.New()
-	engine.POST("/api/v1/tasks", NewCreateTask(&fakeTaskClient{}, "u-test").Handle)
+	engine.POST("/api/v1/tasks", testContext("req-test", "u-test"), NewCreateTask(&fakeTaskClient{}).Handle)
 
 	status, body := performJSON(t, engine, "/api/v1/tasks",
 		`{"spaceId":"22222222-2222-2222-2222-222222222222"}`)
@@ -167,7 +253,7 @@ func TestCreateTaskMissingTitle(t *testing.T) {
 
 func TestCreateTaskDoneStatus(t *testing.T) {
 	engine := server.New()
-	engine.POST("/api/v1/tasks", NewCreateTask(&fakeTaskClient{}, "u-test").Handle)
+	engine.POST("/api/v1/tasks", testContext("req-test", "u-test"), NewCreateTask(&fakeTaskClient{}).Handle)
 
 	status, body := performJSON(t, engine, "/api/v1/tasks",
 		`{"title":"x","spaceId":"22222222-2222-2222-2222-222222222222","status":"done"}`)
@@ -186,7 +272,7 @@ func TestCreateTaskNotFoundMapped(t *testing.T) {
 		},
 	}
 	engine := server.New()
-	engine.POST("/api/v1/tasks", NewCreateTask(fake, "u-test").Handle)
+	engine.POST("/api/v1/tasks", testContext("req-test", "u-test"), NewCreateTask(fake).Handle)
 
 	status, body := performJSON(t, engine, "/api/v1/tasks",
 		`{"title":"x","spaceId":"22222222-2222-2222-2222-222222222222"}`)

@@ -53,6 +53,85 @@ struct CreateTaskResp {
   255: required base.BaseResp BaseResp
 }
 
+// ===== 认证 =====
+// 邮箱与手机号二选一：两个字段恰好传一个，两个都传或都不传由服务端拒绝。
+
+// 发送验证码。开发环境不接真实邮件/短信，固定 2222 视为正确。
+struct SendCodeReq {
+  1: optional string email
+  2: optional string phone
+
+  255: required base.Base Base
+}
+
+struct SendCodeResp {
+  1: required string channel       // 实际使用的渠道：email 或 phone
+
+  255: required base.BaseResp BaseResp
+}
+
+// 注册：验证码确认邮箱/手机归属，密码只存 bcrypt 哈希。
+struct RegisterReq {
+  1: optional string email
+  2: optional string phone
+  3: required string code          // 验证码；开发环境固定 2222
+  4: required string password      // 至少 8 位
+
+  255: required base.Base Base
+}
+
+struct RegisterResp {
+  1: required string userId
+
+  255: required base.BaseResp BaseResp
+}
+
+// 登录：邮箱或手机号 + 密码，成功后签发 JWT。
+struct LoginReq {
+  1: optional string email
+  2: optional string phone
+  3: required string password
+  4: optional string client        // web 或 desktop；空值按 web 处理
+  5: optional string device        // 设备描述，gateway 从 User-Agent 取
+  6: optional string ip            // 客户端 IP
+
+  255: required base.Base Base
+}
+
+struct LoginResp {
+  1: required string token         // JWT；网页端写 Cookie，桌面端放响应体
+  2: required string userId
+  3: required string expiresAt     // RFC3339
+
+  255: required base.BaseResp BaseResp
+}
+
+// 登出：吊销会话，之后同一个 token 不再通过校验。
+struct LogoutReq {
+  1: required string sessionId
+
+  255: required base.Base Base
+}
+
+struct LogoutResp {
+  255: required base.BaseResp BaseResp
+}
+
+// 校验 JWT 与 session 状态，供 gateway 中间件调用。
+struct ValidateSessionReq {
+  1: required string token
+
+  255: required base.Base Base
+}
+
+struct ValidateSessionResp {
+  1: required string userId
+  2: required string sessionId
+  3: required string expiresAt     // RFC3339
+
+  255: required base.BaseResp BaseResp
+}
+
 // ===== 服务 =====
 
 // 只有一个 RPC 服务：gateway 通过它访问全部能力。
@@ -63,7 +142,18 @@ service DailyWorkService {
   // 创建任务。同一 userId + idempotencyKey 重复调用返回首次结果，不会建出两条。
   CreateTaskResp CreateTask(1: CreateTaskReq req)
 
-  // 其余方法（GetTask / UpdateTask / CompleteTask / ReopenTask / DeleteTask /
-  // ListToday / ValidateSession）在后续切片实现时再加回来；
-  // 对应的请求响应结构暂留，避免反复生成。
+  // 发送验证码；开发环境固定 2222。
+  SendCodeResp SendCode(1: SendCodeReq req)
+
+  // 注册账户。
+  RegisterResp Register(1: RegisterReq req)
+
+  // 登录，返回 JWT。
+  LoginResp Login(1: LoginReq req)
+
+  // 吊销会话。
+  LogoutResp Logout(1: LogoutReq req)
+
+  // 校验 JWT 与会话状态。
+  ValidateSessionResp ValidateSession(1: ValidateSessionReq req)
 }

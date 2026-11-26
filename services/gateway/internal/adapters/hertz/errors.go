@@ -26,6 +26,8 @@ func mapStatus(statusCode int32) (int, api.ErrorCode) {
 	switch statusCode {
 	case 400:
 		return 400, api.VALIDATIONFAILED
+	case 401:
+		return 401, api.UNAUTHORIZED
 	case 404:
 		return 404, api.NOTFOUND
 	case 409:

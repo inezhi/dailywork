@@ -145,6 +145,55 @@ ownerID 配置 → 测试 → 提交。验收四项里「能演示」「有测�
 
 另：**开发过程中禁止删除任何分支**，合并后也保留功能分支。这条已写进 CLAUDE.md 与 README。
 
+**切片 2 第 1 步：认证契约（2026-11-24）。** Thrift 增加 `SendCode` / `Register` / `Login` /
+`Logout` / `ValidateSession` 五个方法与对应请求响应；邮箱与手机号用两个独立字段、二选一，
+不靠格式猜类型。OpenAPI 增加四条认证路径（codes / register / login / logout），登录支持
+`X-Client: desktop` 换 Bearer token；所有 `description` 改为英文。生成代码后为了让服务继续
+编译，新增 `auth_stub.go` 五个返回 500 的临时桩，gateway 测试的假客户端补了对应空方法。
+
+**切片 2 第 2 步：users / sessions 建表（2026-11-24）。** 两张表加进 `02-schema.sql`：
+users 的邮箱与手机号各自唯一、CHECK 保证至少有一个，另有头像与会员等级；sessions 一行一次
+登录，带设备、IP、过期与吊销。对运行中的库手动执行了两条 `CREATE TABLE`，没有清数据；
+`make down-v` 从空卷重建时脚本也会建出这两张表。
+
+**切片 2 第 3a 步：identity 领域与应用层（2026-11-24）。** 新增 `services/identity/internal/domain`
+与 `application`：Email/Phone 值对象、User 聚合，SendCode 与 Register 两个用例，以及五个端口
+（UserRepository、VerificationCodeStore、PasswordHasher、IDGenerator、Clock）。验证码固定 2222、
+TTL 5 分钟；密码 8–72 字节。18 个测试全部用假实现，不依赖 MySQL/Redis；适配器与接线留给 3b。
+
+**切片 2 第 3b 步：identity 适配器与接线（2026-11-24）。** 新增 MySQL 用户仓储（唯一键冲突按
+索引名翻译成邮箱/手机号已注册）、Redis 验证码存储（`SET EX` / `GETDEL`，前缀 `auth:code:`）、
+bcrypt 哈希器；RPC 的 `SendCode` / `Register` 换成真实实现，`Login` / `Logout` / `ValidateSession`
+仍为桩。`task.yaml` 增加 `redis` 段，启动时连 Redis 并 ping。实测注册成功并落库、重复注册 409、
+错误验证码 400，Redis 里的验证码 TTL 为 300 秒。
+
+**目录调整。** Go 的 `internal` 规则禁止 `services/task` import `services/identity/internal`，
+identity 的 `domain` / `application` / `adapters` 上移一层，脱离 `internal`；task 的内部代码不变。
+
+**切片 2 第 4 步：登录、JWT 与会话（2026-11-26）。** 契约给 `LoginReq` 增加 `client` / `device` / `ip`；
+新增 `Session` 聚合与 `Login` / `ValidateSession` / `Logout` 三个用例；MySQL 会话仓储、用户按邮箱/
+手机号查询、JWT（HS256）与 bcrypt `Verify`；RPC 三个方法换成真实实现，`auth_stub.go` 删除。
+配置增加 `auth.jwt_secret`，启动时校验。实测登录拿到 token、错误密码 401、登出后校验 401，
+会话表记录了设备、IP、30 天过期与吊销时间；identity 测试 36 个通过。
+
+**切片 2 第 6 步：gateway 认证路由与中间件（2026-11-26）。** 新增 requestId 与登录态两个中间件：
+requestId 统一生成 UUIDv7 并写入响应头；鉴权从 Cookie `daily_session` 或
+`Authorization: Bearer` 取 token，调 `ValidateSession`，把 userId / sessionId 放进上下文。
+新增四条认证路由，`echo` 与 `tasks` 改为需要登录；`CreateTask` 的 userId 从上下文取，
+`auth.owner_id` 配置删除。网页登录写 HttpOnly Cookie，桌面端（`X-Client: desktop`）返回 token。
+
+**切片 2 第 7 步：网关测试与演示（2026-11-26）。** 新增 9 个网关测试，覆盖认证路由、Cookie 与
+Bearer 两种登录、登出清 Cookie、中间件 401；网关测试共 24 个，全仓库测试通过。端到端演示：
+注册 → 网页 Cookie 建任务 → 登出后 401 → 桌面 token 建任务。
+
+**切片 2 收尾。** 契约、建表、domain / application、MySQL / Redis / bcrypt / JWT 适配器、
+RPC 与网关全部完成。验收四项里「能演示」「有测试」「文档同步」满足；「有指标」继续延期，
+理由与切片 1 相同。
+
+**文档修正：gateway 的职责边界（2026-11-26）。** 原规则写「gateway 不写数据校验」，但实现里
+gateway 做了契约级校验（必填、长度、枚举、格式）。按实际做法修正文档：允许边缘契约校验，
+用于尽早返回 400；业务不变量仍由 domain / application 负责，gateway 不写业务规则。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）

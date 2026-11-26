@@ -3,11 +3,12 @@ info:
   title: 时序 API
   version: 1.0.0
   description: |
-    对外 REST 契约，由 gateway 提供。浏览器与桌面端只看到这一层；
-    gateway 内部再用 Thrift 调用 DailyWorkService，那些结构不出现在这里。
+    External REST contract served by the gateway. Browsers and the desktop app
+    only see this layer; the gateway calls DailyWorkService over Thrift internally.
 
-    成功与错误都走统一信封：成功是 { data, meta }，错误是 { error, meta }。
-    meta.requestId 每次都有，与响应头 X-Request-Id 是同一个值。
+    Both success and error responses use a single envelope:
+    success is { data, meta }, error is { error, meta }.
+    meta.requestId is always present and equals the X-Request-Id response header.
 
 servers:
   # 相对路径：生成的客户端跟着当前页面/网关的域名走，不写死主机
@@ -23,8 +24,9 @@ paths:
       operationId: echo
       summary: 连通性检查
       description: |
-        把请求体里的 message 原样返回。与 /healthz 的区别：/healthz 只证明 gateway 进程活着，
-        这个会一路调到 DailyWorkService.Echo，证明 gateway → RPC 服务 整条链路通。
+        Returns the message from the request body unchanged. Unlike /healthz,
+        which only proves the gateway process is alive, this call reaches
+        DailyWorkService.Echo and proves the whole gateway -> RPC chain works.
       requestBody:
         required: true
         content:
@@ -33,7 +35,7 @@ paths:
               $ref: '#/components/schemas/EchoReq'
       responses:
         '200':
-          description: 链路通，data 里是原样回显的内容
+          description: Request succeeded; data contains the echoed message
           content:
             application/json:
               schema:
@@ -50,11 +52,12 @@ paths:
       operationId: createTask
       summary: 创建任务
       description: |
-        title 必填。省略 spaceId 时落到用户的"个人"空间；
-        带 parentId 时忽略 spaceId 与 projectId，继承父任务的空间与项目；
-        省略 notes / status / priority 时分别为空串 / inbox / none。
-        用户身份永远来自会话，不接受请求体传入。
-        不能直接建 completed 的任务：status 传 done 会被拒绝，完成请走 complete 接口。
+        title is required. When spaceId is omitted, the task goes to the user's
+        default space. When parentId is provided, spaceId and projectId are
+        ignored and inherited from the parent. notes / status / priority default
+        to "" / inbox / none. The user identity always comes from the session and
+        is never accepted from the request body. status=done is rejected; use the
+        complete endpoint instead.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -65,7 +68,7 @@ paths:
               $ref: '#/components/schemas/CreateTaskReq'
       responses:
         '200':
-          description: 创建成功
+          description: Task created
           content:
             application/json:
               schema:
@@ -81,17 +84,125 @@ paths:
         '500':
           $ref: '#/components/responses/Internal'
 
+  /api/v1/auth/codes:
+    post:
+      operationId: sendCode
+      summary: 发送验证码
+      description: |
+        Sends a verification code. The development environment does not send real
+        email or SMS; the code is always 2222. Provide exactly one of email or phone.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendCodeReq'
+      responses:
+        '200':
+          description: Code "sent" (no real delivery in development)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendCodeEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '500':
+          $ref: '#/components/responses/Internal'
+
+  /api/v1/auth/register:
+    post:
+      operationId: register
+      summary: 注册
+      description: |
+        Email or phone number + verification code + password. Provide exactly one
+        of email or phone. The verification code is always 2222 in development.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterReq'
+      responses:
+        '200':
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/Internal'
+
+  /api/v1/auth/login:
+    post:
+      operationId: login
+      summary: 登录
+      description: |
+        Email or phone number + password. On success a JWT is issued: web clients
+        receive it as an HttpOnly cookie named daily_session; desktop clients that
+        send X-Client: desktop receive it as a token in the response body.
+      security: []
+      parameters:
+        - name: X-Client
+          in: header
+          required: false
+          description: Send desktop to receive a Bearer token; otherwise only a cookie is set
+          schema:
+            type: string
+            enum: [desktop]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginReq'
+      responses:
+        '200':
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/Internal'
+
+  /api/v1/auth/logout:
+    post:
+      operationId: logout
+      summary: 登出
+      description: Revokes the current session; the same token will no longer validate.
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/Internal'
+
 components:
   securitySchemes:
     sessionCookie:
       type: apiKey
       in: cookie
       name: daily_session
-      description: 网页端使用；HttpOnly Cookie
+      description: Used by the web client; HttpOnly cookie
     bearerAuth:
       type: http
       scheme: bearer
-      description: '桌面端与脚本客户端使用；登录时带 X-Client: desktop 换取'
+      description: 'Used by the desktop and script clients; obtain it at login with X-Client: desktop'
 
   parameters:
     IdempotencyKey:
@@ -99,8 +210,9 @@ components:
       in: header
       required: false
       description: |
-        建议所有写请求都带。键长 16–128 字符，按用户隔离、保留 24 小时。
-        同一用户同一 key 同一请求体：返回首次响应；同一 key 不同请求体：返回 409。
+        Recommended for all write requests. 16-128 characters, scoped per user and
+        kept for 24 hours. Same user, same key, same body: the first response is
+        replayed. Same key with a different body: 409.
       schema:
         type: string
         minLength: 16
@@ -108,31 +220,31 @@ components:
 
   responses:
     ValidationFailed:
-      description: 字段缺失、格式错误或长度越界
+      description: Missing field, malformed value, or length out of range
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorEnvelope'
     Unauthorized:
-      description: 未登录、会话过期或令牌无效
+      description: Not logged in, session expired, or invalid token
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorEnvelope'
     Conflict:
-      description: 版本冲突、幂等键复用或唯一约束冲突
+      description: Version conflict, idempotency key reuse, or unique constraint conflict
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorEnvelope'
     NotFound:
-      description: 目标资源不存在，例如父任务 id 查不到
+      description: Target resource does not exist, e.g. parent task id not found
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorEnvelope'
     Internal:
-      description: 未预期错误，细节只出现在日志里
+      description: Unexpected error; details are only in the logs
       content:
         application/json:
           schema:
@@ -156,7 +268,7 @@ components:
       properties:
         message:
           type: string
-          description: 原样返回，调用方据此确认内容没被改写
+          description: Returned unchanged; the caller can verify it was not modified
 
     EchoEnvelope:
       type: object
@@ -281,31 +393,32 @@ components:
 
     TaskStatus:
       type: string
-      description: 任务没有 archived 状态
+      description: Tasks have no archived status
       enum: [inbox, next, doing, waiting, blocked, done]
 
     CreateTaskStatus:
       type: string
       description: |
-        创建时允许的状态，比 TaskStatus 少一个 done。
-        创建即完成会让 completedAt 没有来源，完成必须走 POST /tasks/{id}/complete。
-        传 done 返回 400 VALIDATION_FAILED。
+        Statuses allowed at creation time; unlike TaskStatus, done is excluded.
+        Creating a completed task would leave completedAt without a source;
+        completion must go through POST /tasks/{id}/complete.
+        Passing done returns 400 VALIDATION_FAILED.
       enum: [inbox, next, doing, waiting, blocked]
 
     TaskPriority:
       type: string
-      description: 只影响排序与视觉，不参与今天分组
+      description: Affects ordering and display only; does not affect today grouping
       enum: [none, low, medium, high, urgent]
 
     Meta:
       type: object
       additionalProperties: false
-      description: 每次响应都带。requestId 与响应头 X-Request-Id 是同一个值。
+      description: Included in every response. requestId matches the X-Request-Id response header.
       required: [requestId]
       properties:
         requestId:
           type: string
-          description: gateway 生成的 UUIDv7，用于串联日志
+          description: UUIDv7 generated by the gateway, used to correlate logs
 
     TaskEnvelope:
       type: object
@@ -317,6 +430,135 @@ components:
         meta:
           $ref: '#/components/schemas/Meta'
 
+    SendCodeReq:
+      type: object
+      additionalProperties: false
+      description: Provide exactly one of email or phone
+      properties:
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          pattern: '^1[3-9][0-9]{9}$'
+
+    SendCodeData:
+      type: object
+      additionalProperties: false
+      required: [channel]
+      properties:
+        channel:
+          type: string
+          enum: [email, phone]
+
+    SendCodeEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/SendCodeData'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    RegisterReq:
+      type: object
+      additionalProperties: false
+      description: Provide exactly one of email or phone
+      required: [code, password]
+      properties:
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          pattern: '^1[3-9][0-9]{9}$'
+        code:
+          type: string
+          minLength: 4
+          maxLength: 8
+        password:
+          type: string
+          minLength: 8
+          maxLength: 72
+
+    RegisterData:
+      type: object
+      additionalProperties: false
+      required: [userId]
+      properties:
+        userId:
+          type: string
+          format: uuid
+
+    RegisterEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/RegisterData'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    LoginReq:
+      type: object
+      additionalProperties: false
+      description: Provide exactly one of email or phone
+      required: [password]
+      properties:
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          pattern: '^1[3-9][0-9]{9}$'
+        password:
+          type: string
+
+    LoginData:
+      type: object
+      additionalProperties: false
+      required: [userId, expiresAt]
+      properties:
+        token:
+          type: string
+          description: Returned only with X-Client desktop; web clients read the cookie instead
+        userId:
+          type: string
+          format: uuid
+        expiresAt:
+          type: string
+          format: date-time
+
+    LoginEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/LoginData'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    OkData:
+      type: object
+      additionalProperties: false
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+
+    OkEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/OkData'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
     ErrorBody:
       type: object
       required: [code, message]
@@ -325,15 +567,15 @@ components:
           $ref: '#/components/schemas/ErrorCode'
         message:
           type: string
-          description: 面向用户，可直接展示
+          description: User-facing; safe to display
         details:
           type: object
           additionalProperties: true
-          description: 结构化补充，如 currentVersion、taskId
+          description: Structured extra data, e.g. currentVersion, taskId
 
     ErrorCode:
       type: string
-      description: 面向程序，稳定不变；HTTP 状态码表达大类，错误码表达具体原因
+      description: Stable machine-readable code; the HTTP status conveys the category, the code the specific reason
       enum:
         - VALIDATION_FAILED
         - UNAUTHORIZED

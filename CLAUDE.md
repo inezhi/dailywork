@@ -4,12 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 当前状态
 
-**切片 1 完成：`POST /api/v1/tasks` 已从 gateway 打通到 MySQL。** 下一步切片 2：identity 注册登录 + JWT 校验。本地调用方式见 `docs/dev/cli.md`。
+**切片 2 完成：注册、登录、会话校验与登出已打通，`POST /api/v1/tasks` 需要登录。** 下一步切片 3：`GET /today`。本地调用方式见 `docs/dev/cli.md`。
 
 ```text
 api/              # Thrift IDL、OpenAPI 契约、生成代码
 deploy/           # Docker Compose、MySQL 初始化脚本、task.example.yaml
 docs/             # 开发文档与学习日志
+services/identity # 账户、会话、验证码（与 task 同进程）
 services/task     # Kitex：任务服务
 services/gateway  # Hertz：HTTP 网关
 tools/            # 开发用命令行工具（RPC 客户端）
@@ -112,7 +113,7 @@ docs/           # 本地只放索引；正式文档在飞书
 
 ## Hertz / gateway
 
-- gateway 只做协议转换、鉴权、限流、按需 BFF 聚合和 SSE；不写任务状态机、权限或数据校验。
+- gateway 只做协议转换、鉴权、限流、按需 BFF 聚合和 SSE；不写任务状态机或权限规则。允许在边缘做**契约级校验**（必填、长度、枚举、格式），目的是尽早返回 400；业务不变量仍必须由 domain/application 校验，不能只靠 gateway。
 - 请求 ID、访问日志、trace、panic recovery 统一在中间件处理。
 - 对外 REST 前缀 `/api/v1`；错误信封与 OpenAPI 保持一致。
 - BFF 聚合按需使用：今天页值得聚合；如果前端并行调 2–3 个接口更简单，就让前端拼。

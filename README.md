@@ -2,7 +2,7 @@
 
 个人任务 × 时间 × 知识工作台。v2 同时是一个 **Go 微服务学习项目**：用一个真实可用的产品，练习服务边界、数据所有权、事件驱动、可观测性与容器化。
 
-> 当前状态：**切片 1 完成**。`POST /api/v1/tasks` 已从 gateway 打通到 MySQL；下一步切片 2：identity 注册登录。本地调用方式见 [docs/dev/cli.md](docs/dev/cli.md)。
+> 当前状态：**切片 2 完成**。注册、登录、会话校验与登出已打通，`POST /api/v1/tasks` 需要登录。下一步切片 3：`GET /today`。本地调用方式见 [docs/dev/cli.md](docs/dev/cli.md)。
 
 ## 为什么重做
 
@@ -219,7 +219,7 @@ go run ./services/task/cmd/task -config deploy/task.yaml
 go run ./services/gateway/cmd/gateway -config deploy/gateway.yaml
 ```
 
-**调用接口**：HTTP 走 gateway（curl 即可），RPC 直接用 [docs/dev/cli.md](docs/dev/cli.md) 里的命令行工具。
+**调用接口**：HTTP 走 gateway；除注册、登录、发验证码外都需要登录（Cookie 或 Bearer）。RPC 直接用 [docs/dev/cli.md](docs/dev/cli.md) 里的命令行工具。
 
 **常用命令**：
 

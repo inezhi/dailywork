@@ -414,10 +414,679 @@ var fieldIDToName_CreateTaskResp = map[int16]string{
 	255: "BaseResp",
 }
 
+type SendCodeReq struct {
+	Email *string    `thrift:"email,1,optional" frugal:"1,optional,string" json:"email,omitempty"`
+	Phone *string    `thrift:"phone,2,optional" frugal:"2,optional,string" json:"phone,omitempty"`
+	Base  *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
+}
+
+func NewSendCodeReq() *SendCodeReq {
+	return &SendCodeReq{}
+}
+
+func (p *SendCodeReq) InitDefault() {
+}
+
+var SendCodeReq_Email_DEFAULT string
+
+func (p *SendCodeReq) GetEmail() (v string) {
+	if !p.IsSetEmail() {
+		return SendCodeReq_Email_DEFAULT
+	}
+	return *p.Email
+}
+
+var SendCodeReq_Phone_DEFAULT string
+
+func (p *SendCodeReq) GetPhone() (v string) {
+	if !p.IsSetPhone() {
+		return SendCodeReq_Phone_DEFAULT
+	}
+	return *p.Phone
+}
+
+var SendCodeReq_Base_DEFAULT *base.Base
+
+func (p *SendCodeReq) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return SendCodeReq_Base_DEFAULT
+	}
+	return p.Base
+}
+func (p *SendCodeReq) SetEmail(val *string) {
+	p.Email = val
+}
+func (p *SendCodeReq) SetPhone(val *string) {
+	p.Phone = val
+}
+func (p *SendCodeReq) SetBase(val *base.Base) {
+	p.Base = val
+}
+
+func (p *SendCodeReq) IsSetEmail() bool {
+	return p.Email != nil
+}
+
+func (p *SendCodeReq) IsSetPhone() bool {
+	return p.Phone != nil
+}
+
+func (p *SendCodeReq) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *SendCodeReq) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("SendCodeReq(%+v)", *p)
+}
+
+var fieldIDToName_SendCodeReq = map[int16]string{
+	1:   "email",
+	2:   "phone",
+	255: "Base",
+}
+
+type SendCodeResp struct {
+	Channel  string         `thrift:"channel,1,required" frugal:"1,required,string" json:"channel"`
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewSendCodeResp() *SendCodeResp {
+	return &SendCodeResp{}
+}
+
+func (p *SendCodeResp) InitDefault() {
+}
+
+func (p *SendCodeResp) GetChannel() (v string) {
+	return p.Channel
+}
+
+var SendCodeResp_BaseResp_DEFAULT *base.BaseResp
+
+func (p *SendCodeResp) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return SendCodeResp_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *SendCodeResp) SetChannel(val string) {
+	p.Channel = val
+}
+func (p *SendCodeResp) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *SendCodeResp) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *SendCodeResp) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("SendCodeResp(%+v)", *p)
+}
+
+var fieldIDToName_SendCodeResp = map[int16]string{
+	1:   "channel",
+	255: "BaseResp",
+}
+
+type RegisterReq struct {
+	Email    *string    `thrift:"email,1,optional" frugal:"1,optional,string" json:"email,omitempty"`
+	Phone    *string    `thrift:"phone,2,optional" frugal:"2,optional,string" json:"phone,omitempty"`
+	Code     string     `thrift:"code,3,required" frugal:"3,required,string" json:"code"`
+	Password string     `thrift:"password,4,required" frugal:"4,required,string" json:"password"`
+	Base     *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
+}
+
+func NewRegisterReq() *RegisterReq {
+	return &RegisterReq{}
+}
+
+func (p *RegisterReq) InitDefault() {
+}
+
+var RegisterReq_Email_DEFAULT string
+
+func (p *RegisterReq) GetEmail() (v string) {
+	if !p.IsSetEmail() {
+		return RegisterReq_Email_DEFAULT
+	}
+	return *p.Email
+}
+
+var RegisterReq_Phone_DEFAULT string
+
+func (p *RegisterReq) GetPhone() (v string) {
+	if !p.IsSetPhone() {
+		return RegisterReq_Phone_DEFAULT
+	}
+	return *p.Phone
+}
+
+func (p *RegisterReq) GetCode() (v string) {
+	return p.Code
+}
+
+func (p *RegisterReq) GetPassword() (v string) {
+	return p.Password
+}
+
+var RegisterReq_Base_DEFAULT *base.Base
+
+func (p *RegisterReq) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return RegisterReq_Base_DEFAULT
+	}
+	return p.Base
+}
+func (p *RegisterReq) SetEmail(val *string) {
+	p.Email = val
+}
+func (p *RegisterReq) SetPhone(val *string) {
+	p.Phone = val
+}
+func (p *RegisterReq) SetCode(val string) {
+	p.Code = val
+}
+func (p *RegisterReq) SetPassword(val string) {
+	p.Password = val
+}
+func (p *RegisterReq) SetBase(val *base.Base) {
+	p.Base = val
+}
+
+func (p *RegisterReq) IsSetEmail() bool {
+	return p.Email != nil
+}
+
+func (p *RegisterReq) IsSetPhone() bool {
+	return p.Phone != nil
+}
+
+func (p *RegisterReq) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *RegisterReq) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("RegisterReq(%+v)", *p)
+}
+
+var fieldIDToName_RegisterReq = map[int16]string{
+	1:   "email",
+	2:   "phone",
+	3:   "code",
+	4:   "password",
+	255: "Base",
+}
+
+type RegisterResp struct {
+	UserId   string         `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewRegisterResp() *RegisterResp {
+	return &RegisterResp{}
+}
+
+func (p *RegisterResp) InitDefault() {
+}
+
+func (p *RegisterResp) GetUserId() (v string) {
+	return p.UserId
+}
+
+var RegisterResp_BaseResp_DEFAULT *base.BaseResp
+
+func (p *RegisterResp) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return RegisterResp_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *RegisterResp) SetUserId(val string) {
+	p.UserId = val
+}
+func (p *RegisterResp) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *RegisterResp) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *RegisterResp) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("RegisterResp(%+v)", *p)
+}
+
+var fieldIDToName_RegisterResp = map[int16]string{
+	1:   "userId",
+	255: "BaseResp",
+}
+
+type LoginReq struct {
+	Email    *string    `thrift:"email,1,optional" frugal:"1,optional,string" json:"email,omitempty"`
+	Phone    *string    `thrift:"phone,2,optional" frugal:"2,optional,string" json:"phone,omitempty"`
+	Password string     `thrift:"password,3,required" frugal:"3,required,string" json:"password"`
+	Client   *string    `thrift:"client,4,optional" frugal:"4,optional,string" json:"client,omitempty"`
+	Device   *string    `thrift:"device,5,optional" frugal:"5,optional,string" json:"device,omitempty"`
+	Ip       *string    `thrift:"ip,6,optional" frugal:"6,optional,string" json:"ip,omitempty"`
+	Base     *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
+}
+
+func NewLoginReq() *LoginReq {
+	return &LoginReq{}
+}
+
+func (p *LoginReq) InitDefault() {
+}
+
+var LoginReq_Email_DEFAULT string
+
+func (p *LoginReq) GetEmail() (v string) {
+	if !p.IsSetEmail() {
+		return LoginReq_Email_DEFAULT
+	}
+	return *p.Email
+}
+
+var LoginReq_Phone_DEFAULT string
+
+func (p *LoginReq) GetPhone() (v string) {
+	if !p.IsSetPhone() {
+		return LoginReq_Phone_DEFAULT
+	}
+	return *p.Phone
+}
+
+func (p *LoginReq) GetPassword() (v string) {
+	return p.Password
+}
+
+var LoginReq_Client_DEFAULT string
+
+func (p *LoginReq) GetClient() (v string) {
+	if !p.IsSetClient() {
+		return LoginReq_Client_DEFAULT
+	}
+	return *p.Client
+}
+
+var LoginReq_Device_DEFAULT string
+
+func (p *LoginReq) GetDevice() (v string) {
+	if !p.IsSetDevice() {
+		return LoginReq_Device_DEFAULT
+	}
+	return *p.Device
+}
+
+var LoginReq_Ip_DEFAULT string
+
+func (p *LoginReq) GetIp() (v string) {
+	if !p.IsSetIp() {
+		return LoginReq_Ip_DEFAULT
+	}
+	return *p.Ip
+}
+
+var LoginReq_Base_DEFAULT *base.Base
+
+func (p *LoginReq) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return LoginReq_Base_DEFAULT
+	}
+	return p.Base
+}
+func (p *LoginReq) SetEmail(val *string) {
+	p.Email = val
+}
+func (p *LoginReq) SetPhone(val *string) {
+	p.Phone = val
+}
+func (p *LoginReq) SetPassword(val string) {
+	p.Password = val
+}
+func (p *LoginReq) SetClient(val *string) {
+	p.Client = val
+}
+func (p *LoginReq) SetDevice(val *string) {
+	p.Device = val
+}
+func (p *LoginReq) SetIp(val *string) {
+	p.Ip = val
+}
+func (p *LoginReq) SetBase(val *base.Base) {
+	p.Base = val
+}
+
+func (p *LoginReq) IsSetEmail() bool {
+	return p.Email != nil
+}
+
+func (p *LoginReq) IsSetPhone() bool {
+	return p.Phone != nil
+}
+
+func (p *LoginReq) IsSetClient() bool {
+	return p.Client != nil
+}
+
+func (p *LoginReq) IsSetDevice() bool {
+	return p.Device != nil
+}
+
+func (p *LoginReq) IsSetIp() bool {
+	return p.Ip != nil
+}
+
+func (p *LoginReq) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *LoginReq) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("LoginReq(%+v)", *p)
+}
+
+var fieldIDToName_LoginReq = map[int16]string{
+	1:   "email",
+	2:   "phone",
+	3:   "password",
+	4:   "client",
+	5:   "device",
+	6:   "ip",
+	255: "Base",
+}
+
+type LoginResp struct {
+	Token     string         `thrift:"token,1,required" frugal:"1,required,string" json:"token"`
+	UserId    string         `thrift:"userId,2,required" frugal:"2,required,string" json:"userId"`
+	ExpiresAt string         `thrift:"expiresAt,3,required" frugal:"3,required,string" json:"expiresAt"`
+	BaseResp  *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewLoginResp() *LoginResp {
+	return &LoginResp{}
+}
+
+func (p *LoginResp) InitDefault() {
+}
+
+func (p *LoginResp) GetToken() (v string) {
+	return p.Token
+}
+
+func (p *LoginResp) GetUserId() (v string) {
+	return p.UserId
+}
+
+func (p *LoginResp) GetExpiresAt() (v string) {
+	return p.ExpiresAt
+}
+
+var LoginResp_BaseResp_DEFAULT *base.BaseResp
+
+func (p *LoginResp) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return LoginResp_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *LoginResp) SetToken(val string) {
+	p.Token = val
+}
+func (p *LoginResp) SetUserId(val string) {
+	p.UserId = val
+}
+func (p *LoginResp) SetExpiresAt(val string) {
+	p.ExpiresAt = val
+}
+func (p *LoginResp) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *LoginResp) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *LoginResp) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("LoginResp(%+v)", *p)
+}
+
+var fieldIDToName_LoginResp = map[int16]string{
+	1:   "token",
+	2:   "userId",
+	3:   "expiresAt",
+	255: "BaseResp",
+}
+
+type LogoutReq struct {
+	SessionId string     `thrift:"sessionId,1,required" frugal:"1,required,string" json:"sessionId"`
+	Base      *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
+}
+
+func NewLogoutReq() *LogoutReq {
+	return &LogoutReq{}
+}
+
+func (p *LogoutReq) InitDefault() {
+}
+
+func (p *LogoutReq) GetSessionId() (v string) {
+	return p.SessionId
+}
+
+var LogoutReq_Base_DEFAULT *base.Base
+
+func (p *LogoutReq) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return LogoutReq_Base_DEFAULT
+	}
+	return p.Base
+}
+func (p *LogoutReq) SetSessionId(val string) {
+	p.SessionId = val
+}
+func (p *LogoutReq) SetBase(val *base.Base) {
+	p.Base = val
+}
+
+func (p *LogoutReq) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *LogoutReq) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("LogoutReq(%+v)", *p)
+}
+
+var fieldIDToName_LogoutReq = map[int16]string{
+	1:   "sessionId",
+	255: "Base",
+}
+
+type LogoutResp struct {
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewLogoutResp() *LogoutResp {
+	return &LogoutResp{}
+}
+
+func (p *LogoutResp) InitDefault() {
+}
+
+var LogoutResp_BaseResp_DEFAULT *base.BaseResp
+
+func (p *LogoutResp) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return LogoutResp_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *LogoutResp) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *LogoutResp) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *LogoutResp) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("LogoutResp(%+v)", *p)
+}
+
+var fieldIDToName_LogoutResp = map[int16]string{
+	255: "BaseResp",
+}
+
+type ValidateSessionReq struct {
+	Token string     `thrift:"token,1,required" frugal:"1,required,string" json:"token"`
+	Base  *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
+}
+
+func NewValidateSessionReq() *ValidateSessionReq {
+	return &ValidateSessionReq{}
+}
+
+func (p *ValidateSessionReq) InitDefault() {
+}
+
+func (p *ValidateSessionReq) GetToken() (v string) {
+	return p.Token
+}
+
+var ValidateSessionReq_Base_DEFAULT *base.Base
+
+func (p *ValidateSessionReq) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return ValidateSessionReq_Base_DEFAULT
+	}
+	return p.Base
+}
+func (p *ValidateSessionReq) SetToken(val string) {
+	p.Token = val
+}
+func (p *ValidateSessionReq) SetBase(val *base.Base) {
+	p.Base = val
+}
+
+func (p *ValidateSessionReq) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *ValidateSessionReq) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ValidateSessionReq(%+v)", *p)
+}
+
+var fieldIDToName_ValidateSessionReq = map[int16]string{
+	1:   "token",
+	255: "Base",
+}
+
+type ValidateSessionResp struct {
+	UserId    string         `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
+	SessionId string         `thrift:"sessionId,2,required" frugal:"2,required,string" json:"sessionId"`
+	ExpiresAt string         `thrift:"expiresAt,3,required" frugal:"3,required,string" json:"expiresAt"`
+	BaseResp  *base.BaseResp `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewValidateSessionResp() *ValidateSessionResp {
+	return &ValidateSessionResp{}
+}
+
+func (p *ValidateSessionResp) InitDefault() {
+}
+
+func (p *ValidateSessionResp) GetUserId() (v string) {
+	return p.UserId
+}
+
+func (p *ValidateSessionResp) GetSessionId() (v string) {
+	return p.SessionId
+}
+
+func (p *ValidateSessionResp) GetExpiresAt() (v string) {
+	return p.ExpiresAt
+}
+
+var ValidateSessionResp_BaseResp_DEFAULT *base.BaseResp
+
+func (p *ValidateSessionResp) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return ValidateSessionResp_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *ValidateSessionResp) SetUserId(val string) {
+	p.UserId = val
+}
+func (p *ValidateSessionResp) SetSessionId(val string) {
+	p.SessionId = val
+}
+func (p *ValidateSessionResp) SetExpiresAt(val string) {
+	p.ExpiresAt = val
+}
+func (p *ValidateSessionResp) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *ValidateSessionResp) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *ValidateSessionResp) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ValidateSessionResp(%+v)", *p)
+}
+
+var fieldIDToName_ValidateSessionResp = map[int16]string{
+	1:   "userId",
+	2:   "sessionId",
+	3:   "expiresAt",
+	255: "BaseResp",
+}
+
 type DailyWorkService interface {
 	Echo(ctx context.Context, req *EchoReq) (r *EchoResp, err error)
 
 	CreateTask(ctx context.Context, req *CreateTaskReq) (r *CreateTaskResp, err error)
+
+	SendCode(ctx context.Context, req *SendCodeReq) (r *SendCodeResp, err error)
+
+	Register(ctx context.Context, req *RegisterReq) (r *RegisterResp, err error)
+
+	Login(ctx context.Context, req *LoginReq) (r *LoginResp, err error)
+
+	Logout(ctx context.Context, req *LogoutReq) (r *LogoutResp, err error)
+
+	ValidateSession(ctx context.Context, req *ValidateSessionReq) (r *ValidateSessionResp, err error)
 }
 
 type DailyWorkServiceEchoArgs struct {
@@ -569,5 +1238,385 @@ func (p *DailyWorkServiceCreateTaskResult) String() string {
 }
 
 var fieldIDToName_DailyWorkServiceCreateTaskResult = map[int16]string{
+	0: "success",
+}
+
+type DailyWorkServiceSendCodeArgs struct {
+	Req *SendCodeReq `thrift:"req,1" frugal:"1,default,SendCodeReq" json:"req"`
+}
+
+func NewDailyWorkServiceSendCodeArgs() *DailyWorkServiceSendCodeArgs {
+	return &DailyWorkServiceSendCodeArgs{}
+}
+
+func (p *DailyWorkServiceSendCodeArgs) InitDefault() {
+}
+
+var DailyWorkServiceSendCodeArgs_Req_DEFAULT *SendCodeReq
+
+func (p *DailyWorkServiceSendCodeArgs) GetReq() (v *SendCodeReq) {
+	if !p.IsSetReq() {
+		return DailyWorkServiceSendCodeArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+func (p *DailyWorkServiceSendCodeArgs) SetReq(val *SendCodeReq) {
+	p.Req = val
+}
+
+func (p *DailyWorkServiceSendCodeArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DailyWorkServiceSendCodeArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceSendCodeArgs(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceSendCodeArgs = map[int16]string{
+	1: "req",
+}
+
+type DailyWorkServiceSendCodeResult struct {
+	Success *SendCodeResp `thrift:"success,0,optional" frugal:"0,optional,SendCodeResp" json:"success,omitempty"`
+}
+
+func NewDailyWorkServiceSendCodeResult() *DailyWorkServiceSendCodeResult {
+	return &DailyWorkServiceSendCodeResult{}
+}
+
+func (p *DailyWorkServiceSendCodeResult) InitDefault() {
+}
+
+var DailyWorkServiceSendCodeResult_Success_DEFAULT *SendCodeResp
+
+func (p *DailyWorkServiceSendCodeResult) GetSuccess() (v *SendCodeResp) {
+	if !p.IsSetSuccess() {
+		return DailyWorkServiceSendCodeResult_Success_DEFAULT
+	}
+	return p.Success
+}
+func (p *DailyWorkServiceSendCodeResult) SetSuccess(x interface{}) {
+	p.Success = x.(*SendCodeResp)
+}
+
+func (p *DailyWorkServiceSendCodeResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DailyWorkServiceSendCodeResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceSendCodeResult(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceSendCodeResult = map[int16]string{
+	0: "success",
+}
+
+type DailyWorkServiceRegisterArgs struct {
+	Req *RegisterReq `thrift:"req,1" frugal:"1,default,RegisterReq" json:"req"`
+}
+
+func NewDailyWorkServiceRegisterArgs() *DailyWorkServiceRegisterArgs {
+	return &DailyWorkServiceRegisterArgs{}
+}
+
+func (p *DailyWorkServiceRegisterArgs) InitDefault() {
+}
+
+var DailyWorkServiceRegisterArgs_Req_DEFAULT *RegisterReq
+
+func (p *DailyWorkServiceRegisterArgs) GetReq() (v *RegisterReq) {
+	if !p.IsSetReq() {
+		return DailyWorkServiceRegisterArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+func (p *DailyWorkServiceRegisterArgs) SetReq(val *RegisterReq) {
+	p.Req = val
+}
+
+func (p *DailyWorkServiceRegisterArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DailyWorkServiceRegisterArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceRegisterArgs(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceRegisterArgs = map[int16]string{
+	1: "req",
+}
+
+type DailyWorkServiceRegisterResult struct {
+	Success *RegisterResp `thrift:"success,0,optional" frugal:"0,optional,RegisterResp" json:"success,omitempty"`
+}
+
+func NewDailyWorkServiceRegisterResult() *DailyWorkServiceRegisterResult {
+	return &DailyWorkServiceRegisterResult{}
+}
+
+func (p *DailyWorkServiceRegisterResult) InitDefault() {
+}
+
+var DailyWorkServiceRegisterResult_Success_DEFAULT *RegisterResp
+
+func (p *DailyWorkServiceRegisterResult) GetSuccess() (v *RegisterResp) {
+	if !p.IsSetSuccess() {
+		return DailyWorkServiceRegisterResult_Success_DEFAULT
+	}
+	return p.Success
+}
+func (p *DailyWorkServiceRegisterResult) SetSuccess(x interface{}) {
+	p.Success = x.(*RegisterResp)
+}
+
+func (p *DailyWorkServiceRegisterResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DailyWorkServiceRegisterResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceRegisterResult(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceRegisterResult = map[int16]string{
+	0: "success",
+}
+
+type DailyWorkServiceLoginArgs struct {
+	Req *LoginReq `thrift:"req,1" frugal:"1,default,LoginReq" json:"req"`
+}
+
+func NewDailyWorkServiceLoginArgs() *DailyWorkServiceLoginArgs {
+	return &DailyWorkServiceLoginArgs{}
+}
+
+func (p *DailyWorkServiceLoginArgs) InitDefault() {
+}
+
+var DailyWorkServiceLoginArgs_Req_DEFAULT *LoginReq
+
+func (p *DailyWorkServiceLoginArgs) GetReq() (v *LoginReq) {
+	if !p.IsSetReq() {
+		return DailyWorkServiceLoginArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+func (p *DailyWorkServiceLoginArgs) SetReq(val *LoginReq) {
+	p.Req = val
+}
+
+func (p *DailyWorkServiceLoginArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DailyWorkServiceLoginArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceLoginArgs(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceLoginArgs = map[int16]string{
+	1: "req",
+}
+
+type DailyWorkServiceLoginResult struct {
+	Success *LoginResp `thrift:"success,0,optional" frugal:"0,optional,LoginResp" json:"success,omitempty"`
+}
+
+func NewDailyWorkServiceLoginResult() *DailyWorkServiceLoginResult {
+	return &DailyWorkServiceLoginResult{}
+}
+
+func (p *DailyWorkServiceLoginResult) InitDefault() {
+}
+
+var DailyWorkServiceLoginResult_Success_DEFAULT *LoginResp
+
+func (p *DailyWorkServiceLoginResult) GetSuccess() (v *LoginResp) {
+	if !p.IsSetSuccess() {
+		return DailyWorkServiceLoginResult_Success_DEFAULT
+	}
+	return p.Success
+}
+func (p *DailyWorkServiceLoginResult) SetSuccess(x interface{}) {
+	p.Success = x.(*LoginResp)
+}
+
+func (p *DailyWorkServiceLoginResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DailyWorkServiceLoginResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceLoginResult(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceLoginResult = map[int16]string{
+	0: "success",
+}
+
+type DailyWorkServiceLogoutArgs struct {
+	Req *LogoutReq `thrift:"req,1" frugal:"1,default,LogoutReq" json:"req"`
+}
+
+func NewDailyWorkServiceLogoutArgs() *DailyWorkServiceLogoutArgs {
+	return &DailyWorkServiceLogoutArgs{}
+}
+
+func (p *DailyWorkServiceLogoutArgs) InitDefault() {
+}
+
+var DailyWorkServiceLogoutArgs_Req_DEFAULT *LogoutReq
+
+func (p *DailyWorkServiceLogoutArgs) GetReq() (v *LogoutReq) {
+	if !p.IsSetReq() {
+		return DailyWorkServiceLogoutArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+func (p *DailyWorkServiceLogoutArgs) SetReq(val *LogoutReq) {
+	p.Req = val
+}
+
+func (p *DailyWorkServiceLogoutArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DailyWorkServiceLogoutArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceLogoutArgs(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceLogoutArgs = map[int16]string{
+	1: "req",
+}
+
+type DailyWorkServiceLogoutResult struct {
+	Success *LogoutResp `thrift:"success,0,optional" frugal:"0,optional,LogoutResp" json:"success,omitempty"`
+}
+
+func NewDailyWorkServiceLogoutResult() *DailyWorkServiceLogoutResult {
+	return &DailyWorkServiceLogoutResult{}
+}
+
+func (p *DailyWorkServiceLogoutResult) InitDefault() {
+}
+
+var DailyWorkServiceLogoutResult_Success_DEFAULT *LogoutResp
+
+func (p *DailyWorkServiceLogoutResult) GetSuccess() (v *LogoutResp) {
+	if !p.IsSetSuccess() {
+		return DailyWorkServiceLogoutResult_Success_DEFAULT
+	}
+	return p.Success
+}
+func (p *DailyWorkServiceLogoutResult) SetSuccess(x interface{}) {
+	p.Success = x.(*LogoutResp)
+}
+
+func (p *DailyWorkServiceLogoutResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DailyWorkServiceLogoutResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceLogoutResult(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceLogoutResult = map[int16]string{
+	0: "success",
+}
+
+type DailyWorkServiceValidateSessionArgs struct {
+	Req *ValidateSessionReq `thrift:"req,1" frugal:"1,default,ValidateSessionReq" json:"req"`
+}
+
+func NewDailyWorkServiceValidateSessionArgs() *DailyWorkServiceValidateSessionArgs {
+	return &DailyWorkServiceValidateSessionArgs{}
+}
+
+func (p *DailyWorkServiceValidateSessionArgs) InitDefault() {
+}
+
+var DailyWorkServiceValidateSessionArgs_Req_DEFAULT *ValidateSessionReq
+
+func (p *DailyWorkServiceValidateSessionArgs) GetReq() (v *ValidateSessionReq) {
+	if !p.IsSetReq() {
+		return DailyWorkServiceValidateSessionArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+func (p *DailyWorkServiceValidateSessionArgs) SetReq(val *ValidateSessionReq) {
+	p.Req = val
+}
+
+func (p *DailyWorkServiceValidateSessionArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DailyWorkServiceValidateSessionArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceValidateSessionArgs(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceValidateSessionArgs = map[int16]string{
+	1: "req",
+}
+
+type DailyWorkServiceValidateSessionResult struct {
+	Success *ValidateSessionResp `thrift:"success,0,optional" frugal:"0,optional,ValidateSessionResp" json:"success,omitempty"`
+}
+
+func NewDailyWorkServiceValidateSessionResult() *DailyWorkServiceValidateSessionResult {
+	return &DailyWorkServiceValidateSessionResult{}
+}
+
+func (p *DailyWorkServiceValidateSessionResult) InitDefault() {
+}
+
+var DailyWorkServiceValidateSessionResult_Success_DEFAULT *ValidateSessionResp
+
+func (p *DailyWorkServiceValidateSessionResult) GetSuccess() (v *ValidateSessionResp) {
+	if !p.IsSetSuccess() {
+		return DailyWorkServiceValidateSessionResult_Success_DEFAULT
+	}
+	return p.Success
+}
+func (p *DailyWorkServiceValidateSessionResult) SetSuccess(x interface{}) {
+	p.Success = x.(*ValidateSessionResp)
+}
+
+func (p *DailyWorkServiceValidateSessionResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DailyWorkServiceValidateSessionResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceValidateSessionResult(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceValidateSessionResult = map[int16]string{
 	0: "success",
 }

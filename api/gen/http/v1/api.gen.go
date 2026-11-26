@@ -83,6 +83,24 @@ func (e ErrorCode) Valid() bool {
 	}
 }
 
+// Defines values for SendCodeDataChannel.
+const (
+	Email SendCodeDataChannel = "email"
+	Phone SendCodeDataChannel = "phone"
+)
+
+// Valid indicates whether the value is a known member of the SendCodeDataChannel enum.
+func (e SendCodeDataChannel) Valid() bool {
+	switch e {
+	case Email:
+		return true
+	case Phone:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TaskPriority.
 const (
 	High   TaskPriority = "high"
@@ -140,6 +158,21 @@ func (e TaskStatus) Valid() bool {
 	}
 }
 
+// Defines values for LoginParamsXClient.
+const (
+	Desktop LoginParamsXClient = "desktop"
+)
+
+// Valid indicates whether the value is a known member of the LoginParamsXClient enum.
+func (e LoginParamsXClient) Valid() bool {
+	switch e {
+	case Desktop:
+		return true
+	default:
+		return false
+	}
+}
+
 // CreateTaskReq defines model for CreateTaskReq.
 type CreateTaskReq struct {
 	DueDate         *openapi_types.Date `json:"dueDate,omitempty"`
@@ -147,28 +180,30 @@ type CreateTaskReq struct {
 	Notes           *string             `json:"notes,omitempty"`
 	ParentId        *openapi_types.UUID `json:"parentId,omitempty"`
 
-	// Priority 只影响排序与视觉，不参与今天分组
+	// Priority Affects ordering and display only; does not affect today grouping
 	Priority      *TaskPriority       `json:"priority,omitempty"`
 	ProjectId     *openapi_types.UUID `json:"projectId,omitempty"`
 	ScheduledDate *openapi_types.Date `json:"scheduledDate,omitempty"`
 	SpaceId       *openapi_types.UUID `json:"spaceId,omitempty"`
 
-	// Status 创建时允许的状态，比 TaskStatus 少一个 done。
-	// 创建即完成会让 completedAt 没有来源，完成必须走 POST /tasks/{id}/complete。
-	// 传 done 返回 400 VALIDATION_FAILED。
+	// Status Statuses allowed at creation time; unlike TaskStatus, done is excluded.
+	// Creating a completed task would leave completedAt without a source;
+	// completion must go through POST /tasks/{id}/complete.
+	// Passing done returns 400 VALIDATION_FAILED.
 	Status *CreateTaskStatus    `json:"status,omitempty"`
 	TagIds []openapi_types.UUID `json:"tagIds,omitempty"`
 	Title  string               `json:"title"`
 }
 
-// CreateTaskStatus 创建时允许的状态，比 TaskStatus 少一个 done。
-// 创建即完成会让 completedAt 没有来源，完成必须走 POST /tasks/{id}/complete。
-// 传 done 返回 400 VALIDATION_FAILED。
+// CreateTaskStatus Statuses allowed at creation time; unlike TaskStatus, done is excluded.
+// Creating a completed task would leave completedAt without a source;
+// completion must go through POST /tasks/{id}/complete.
+// Passing done returns 400 VALIDATION_FAILED.
 type CreateTaskStatus string
 
 // Echo defines model for Echo.
 type Echo struct {
-	// Message 原样返回，调用方据此确认内容没被改写
+	// Message Returned unchanged; the caller can verify it was not modified
 	Message string `json:"message"`
 }
 
@@ -176,7 +211,7 @@ type Echo struct {
 type EchoEnvelope struct {
 	Data Echo `json:"data"`
 
-	// Meta 每次响应都带。requestId 与响应头 X-Request-Id 是同一个值。
+	// Meta Included in every response. requestId matches the X-Request-Id response header.
 	Meta Meta `json:"meta"`
 }
 
@@ -187,31 +222,111 @@ type EchoReq struct {
 
 // ErrorBody defines model for ErrorBody.
 type ErrorBody struct {
-	// Code 面向程序，稳定不变；HTTP 状态码表达大类，错误码表达具体原因
+	// Code Stable machine-readable code; the HTTP status conveys the category, the code the specific reason
 	Code ErrorCode `json:"code"`
 
-	// Details 结构化补充，如 currentVersion、taskId
+	// Details Structured extra data, e.g. currentVersion, taskId
 	Details *map[string]interface{} `json:"details,omitempty"`
 
-	// Message 面向用户，可直接展示
+	// Message User-facing; safe to display
 	Message string `json:"message"`
 }
 
-// ErrorCode 面向程序，稳定不变；HTTP 状态码表达大类，错误码表达具体原因
+// ErrorCode Stable machine-readable code; the HTTP status conveys the category, the code the specific reason
 type ErrorCode string
 
 // ErrorEnvelope defines model for ErrorEnvelope.
 type ErrorEnvelope struct {
 	Error ErrorBody `json:"error"`
 
-	// Meta 每次响应都带。requestId 与响应头 X-Request-Id 是同一个值。
+	// Meta Included in every response. requestId matches the X-Request-Id response header.
 	Meta Meta `json:"meta"`
 }
 
-// Meta 每次响应都带。requestId 与响应头 X-Request-Id 是同一个值。
+// LoginData defines model for LoginData.
+type LoginData struct {
+	ExpiresAt time.Time `json:"expiresAt"`
+
+	// Token Returned only with X-Client desktop; web clients read the cookie instead
+	Token  *string            `json:"token,omitempty"`
+	UserId openapi_types.UUID `json:"userId"`
+}
+
+// LoginEnvelope defines model for LoginEnvelope.
+type LoginEnvelope struct {
+	Data LoginData `json:"data"`
+
+	// Meta Included in every response. requestId matches the X-Request-Id response header.
+	Meta Meta `json:"meta"`
+}
+
+// LoginReq Provide exactly one of email or phone
+type LoginReq struct {
+	Email    *openapi_types.Email `json:"email,omitempty"`
+	Password string               `json:"password"`
+	Phone    *string              `json:"phone,omitempty"`
+}
+
+// Meta Included in every response. requestId matches the X-Request-Id response header.
 type Meta struct {
-	// RequestId gateway 生成的 UUIDv7，用于串联日志
+	// RequestId UUIDv7 generated by the gateway, used to correlate logs
 	RequestId string `json:"requestId"`
+}
+
+// OkData defines model for OkData.
+type OkData struct {
+	Ok bool `json:"ok"`
+}
+
+// OkEnvelope defines model for OkEnvelope.
+type OkEnvelope struct {
+	Data OkData `json:"data"`
+
+	// Meta Included in every response. requestId matches the X-Request-Id response header.
+	Meta Meta `json:"meta"`
+}
+
+// RegisterData defines model for RegisterData.
+type RegisterData struct {
+	UserId openapi_types.UUID `json:"userId"`
+}
+
+// RegisterEnvelope defines model for RegisterEnvelope.
+type RegisterEnvelope struct {
+	Data RegisterData `json:"data"`
+
+	// Meta Included in every response. requestId matches the X-Request-Id response header.
+	Meta Meta `json:"meta"`
+}
+
+// RegisterReq Provide exactly one of email or phone
+type RegisterReq struct {
+	Code     string               `json:"code"`
+	Email    *openapi_types.Email `json:"email,omitempty"`
+	Password string               `json:"password"`
+	Phone    *string              `json:"phone,omitempty"`
+}
+
+// SendCodeData defines model for SendCodeData.
+type SendCodeData struct {
+	Channel SendCodeDataChannel `json:"channel"`
+}
+
+// SendCodeDataChannel defines model for SendCodeData.Channel.
+type SendCodeDataChannel string
+
+// SendCodeEnvelope defines model for SendCodeEnvelope.
+type SendCodeEnvelope struct {
+	Data SendCodeData `json:"data"`
+
+	// Meta Included in every response. requestId matches the X-Request-Id response header.
+	Meta Meta `json:"meta"`
+}
+
+// SendCodeReq Provide exactly one of email or phone
+type SendCodeReq struct {
+	Email *openapi_types.Email `json:"email,omitempty"`
+	Phone *string              `json:"phone,omitempty"`
 }
 
 // Task defines model for Task.
@@ -225,13 +340,13 @@ type Task struct {
 	Notes           string              `json:"notes"`
 	ParentId        *openapi_types.UUID `json:"parentId,omitempty"`
 
-	// Priority 只影响排序与视觉，不参与今天分组
+	// Priority Affects ordering and display only; does not affect today grouping
 	Priority      TaskPriority        `json:"priority"`
 	ProjectId     *openapi_types.UUID `json:"projectId,omitempty"`
 	ScheduledDate *openapi_types.Date `json:"scheduledDate,omitempty"`
 	SpaceId       openapi_types.UUID  `json:"spaceId"`
 
-	// Status 任务没有 archived 状态
+	// Status Tasks have no archived status
 	Status    TaskStatus           `json:"status"`
 	TagIds    []openapi_types.UUID `json:"tagIds,omitempty"`
 	Title     string               `json:"title"`
@@ -243,14 +358,14 @@ type Task struct {
 type TaskEnvelope struct {
 	Data Task `json:"data"`
 
-	// Meta 每次响应都带。requestId 与响应头 X-Request-Id 是同一个值。
+	// Meta Included in every response. requestId matches the X-Request-Id response header.
 	Meta Meta `json:"meta"`
 }
 
-// TaskPriority 只影响排序与视觉，不参与今天分组
+// TaskPriority Affects ordering and display only; does not affect today grouping
 type TaskPriority string
 
-// TaskStatus 任务没有 archived 状态
+// TaskStatus Tasks have no archived status
 type TaskStatus string
 
 // IdempotencyKey defines model for IdempotencyKey.
@@ -271,12 +386,31 @@ type Unauthorized = ErrorEnvelope
 // ValidationFailed defines model for ValidationFailed.
 type ValidationFailed = ErrorEnvelope
 
+// LoginParams defines parameters for Login.
+type LoginParams struct {
+	// XClient Send desktop to receive a Bearer token; otherwise only a cookie is set
+	XClient *LoginParamsXClient `json:"X-Client,omitempty"`
+}
+
+// LoginParamsXClient defines parameters for Login.
+type LoginParamsXClient string
+
 // CreateTaskParams defines parameters for CreateTask.
 type CreateTaskParams struct {
-	// IdempotencyKey 建议所有写请求都带。键长 16–128 字符，按用户隔离、保留 24 小时。
-	// 同一用户同一 key 同一请求体：返回首次响应；同一 key 不同请求体：返回 409。
+	// IdempotencyKey Recommended for all write requests. 16-128 characters, scoped per user and
+	// kept for 24 hours. Same user, same key, same body: the first response is
+	// replayed. Same key with a different body: 409.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
+
+// SendCodeJSONRequestBody defines body for SendCode for application/json ContentType.
+type SendCodeJSONRequestBody = SendCodeReq
+
+// LoginJSONRequestBody defines body for Login for application/json ContentType.
+type LoginJSONRequestBody = LoginReq
+
+// RegisterJSONRequestBody defines body for Register for application/json ContentType.
+type RegisterJSONRequestBody = RegisterReq
 
 // EchoJSONRequestBody defines body for Echo for application/json ContentType.
 type EchoJSONRequestBody = EchoReq
@@ -286,6 +420,18 @@ type CreateTaskJSONRequestBody = CreateTaskReq
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// SendCode 发送验证码
+	// (POST /api/v1/auth/codes)
+	SendCode(w http.ResponseWriter, r *http.Request)
+	// Login 登录
+	// (POST /api/v1/auth/login)
+	Login(w http.ResponseWriter, r *http.Request, params LoginParams)
+	// Logout 登出
+	// (POST /api/v1/auth/logout)
+	Logout(w http.ResponseWriter, r *http.Request)
+	// Register 注册
+	// (POST /api/v1/auth/register)
+	Register(w http.ResponseWriter, r *http.Request)
 	// Echo 连通性检查
 	// (POST /api/v1/echo)
 	Echo(w http.ResponseWriter, r *http.Request)
@@ -302,6 +448,89 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// SendCode operation middleware
+func (siw *ServerInterfaceWrapper) SendCode(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.SendCode(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// Login operation middleware
+func (siw *ServerInterfaceWrapper) Login(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params LoginParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-Client" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Client")]; found {
+		var XClient LoginParamsXClient
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-Client", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Client", valueList[0], &XClient, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-Client", Err: err})
+			return
+		}
+
+		params.XClient = &XClient
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.Login(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// Logout operation middleware
+func (siw *ServerInterfaceWrapper) Logout(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.Logout(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// Register operation middleware
+func (siw *ServerInterfaceWrapper) Register(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.Register(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
 
 // Echo operation middleware
 func (siw *ServerInterfaceWrapper) Echo(w http.ResponseWriter, r *http.Request) {
@@ -480,6 +709,10 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/echo", wrapper.Echo)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/tasks", wrapper.CreateTask)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/auth/codes", wrapper.SendCode)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/auth/register", wrapper.Register)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/auth/login", wrapper.Login)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/auth/logout", wrapper.Logout)
 
 	return m
 }
