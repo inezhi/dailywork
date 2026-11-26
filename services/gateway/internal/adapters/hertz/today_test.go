@@ -50,7 +50,7 @@ func TestTodayHTTP(t *testing.T) {
 	engine := server.New()
 	engine.GET("/api/v1/today", testContext("req-test", "u-test"), NewToday(fake).Handle)
 
-	status, body := performGET(t, engine, "/api/v1/today?date=2026-11-26")
+	status, body := performGET(t, engine, "/api/v1/today?date=2026-11-26&tz=Asia%2FShanghai")
 	if status != 200 {
 		t.Fatalf("status = %d: %s", status, body)
 	}
@@ -64,6 +64,9 @@ func TestTodayHTTP(t *testing.T) {
 	}
 	if fake.lastListTodayReq.UserId != "u-test" {
 		t.Errorf("userId = %q", fake.lastListTodayReq.UserId)
+	}
+	if fake.lastListTodayReq.Timezone == nil || *fake.lastListTodayReq.Timezone != "Asia/Shanghai" {
+		t.Errorf("timezone = %v", fake.lastListTodayReq.Timezone)
 	}
 }
 

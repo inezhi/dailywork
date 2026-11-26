@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	_ "time/tzdata" // 把时区数据编进二进制，精简容器里也能用
 
 	"github.com/cloudwego/kitex/server"
 	"github.com/google/uuid"

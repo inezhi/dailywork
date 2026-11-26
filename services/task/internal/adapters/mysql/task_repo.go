@@ -81,9 +81,14 @@ func (r *TaskRepo) FindByID(ctx context.Context, id string) (*domain.Task, error
 }
 
 // ListForToday 列出今天页的候选任务：未删除、且不属于归档项目。
-func (r *TaskRepo) ListForToday(ctx context.Context, userID string, day time.Time) ([]*domain.Task, error) {
-	nextDay := day.AddDate(0, 0, 1)
-
+// day 用于日期列；completedFrom/To 是按客户端时区算好的 UTC 区间，用于完成时间。
+func (r *TaskRepo) ListForToday(
+	ctx context.Context,
+	userID string,
+	day time.Time,
+	completedFrom time.Time,
+	completedTo time.Time,
+) ([]*domain.Task, error) {
 	var rows []taskRow
 	err := r.db.WithContext(ctx).
 		Raw(`SELECT t.* FROM tasks t
@@ -100,7 +105,7 @@ func (r *TaskRepo) ListForToday(ctx context.Context, userID string, day time.Tim
 			    WHERE p.id = t.project_id AND p.archived_at IS NOT NULL
 			  )
 			ORDER BY t.created_at DESC`,
-			userID, day, day, day, nextDay).
+			userID, day, day, completedFrom, completedTo).
 		Scan(&rows).Error
 	if err != nil {
 		return nil, fmt.Errorf("list today tasks: %w", err)

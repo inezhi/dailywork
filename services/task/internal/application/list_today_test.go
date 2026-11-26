@@ -76,7 +76,7 @@ func TestListTodayGroups(t *testing.T) {
 		todayTask("future", domain.StatusInbox, &tomorrow, &tomorrow, nil, nil),
 	}
 
-	result, err := NewListToday(repo).Execute(context.Background(), "u1", day)
+	result, err := NewListToday(repo).Execute(context.Background(), "u1", day, time.UTC)
 	if err != nil {
 		t.Fatalf("err = %v", err)
 	}
@@ -116,7 +116,7 @@ func TestListTodayGroups(t *testing.T) {
 
 func TestListTodayEmptyGroups(t *testing.T) {
 	day := time.Date(2026, 11, 26, 0, 0, 0, 0, time.UTC)
-	result, err := NewListToday(newFakeRepo()).Execute(context.Background(), "u1", day)
+	result, err := NewListToday(newFakeRepo()).Execute(context.Background(), "u1", day, time.UTC)
 	if err != nil {
 		t.Fatalf("err = %v", err)
 	}
@@ -138,8 +138,39 @@ func TestListTodayRepoError(t *testing.T) {
 	repo.listErr = errors.New("db down")
 	day := time.Date(2026, 11, 26, 0, 0, 0, 0, time.UTC)
 
-	_, err := NewListToday(repo).Execute(context.Background(), "u1", day)
+	_, err := NewListToday(repo).Execute(context.Background(), "u1", day, time.UTC)
 	if err == nil {
 		t.Fatal("应该返回错误")
+	}
+}
+
+func TestListTodayCompletedTimezone(t *testing.T) {
+	// 北京时间 2026-11-27 00:30 = UTC 2026-11-26 16:30
+	completed := time.Date(2026, 11, 26, 16, 30, 0, 0, time.UTC)
+	day := time.Date(2026, 11, 27, 0, 0, 0, 0, time.UTC)
+	task := todayTask("done", domain.StatusDone, nil, nil, &completed, nil)
+
+	repo := newFakeRepo()
+	repo.todayTasks = []*domain.Task{task}
+
+	shanghai, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		t.Fatalf("load location: %v", err)
+	}
+
+	result, err := NewListToday(repo).Execute(context.Background(), "u1", day, shanghai)
+	if err != nil {
+		t.Fatalf("err = %v", err)
+	}
+	if ids := groupIDs(result, TodayCompletedToday); len(ids) != 1 {
+		t.Errorf("东八区应该算今天完成: %v", ids)
+	}
+
+	resultUTC, err := NewListToday(repo).Execute(context.Background(), "u1", day, time.UTC)
+	if err != nil {
+		t.Fatalf("err = %v", err)
+	}
+	if ids := groupIDs(resultUTC, TodayCompletedToday); len(ids) != 0 {
+		t.Errorf("UTC 下不应该算今天完成: %v", ids)
 	}
 }
