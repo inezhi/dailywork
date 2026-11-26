@@ -269,5 +269,10 @@ func (t *Task) EstimateMinutes() *int     { return t.estimateMinutes }
 func (t *Task) ActualMinutes() int        { return t.actualMinutes }
 func (t *Task) CompletedAt() *time.Time   { return t.completedAt }
 func (t *Task) Version() int              { return t.version }
-func (t *Task) CreatedAt() time.Time      { return t.createdAt }
-func (t *Task) UpdatedAt() time.Time      { return t.updatedAt }
+
+// 持久化成功后同步版本号，由仓储调用
+func (t *Task) SyncVersion(version int) {
+	t.version = version
+}
+func (t *Task) CreatedAt() time.Time { return t.createdAt }
+func (t *Task) UpdatedAt() time.Time { return t.updatedAt }

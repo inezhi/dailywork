@@ -16,6 +16,8 @@ type TaskRepository interface {
 	FindByID(ctx context.Context, id string) (*domain.Task, error)
 	// 今天页的候选任务：不含已删除、归档项目下的任务
 	ListForToday(ctx context.Context, userID string, day time.Time) ([]*domain.Task, error)
+	// 完成任务：状态更新与 outbox 记录必须同一事务
+	SaveWithEvent(ctx context.Context, t *domain.Task, event domain.TaskCompleted) error
 }
 
 // IDGenerator 生成聚合根 ID。做成接口，测试时可以返回固定值。

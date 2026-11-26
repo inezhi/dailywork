@@ -201,6 +201,19 @@ gateway 做了契约级校验（必填、长度、枚举、格式）。按实际
 归档项目下的任务；每组返回任务数与预估合计。gateway 新增路由与日期校验。测试：application
 新增 3 个、gateway 新增 3 个；实测六组与「归档项目任务不出现」都正确。
 
+**切片 4：完成任务 + outbox + Kafka（2026-11-26）。** 契约新增 `CompleteTask`（`expectedVersion`
+必填）与 `POST /api/v1/tasks/{id}/complete`，事件契约 `api/events/task.events.v1/task.completed.json`。
+domain 新增 `TaskCompleted` 事件与 `SyncVersion`；application 新增 `CompleteTask` 用例；MySQL 新增
+`outbox` 表，任务更新与 outbox 写入同一事务；新增 outbox relay，轮询未发布事件投到
+`task.events.v1`。gateway 新增路由与 409 映射。
+
+踩了两个坑：`CompleteTaskResp.task` 一开始写成 `required`，业务错误时 task 为空，序列化失败，
+客户端拿到的是网络错误而不是 409；持久化成功后领域对象的版本号没同步，响应里的 `version` 还是
+旧值。
+
+实测：完成任务 200 且 `version=2`；重复完成 409「任务已完成」；旧版本 409「任务已被修改」；
+outbox 两行均标记已发布；Kafka 能消费到 `task.completed`；今天页的「今日完成」出现已完成任务。
+
 ---
 
 ## 阶段 0 · 契约（2026-10-31 ~ 2026-11-02）

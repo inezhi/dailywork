@@ -24,6 +24,7 @@ import (
 	identityapp "github.com/inezhi/dailywork/services/identity/application"
 	"github.com/inezhi/dailywork/services/task/internal/adapters/kitex"
 	"github.com/inezhi/dailywork/services/task/internal/adapters/mysql"
+	"github.com/inezhi/dailywork/services/task/internal/adapters/outbox"
 	"github.com/inezhi/dailywork/services/task/internal/application"
 )
 
@@ -32,6 +33,7 @@ type config struct {
 	MySQL  mysqlConfig  `yaml:"mysql"`
 	Redis  redisConfig  `yaml:"redis"`
 	Auth   authConfig   `yaml:"auth"`
+	Kafka  kafkaConfig  `yaml:"kafka"`
 }
 
 // serverConfig 是 Kitex 服务的监听配置。
@@ -53,6 +55,13 @@ type redisConfig struct {
 // authConfig 是 JWT 相关配置。
 type authConfig struct {
 	JWTSecret string `yaml:"jwt_secret"`
+}
+
+// kafkaConfig 是事件投递配置。
+type kafkaConfig struct {
+	Brokers      []string `yaml:"brokers"`
+	Topic        string   `yaml:"topic"`
+	PollInterval string   `yaml:"poll_interval"`
 }
 
 // loadConfig 读 YAML 文件，并校验必填项。
@@ -82,6 +91,13 @@ func loadConfig(path string) (config, error) {
 	// 没有 JWT 密钥就签不了 token
 	if cfg.Auth.JWTSecret == "" {
 		return config{}, fmt.Errorf("config %s: auth.jwt_secret is required", path)
+	}
+	// 没有 Kafka 配置就发不了事件
+	if len(cfg.Kafka.Brokers) == 0 {
+		return config{}, fmt.Errorf("config %s: kafka.brokers is required", path)
+	}
+	if cfg.Kafka.Topic == "" {
+		return config{}, fmt.Errorf("config %s: kafka.topic is required", path)
 	}
 
 	return cfg, nil
@@ -160,6 +176,7 @@ func run(configPath string) error {
 	// 4. 装配：仓储 → 用例 → handler
 	taskRepo := mysql.New(db)
 	createTask := application.NewCreateTask(taskRepo, uuidGen{}, systemClock{}) // 这里就是那三个组装起来的接口struct
+	completeTask := application.NewCompleteTask(taskRepo, systemClock{})
 	listToday := application.NewListToday(taskRepo)
 
 	userRepo := identitymysql.NewUserRepo(db)
@@ -174,7 +191,22 @@ func run(configPath string) error {
 	validateSession := identityapp.NewValidateSession(sessionRepo, tokenManager, systemClock{})
 	logout := identityapp.NewLogout(sessionRepo, systemClock{})
 
-	handler := kitex.New(createTask, listToday, sendCode, register, login, validateSession, logout)
+	handler := kitex.New(createTask, completeTask, listToday, sendCode, register, login, validateSession, logout)
+
+	// 起 outbox relay：把未发布事件投递到 Kafka
+	pollInterval := time.Second
+	if cfg.Kafka.PollInterval != "" {
+		pollInterval, err = time.ParseDuration(cfg.Kafka.PollInterval)
+		if err != nil {
+			return fmt.Errorf("parse kafka.poll_interval: %w", err)
+		}
+	}
+	outboxStore := outbox.NewStore(db)
+	relay := outbox.NewRelay(outboxStore, cfg.Kafka.Brokers, cfg.Kafka.Topic, pollInterval)
+	relayCtx, stopRelay := context.WithCancel(context.Background())
+	defer relay.Close()
+	defer stopRelay()
+	go relay.Run(relayCtx)
 
 	addr, err := net.ResolveTCPAddr("tcp", cfg.Server.Addr)
 	if err != nil {

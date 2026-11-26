@@ -192,6 +192,46 @@ paths:
         '500':
           $ref: '#/components/responses/Internal'
 
+  /api/v1/tasks/{id}/complete:
+    post:
+      operationId: completeTask
+      summary: 完成任务
+      description: |
+        Marks a task as done and records completedAt. expectedVersion is required;
+        a mismatch returns 409 so two tabs cannot overwrite each other silently.
+        Completing an already-done task also returns 409.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Task id
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteTaskReq'
+      responses:
+        '200':
+          description: Task completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/Internal'
+
   /api/v1/today:
     get:
       operationId: listToday
@@ -310,6 +350,15 @@ components:
           $ref: '#/components/schemas/Echo'
         meta:
           $ref: '#/components/schemas/Meta'
+
+    CompleteTaskReq:
+      type: object
+      additionalProperties: false
+      required: [expectedVersion]
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 1
 
     CreateTaskReq:
       type: object

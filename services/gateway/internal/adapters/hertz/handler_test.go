@@ -48,6 +48,10 @@ type fakeTaskClient struct {
 	listTodayResp    *rpc.ListTodayResp
 	listTodayErr     error
 	lastListTodayReq *rpc.ListTodayReq
+
+	completeResp    *rpc.CompleteTaskResp
+	completeErr     error
+	lastCompleteReq *rpc.CompleteTaskReq
 }
 
 // Echo 返回预设的 Echo 结果。
@@ -130,6 +134,18 @@ func (f *fakeTaskClient) ListToday(ctx context.Context, req *rpc.ListTodayReq, _
 		return &rpc.ListTodayResp{BaseResp: &base.BaseResp{}}, nil
 	}
 	return f.listTodayResp, nil
+}
+
+// CompleteTask 返回预设结果，并记下请求。
+func (f *fakeTaskClient) CompleteTask(ctx context.Context, req *rpc.CompleteTaskReq, _ ...callopt.Option) (*rpc.CompleteTaskResp, error) {
+	f.lastCompleteReq = req
+	if f.completeErr != nil {
+		return nil, f.completeErr
+	}
+	if f.completeResp == nil {
+		return &rpc.CompleteTaskResp{BaseResp: &base.BaseResp{}}, nil
+	}
+	return f.completeResp, nil
 }
 
 // 测试用中间件：补上 requestId 与 userId

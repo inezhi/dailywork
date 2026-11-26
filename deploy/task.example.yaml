@@ -11,3 +11,8 @@ redis:
 
 auth:
   jwt_secret: "填随机字符串，可用 openssl rand -hex 32 生成"
+
+kafka:
+  brokers: ["127.0.0.1:9092"]
+  topic: "task.events.v1"
+  poll_interval: "1s"

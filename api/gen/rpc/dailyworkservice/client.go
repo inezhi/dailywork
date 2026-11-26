@@ -13,6 +13,7 @@ import (
 type Client interface {
 	Echo(ctx context.Context, req *rpc.EchoReq, callOptions ...callopt.Option) (r *rpc.EchoResp, err error)
 	CreateTask(ctx context.Context, req *rpc.CreateTaskReq, callOptions ...callopt.Option) (r *rpc.CreateTaskResp, err error)
+	CompleteTask(ctx context.Context, req *rpc.CompleteTaskReq, callOptions ...callopt.Option) (r *rpc.CompleteTaskResp, err error)
 	SendCode(ctx context.Context, req *rpc.SendCodeReq, callOptions ...callopt.Option) (r *rpc.SendCodeResp, err error)
 	Register(ctx context.Context, req *rpc.RegisterReq, callOptions ...callopt.Option) (r *rpc.RegisterResp, err error)
 	Login(ctx context.Context, req *rpc.LoginReq, callOptions ...callopt.Option) (r *rpc.LoginResp, err error)
@@ -58,6 +59,11 @@ func (p *kDailyWorkServiceClient) Echo(ctx context.Context, req *rpc.EchoReq, ca
 func (p *kDailyWorkServiceClient) CreateTask(ctx context.Context, req *rpc.CreateTaskReq, callOptions ...callopt.Option) (r *rpc.CreateTaskResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.CreateTask(ctx, req)
+}
+
+func (p *kDailyWorkServiceClient) CompleteTask(ctx context.Context, req *rpc.CompleteTaskReq, callOptions ...callopt.Option) (r *rpc.CompleteTaskResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.CompleteTask(ctx, req)
 }
 
 func (p *kDailyWorkServiceClient) SendCode(ctx context.Context, req *rpc.SendCodeReq, callOptions ...callopt.Option) (r *rpc.SendCodeResp, err error) {

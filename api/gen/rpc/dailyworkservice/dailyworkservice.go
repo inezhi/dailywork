@@ -27,6 +27,13 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"CompleteTask": kitex.NewMethodInfo(
+		completeTaskHandler,
+		newDailyWorkServiceCompleteTaskArgs,
+		newDailyWorkServiceCompleteTaskResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 	"SendCode": kitex.NewMethodInfo(
 		sendCodeHandler,
 		newDailyWorkServiceSendCodeArgs,
@@ -171,6 +178,24 @@ func newDailyWorkServiceCreateTaskResult() interface{} {
 	return rpc.NewDailyWorkServiceCreateTaskResult()
 }
 
+func completeTaskHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*rpc.DailyWorkServiceCompleteTaskArgs)
+	realResult := result.(*rpc.DailyWorkServiceCompleteTaskResult)
+	success, err := handler.(rpc.DailyWorkService).CompleteTask(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newDailyWorkServiceCompleteTaskArgs() interface{} {
+	return rpc.NewDailyWorkServiceCompleteTaskArgs()
+}
+
+func newDailyWorkServiceCompleteTaskResult() interface{} {
+	return rpc.NewDailyWorkServiceCompleteTaskResult()
+}
+
 func sendCodeHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	realArg := arg.(*rpc.DailyWorkServiceSendCodeArgs)
 	realResult := result.(*rpc.DailyWorkServiceSendCodeResult)
@@ -304,6 +329,16 @@ func (p *kClient) CreateTask(ctx context.Context, req *rpc.CreateTaskReq) (r *rp
 	_args.Req = req
 	var _result rpc.DailyWorkServiceCreateTaskResult
 	if err = p.c.Call(ctx, "CreateTask", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) CompleteTask(ctx context.Context, req *rpc.CompleteTaskReq) (r *rpc.CompleteTaskResp, err error) {
+	var _args rpc.DailyWorkServiceCompleteTaskArgs
+	_args.Req = req
+	var _result rpc.DailyWorkServiceCompleteTaskResult
+	if err = p.c.Call(ctx, "CompleteTask", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

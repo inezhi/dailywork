@@ -2,7 +2,7 @@
 
 个人任务 × 时间 × 知识工作台。v2 同时是一个 **Go 微服务学习项目**：用一个真实可用的产品，练习服务边界、数据所有权、事件驱动、可观测性与容器化。
 
-> 当前状态：**切片 3 完成**。今天页接口已打通，按客户端日期分六组；下一步切片 4：完成任务 + outbox + Kafka。本地调用方式见 [docs/dev/cli.md](docs/dev/cli.md)。
+> 当前状态：**切片 4 完成，M1 四刀全部完成**。创建任务、注册登录、今天页、完成任务 + outbox + Kafka 都已打通；下一步做 M1 验收与复盘。本地调用方式见 [docs/dev/cli.md](docs/dev/cli.md)。
 
 ## 为什么重做
 
@@ -217,6 +217,12 @@ go run ./services/task/cmd/task -config deploy/task.yaml
 
 ```bash
 go run ./services/gateway/cmd/gateway -config deploy/gateway.yaml
+```
+
+**建 Kafka topic**（首次）：
+
+```bash
+docker exec dailywork-kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists --topic task.events.v1 --partitions 3 --replication-factor 1
 ```
 
 **调用接口**：HTTP 走 gateway；除注册、登录、发验证码外都需要登录（Cookie 或 Bearer）。RPC 直接用 [docs/dev/cli.md](docs/dev/cli.md) 里的命令行工具。

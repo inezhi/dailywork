@@ -1073,6 +1073,127 @@ var fieldIDToName_ValidateSessionResp = map[int16]string{
 	255: "BaseResp",
 }
 
+type CompleteTaskReq struct {
+	UserId          string     `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
+	TaskId          string     `thrift:"taskId,2,required" frugal:"2,required,string" json:"taskId"`
+	ExpectedVersion int32      `thrift:"expectedVersion,3,required" frugal:"3,required,i32" json:"expectedVersion"`
+	Base            *base.Base `thrift:"Base,255,required" frugal:"255,required,base.Base" json:"Base"`
+}
+
+func NewCompleteTaskReq() *CompleteTaskReq {
+	return &CompleteTaskReq{}
+}
+
+func (p *CompleteTaskReq) InitDefault() {
+}
+
+func (p *CompleteTaskReq) GetUserId() (v string) {
+	return p.UserId
+}
+
+func (p *CompleteTaskReq) GetTaskId() (v string) {
+	return p.TaskId
+}
+
+func (p *CompleteTaskReq) GetExpectedVersion() (v int32) {
+	return p.ExpectedVersion
+}
+
+var CompleteTaskReq_Base_DEFAULT *base.Base
+
+func (p *CompleteTaskReq) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return CompleteTaskReq_Base_DEFAULT
+	}
+	return p.Base
+}
+func (p *CompleteTaskReq) SetUserId(val string) {
+	p.UserId = val
+}
+func (p *CompleteTaskReq) SetTaskId(val string) {
+	p.TaskId = val
+}
+func (p *CompleteTaskReq) SetExpectedVersion(val int32) {
+	p.ExpectedVersion = val
+}
+func (p *CompleteTaskReq) SetBase(val *base.Base) {
+	p.Base = val
+}
+
+func (p *CompleteTaskReq) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *CompleteTaskReq) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CompleteTaskReq(%+v)", *p)
+}
+
+var fieldIDToName_CompleteTaskReq = map[int16]string{
+	1:   "userId",
+	2:   "taskId",
+	3:   "expectedVersion",
+	255: "Base",
+}
+
+type CompleteTaskResp struct {
+	Task     *taskmodel.Task `thrift:"task,1,optional" frugal:"1,optional,taskmodel.Task" json:"task,omitempty"`
+	BaseResp *base.BaseResp  `thrift:"BaseResp,255,required" frugal:"255,required,base.BaseResp" json:"BaseResp"`
+}
+
+func NewCompleteTaskResp() *CompleteTaskResp {
+	return &CompleteTaskResp{}
+}
+
+func (p *CompleteTaskResp) InitDefault() {
+}
+
+var CompleteTaskResp_Task_DEFAULT *taskmodel.Task
+
+func (p *CompleteTaskResp) GetTask() (v *taskmodel.Task) {
+	if !p.IsSetTask() {
+		return CompleteTaskResp_Task_DEFAULT
+	}
+	return p.Task
+}
+
+var CompleteTaskResp_BaseResp_DEFAULT *base.BaseResp
+
+func (p *CompleteTaskResp) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return CompleteTaskResp_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+func (p *CompleteTaskResp) SetTask(val *taskmodel.Task) {
+	p.Task = val
+}
+func (p *CompleteTaskResp) SetBaseResp(val *base.BaseResp) {
+	p.BaseResp = val
+}
+
+func (p *CompleteTaskResp) IsSetTask() bool {
+	return p.Task != nil
+}
+
+func (p *CompleteTaskResp) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *CompleteTaskResp) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CompleteTaskResp(%+v)", *p)
+}
+
+var fieldIDToName_CompleteTaskResp = map[int16]string{
+	1:   "task",
+	255: "BaseResp",
+}
+
 type ListTodayReq struct {
 	UserId string     `thrift:"userId,1,required" frugal:"1,required,string" json:"userId"`
 	Date   string     `thrift:"date,2,required" frugal:"2,required,string" json:"date"`
@@ -1237,6 +1358,8 @@ type DailyWorkService interface {
 
 	CreateTask(ctx context.Context, req *CreateTaskReq) (r *CreateTaskResp, err error)
 
+	CompleteTask(ctx context.Context, req *CompleteTaskReq) (r *CompleteTaskResp, err error)
+
 	SendCode(ctx context.Context, req *SendCodeReq) (r *SendCodeResp, err error)
 
 	Register(ctx context.Context, req *RegisterReq) (r *RegisterResp, err error)
@@ -1399,6 +1522,82 @@ func (p *DailyWorkServiceCreateTaskResult) String() string {
 }
 
 var fieldIDToName_DailyWorkServiceCreateTaskResult = map[int16]string{
+	0: "success",
+}
+
+type DailyWorkServiceCompleteTaskArgs struct {
+	Req *CompleteTaskReq `thrift:"req,1" frugal:"1,default,CompleteTaskReq" json:"req"`
+}
+
+func NewDailyWorkServiceCompleteTaskArgs() *DailyWorkServiceCompleteTaskArgs {
+	return &DailyWorkServiceCompleteTaskArgs{}
+}
+
+func (p *DailyWorkServiceCompleteTaskArgs) InitDefault() {
+}
+
+var DailyWorkServiceCompleteTaskArgs_Req_DEFAULT *CompleteTaskReq
+
+func (p *DailyWorkServiceCompleteTaskArgs) GetReq() (v *CompleteTaskReq) {
+	if !p.IsSetReq() {
+		return DailyWorkServiceCompleteTaskArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+func (p *DailyWorkServiceCompleteTaskArgs) SetReq(val *CompleteTaskReq) {
+	p.Req = val
+}
+
+func (p *DailyWorkServiceCompleteTaskArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DailyWorkServiceCompleteTaskArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceCompleteTaskArgs(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceCompleteTaskArgs = map[int16]string{
+	1: "req",
+}
+
+type DailyWorkServiceCompleteTaskResult struct {
+	Success *CompleteTaskResp `thrift:"success,0,optional" frugal:"0,optional,CompleteTaskResp" json:"success,omitempty"`
+}
+
+func NewDailyWorkServiceCompleteTaskResult() *DailyWorkServiceCompleteTaskResult {
+	return &DailyWorkServiceCompleteTaskResult{}
+}
+
+func (p *DailyWorkServiceCompleteTaskResult) InitDefault() {
+}
+
+var DailyWorkServiceCompleteTaskResult_Success_DEFAULT *CompleteTaskResp
+
+func (p *DailyWorkServiceCompleteTaskResult) GetSuccess() (v *CompleteTaskResp) {
+	if !p.IsSetSuccess() {
+		return DailyWorkServiceCompleteTaskResult_Success_DEFAULT
+	}
+	return p.Success
+}
+func (p *DailyWorkServiceCompleteTaskResult) SetSuccess(x interface{}) {
+	p.Success = x.(*CompleteTaskResp)
+}
+
+func (p *DailyWorkServiceCompleteTaskResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DailyWorkServiceCompleteTaskResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DailyWorkServiceCompleteTaskResult(%+v)", *p)
+}
+
+var fieldIDToName_DailyWorkServiceCompleteTaskResult = map[int16]string{
 	0: "success",
 }
 

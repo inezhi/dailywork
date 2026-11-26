@@ -204,6 +204,11 @@ func (e LoginParamsXClient) Valid() bool {
 	}
 }
 
+// CompleteTaskReq defines model for CompleteTaskReq.
+type CompleteTaskReq struct {
+	ExpectedVersion int `json:"expectedVersion"`
+}
+
 // CreateTaskReq defines model for CreateTaskReq.
 type CreateTaskReq struct {
 	DueDate         *openapi_types.Date `json:"dueDate,omitempty"`
@@ -482,6 +487,9 @@ type EchoJSONRequestBody = EchoReq
 // CreateTaskJSONRequestBody defines body for CreateTask for application/json ContentType.
 type CreateTaskJSONRequestBody = CreateTaskReq
 
+// CompleteTaskJSONRequestBody defines body for CompleteTask for application/json ContentType.
+type CompleteTaskJSONRequestBody = CompleteTaskReq
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// SendCode 发送验证码
@@ -502,6 +510,9 @@ type ServerInterface interface {
 	// CreateTask 创建任务
 	// (POST /api/v1/tasks)
 	CreateTask(w http.ResponseWriter, r *http.Request, params CreateTaskParams)
+	// CompleteTask 完成任务
+	// (POST /api/v1/tasks/{id}/complete)
+	CompleteTask(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
 	// ListToday 今天页
 	// (GET /api/v1/today)
 	ListToday(w http.ResponseWriter, r *http.Request, params ListTodayParams)
@@ -645,6 +656,32 @@ func (siw *ServerInterfaceWrapper) CreateTask(w http.ResponseWriter, r *http.Req
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CreateTask(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CompleteTask operation middleware
+func (siw *ServerInterfaceWrapper) CompleteTask(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CompleteTask(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -813,6 +850,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/auth/register", wrapper.Register)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/auth/login", wrapper.Login)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/auth/logout", wrapper.Logout)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/api/v1/tasks/{id}/complete", wrapper.CompleteTask)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/api/v1/today", wrapper.ListToday)
 
 	return m
